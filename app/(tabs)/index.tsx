@@ -1,75 +1,136 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, FlatList, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const screenWidth = Dimensions.get('window').width;
+const blockSize = screenWidth / 2 - 16; // Two columns with margin
+
+// TypeScript types for API response (matches your Django model)
+interface UserSummary {
+  id: number;
+  username: string;
+}
+
+interface Quote {
+  id: number;
+  text: string;
+  author: UserSummary;
+  quoted_user: UserSummary;
+  context?: string;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+  is_public: boolean;
+}
+
+// Dummy data for preview
+const dummyQuotes: Quote[] = [
+  {
+    id: 1,
+    text: "Life is what happens when you're busy making other plans.",
+    author: { id: 1, username: "alice" },
+    quoted_user: { id: 2, username: "bob" },
+    context: "At the cafe last weekend",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    is_active: true,
+    is_public: true,
+  },
+  {
+    id: 2,
+    text: "I'm not lazy, I'm just on energy-saving mode.",
+    author: { id: 2, username: "bob" },
+    quoted_user: { id: 3, username: "charlie" },
+    context: "During coding session",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    is_active: true,
+    is_public: false,
+  },
+  {
+    id: 3,
+    text: "Do or do not. There is no try.",
+    author: { id: 3, username: "charlie" },
+    quoted_user: { id: 4, username: "dana" },
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    is_active: true,
+    is_public: true,
+  },
+];
 
 export default function HomeScreen() {
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const insets = useSafeAreaInsets();
+  useEffect(() => {
+    // For now, load dummy data
+    setQuotes(dummyQuotes);
+
+    // Later: replace with API call
+    /*
+    fetch('https://your-api.com/api/quotes/')
+      .then(res => res.json())
+      .then((data: Quote[]) => setQuotes(data))
+      .catch(err => console.error(err));
+    */
+  }, []);
+
+  const renderQuote = ({ item }: { item: Quote }) => (
+    <View style={styles.quoteBlock}>
+      <ThemedText type="subtitle" numberOfLines={4} style={styles.quoteText}>
+        "{item.text}"
+      </ThemedText>
+      <Text style={styles.metaText}>— {item.quoted_user.username}</Text>
+      <Text style={styles.metaText}>Posted by {item.author.username}</Text>
+    </View>
+  );
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <ThemedView style={styles.container}>
+      <SafeAreaView>
+      <FlatList
+        data={quotes}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderQuote}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={styles.listContent}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    paddingTop: 16,
   },
-  stepContainer: {
-    gap: 8,
+  listContent: {
+    paddingHorizontal: 8,
+  },
+  row: {
+    justifyContent: 'space-between',
+  },
+  quoteBlock: {
+    width: blockSize,
+    height: blockSize,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    padding: 8,
     marginBottom: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  quoteText: {
+    textAlign: 'center',
+    marginBottom: 8,
+    color: '#000000',
+  },
+  metaText: {
+    fontSize: 12,
+    color: '#000000',
   },
 });
