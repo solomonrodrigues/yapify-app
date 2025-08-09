@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/ThemedText';
@@ -8,58 +8,60 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function ProfileScreen() {
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView>
+    <ThemedView style={{padding: 16}}>
+    <SafeAreaView>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         {/* Profile Info */}
-        <ThemedView style={styles.profileContainer}>
+        <View style={styles.profileContainer}>
           <Image
             source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }}
             style={styles.avatar}
           />
           <ThemedText type="title">John Doe</ThemedText>
           <ThemedText style={styles.subtitle}>@johndoe</ThemedText>
-        </ThemedView>
+        </View>
 
         {/* Stats */}
-        <ThemedView style={styles.statsContainer}>
-          <ThemedView style={styles.statBox}>
+        <View style={styles.statsContainer}>
+          <View style={styles.statBox}>
             <ThemedText type="title">245</ThemedText>
             <ThemedText>Posts</ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.statBox}>
+          </View>
+          <View style={styles.statBox}>
             <ThemedText type="title">1.2k</ThemedText>
             <ThemedText>Followers</ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.statBox}>
+          </View>
+          <View style={styles.statBox}>
             <ThemedText type="title">530</ThemedText>
             <ThemedText>Following</ThemedText>
-          </ThemedView>
-        </ThemedView>
+          </View>
+        </View>
 
         {/* Bio */}
-        <ThemedView style={styles.section}>
+        <View style={styles.section}>
           <ThemedText>
             Full-stack developer • Coffee lover ☕ • Traveler 🌍
           </ThemedText>
-        </ThemedView>
+        </View>
 
         {/* Recent Activity */}
-        <ThemedView style={styles.section}>
+        <View style={styles.section}>
           <ThemedText type="subtitle">Recent Activity</ThemedText>
-          <ThemedView style={styles.activityCard}>
+          <View style={styles.activityCard}>
             <ThemedText style={styles.activityText}>
-              Starred "react-native-awesome" repo
+              "Lost my 39 day edging streak..."
             </ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.activityCard}>
+          </View>
+          <View style={styles.activityCard}>
             <IconSymbol name="message.fill" size={20} color="#3498db" />
             <ThemedText style={styles.activityText}>
               Commented on "UI Ideas" thread
             </ThemedText>
-          </ThemedView>
-        </ThemedView>
+          </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
+    </ThemedView>
   );
 }
 
@@ -75,6 +77,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 20,
+    backgroundColor: 'none',
   },
   avatar: {
     width: 100,
@@ -94,6 +97,7 @@ const styles = StyleSheet.create({
   },
   statBox: {
     alignItems: 'center',
+
   },
   section: {
     marginHorizontal: 20,
@@ -105,7 +109,6 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     padding: 10,
     borderRadius: 8,
-    backgroundColor: 'rgba(0,0,0,0.05)',
   },
   activityText: {
     marginLeft: 10,
