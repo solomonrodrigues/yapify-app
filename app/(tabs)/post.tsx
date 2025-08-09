@@ -13,7 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function AddPostScreen() {
   const [quote, setQuote] = useState('');
@@ -66,7 +65,6 @@ export default function AddPostScreen() {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {/* Header */}
           <View style={styles.header}>
-            <IconSymbol name="quote.bubble" size={32} color="#3498db" />
             <ThemedText type="title" style={styles.headerTitle}>Share a Quote</ThemedText>
             <ThemedText style={styles.headerSubtitle}>
               Inspire others with your favorite quotes
@@ -118,7 +116,6 @@ export default function AddPostScreen() {
             <View style={styles.section}>
               <ThemedText type="subtitle" style={styles.label}>Preview</ThemedText>
               <View style={styles.previewCard}>
-                <IconSymbol name="quote.opening" size={24} color="#3498db" style={styles.quoteIcon} />
                 <ThemedText style={styles.previewQuote}>{quote}</ThemedText>
                 {author && (
                   <ThemedText style={styles.previewAuthor}>— {author}</ThemedText>
@@ -134,7 +131,6 @@ export default function AddPostScreen() {
               onPress={clearForm}
               disabled={!quote && !author}
             >
-              <IconSymbol name="trash" size={20} color="#e74c3c" />
               <ThemedText style={styles.clearButtonText}>Clear</ThemedText>
             </TouchableOpacity>
 
@@ -150,7 +146,6 @@ export default function AddPostScreen() {
                 <ThemedText style={styles.submitButtonText}>Posting...</ThemedText>
               ) : (
                 <>
-                  <IconSymbol name="paperplane.fill" size={20} color="#fff" />
                   <ThemedText style={styles.submitButtonText}>Share Quote</ThemedText>
                 </>
               )}
