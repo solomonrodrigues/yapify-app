@@ -1,29 +1,53 @@
-// Fallback for using MaterialIcons on Android and web.
-
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
+import FontAwesome7 from '@expo/vector-icons/FontAwesome6'; // FontAwesome 7 is part of the v6 package in Expo
+import { SymbolWeight } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
-type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
+// Mapping entry type
+type IconMappingEntry = {
+  name: string;
+};
+
+// We'll infer the type from our actual mapping instead of requiring all SF Symbols
 type IconSymbolName = keyof typeof MAPPING;
 
 /**
- * Add your SF Symbols to Material Icons mappings here.
- * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
- * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
+ * Mapping SF Symbols to FontAwesome 7 icon names.
+ * FontAwesome 7 icons can be found here:
+ * https://fontawesome.com/search
  */
 const MAPPING = {
-  'house.fill': 'home',
-  'paperplane.fill': 'send',
-  'chevron.left.forwardslash.chevron.right': 'code',
-  'chevron.right': 'chevron-right',
-} as IconMapping;
+  // Home icons
+  'house.fill': { name: 'house' },
+  // People icons
+  'person.2.fill': { name: 'users' },
+  'person.circle.fill': { name: 'circle-user' },
+  // UI icons
+  'plus.square.fill': { name: 'square-plus' },
+  'bell.fill': { name: 'bell' },
+  'message.fill': { name: 'comment' },
+  'magnifyingglass': { name: 'search' },
+  'close': { name: 'circle-xmark' },
+  'gear': { name: 'gear' },
+} as const satisfies Record<string, IconMappingEntry>;
+
+// Component props for FontAwesome 7
+type IconComponentProps = ComponentProps<typeof FontAwesome7>;
 
 /**
- * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
- * This ensures a consistent look across platforms, and optimal resource usage.
- * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
+ * Render a FontAwesome 7 icon
+ */
+function renderIcon(
+  name: string,
+  color: string | OpaqueColorValue,
+  size: number,
+  style?: StyleProp<TextStyle>
+) {
+  return <FontAwesome7 color={color} size={size} style={style} name={name as IconComponentProps['name']} />;
+}
+
+/**
+ * IconSymbol for Android & web using FontAwesome 7 only
  */
 export function IconSymbol({
   name,
@@ -37,5 +61,16 @@ export function IconSymbol({
   style?: StyleProp<TextStyle>;
   weight?: SymbolWeight;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
+  const mapping = MAPPING[name];
+  
+  if (!mapping) {
+    console.warn(`IconSymbol: No mapping found for "${name}". Using fallback icon.`);
+    return <FontAwesome7 color={color} size={size} name="circle-question" style={style} />;
+  }
+
+  return renderIcon(mapping.name, color, size, style);
 }
+
+// Export the mapping for external use (e.g., for getting available icon names)
+export { MAPPING as ICON_MAPPING };
+export type { IconSymbolName };
