@@ -49,7 +49,7 @@ export default function ProfileScreen() {
           <ThemedText type="subtitle">Recent Activity</ThemedText>
           <View style={styles.activityCard}>
             <ThemedText style={styles.activityText}>
-              "Lost my 39 day edging streak..."
+              "Yeah"
             </ThemedText>
           </View>
           <View style={styles.activityCard}>
