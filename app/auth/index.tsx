@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { register } from "@/api/auth";
 import { useAuth } from "@/context/AuthContext";
+import { ThemedView } from "@/components/ThemedView";
+import { Colors } from "@/constants/Colors";
 
 export default function AuthScreen() {
   const { login } = useAuth();
@@ -45,7 +47,7 @@ export default function AuthScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <ThemedView style={styles.container}>
       <Text style={styles.title}>{isLogin ? "Login" : "Sign Up"}</Text>
 
       {!isLogin && (
@@ -111,7 +113,7 @@ export default function AuthScreen() {
             : "Already have an account? Login"}
         </Text>
       </TouchableOpacity>
-    </View>
+    </ThemedView>
   );
 }
 
@@ -119,7 +121,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#fff",
     justifyContent: "center",
   },
   title: {
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
-    color: "#222",
+    color: "#ccc",
   },
   input: {
     borderWidth: 1,
@@ -136,10 +137,10 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
     fontSize: 16,
-    color: "#000",
+    color: "#ccc",
   },
   button: {
-    backgroundColor: "#4F46E5",
+    backgroundColor: Colors.dark.primary,
     paddingVertical: 14,
     borderRadius: 8,
     marginTop: 4,
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
   },
   toggleText: {
     textAlign: "center",
-    color: "#4F46E5",
+    color: Colors.dark.primary,
     marginTop: 16,
   },
 });
