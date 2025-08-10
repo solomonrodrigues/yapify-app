@@ -1,9 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { getAccessToken, clearTokens } from "@/utils/storage";
 import { setOnLogoutHandler } from "@/api/client";
+import { apiLogin } from "@/api/auth";
+import { AuthTokens } from "@/types/api";
 
 interface AuthContextType {
   isLoggedIn: boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
 }
@@ -11,12 +15,19 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   async function checkAuth() {
     const token = await getAccessToken();
     setIsLoggedIn(!!token);
+    setIsLoading(false);
   }
+
+  async function login(email: string, password: string) {
+    await apiLogin(email, password);
+    setIsLoggedIn(true);
+  };
 
   async function logout() {
     await clearTokens();
@@ -33,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, logout, checkAuth }}>
+    <AuthContext.Provider value={{ isLoading, isLoggedIn, login, logout, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );

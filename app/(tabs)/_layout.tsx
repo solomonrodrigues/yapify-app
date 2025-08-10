@@ -9,26 +9,32 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import { ActivityIndicator } from 'react-native';
+
+// Simple loading screen component
+const LoadingScreen = () => (
+  <React.Fragment>
+    <ActivityIndicator size="large" color={Colors.light.tint} />
+  </React.Fragment>
+);
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { isLoggedIn } = useAuth();
+  const { isLoading, isLoggedIn } = useAuth();
   const router = useRouter();
-  const [checkedAuth, setCheckedAuth] = useState(false);
 
   useEffect(() => {
-    // Wait until isLoggedIn is initialized (true or false) before redirecting
-    setCheckedAuth(true);
-  }, [isLoggedIn]);
-
-  useEffect(() => {
-    if (checkedAuth && !isLoggedIn) {
-      router.replace("/auth");
+    if (!isLoading && !isLoggedIn) {
+      router.replace('/auth');
     }
-  }, [checkedAuth, isLoggedIn]);
+  }, [isLoading, isLoggedIn]);
 
-  if (!checkedAuth || !isLoggedIn) {
-    return null; // or loading indicator
+  if (isLoading) {
+    return <LoadingScreen />; // Or null or a spinner
+  }
+
+  if (!isLoggedIn) {
+    return null; // Or fallback UI if needed, since redirect will happen
   }
 
   return (

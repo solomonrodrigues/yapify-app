@@ -15,7 +15,7 @@ export const register = async (data: RegisterData): Promise<RegisterResponse> =>
   return res.data;
 };
 
-export const login = async (email: string, password: string): Promise<AuthTokens> => {
+export const apiLogin = async (email: string, password: string): Promise<AuthTokens> => {
   const res = await api.post<AuthTokens>('/auth/login/', { email, password });
   await setToken(res.data.access, res.data.refresh);
   return res.data;

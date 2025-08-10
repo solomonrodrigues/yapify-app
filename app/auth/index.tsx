@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { login, register } from "@/api/auth";
+import { register } from "@/api/auth";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AuthScreen() {
+  const { login } = useAuth();
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
 
