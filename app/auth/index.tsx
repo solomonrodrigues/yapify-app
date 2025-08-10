@@ -1,5 +1,17 @@
 import React, { useState } from "react";
-import { Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import {
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { register } from "@/api/auth";
 import { useAuth } from "@/context/AuthContext";
@@ -23,7 +35,7 @@ export default function AuthScreen() {
   async function handleLogin() {
     try {
       await login(email, password);
-      router.replace("/(tabs)"); // This navigates to app/(tabs)/index.tsx
+      router.replace("/(tabs)");
     } catch (err: any) {
       Alert.alert("Login Failed", err.response?.data?.detail || err.message);
     }
@@ -47,71 +59,87 @@ export default function AuthScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Text style={styles.title}>{isLogin ? "Login" : "Sign Up"}</Text>
-
-      {!isLogin && (
-        <>
-          <TextInput
-            style={styles.input}
-            placeholder="First Name"
-            placeholderTextColor="#999"
-            value={firstName}
-            onChangeText={setFirstName}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Last Name"
-            placeholderTextColor="#999"
-            value={lastName}
-            onChangeText={setLastName}
-          />
-        </>
-      )}
-
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#999"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#999"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-
-      {!isLogin && (
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={passwordConfirm}
-          onChangeText={setPasswordConfirm}
-        />
-      )}
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={isLogin ? handleLogin : handleRegister}
+      {/* KeyboardAvoidingView moves content up on keyboard open */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 100} // workable values from testing on-device - tweak if needed
       >
-        <Text style={styles.buttonText}>{isLogin ? "Login" : "Sign Up"}</Text>
-      </TouchableOpacity>
+        {/* TouchableWithoutFeedback dismisses keyboard when tapping outside */}
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          {/* ScrollView allows scrolling if needed */}
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <Text style={styles.title}>{isLogin ? "Login" : "Sign Up"}</Text>
 
-      <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
-        <Text style={styles.toggleText}>
-          {isLogin
-            ? "Don't have an account? Sign Up"
-            : "Already have an account? Login"}
-        </Text>
-      </TouchableOpacity>
+            {!isLogin && (
+              <>
+                <TextInput
+                  style={styles.input}
+                  placeholder="First Name"
+                  placeholderTextColor="#999"
+                  value={firstName}
+                  onChangeText={setFirstName}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Last Name"
+                  placeholderTextColor="#999"
+                  value={lastName}
+                  onChangeText={setLastName}
+                />
+              </>
+            )}
+
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#999"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor="#999"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+
+            {!isLogin && (
+              <TextInput
+                style={styles.input}
+                placeholder="Confirm Password"
+                placeholderTextColor="#999"
+                secureTextEntry
+                value={passwordConfirm}
+                onChangeText={setPasswordConfirm}
+              />
+            )}
+
+            <TouchableOpacity
+              style={styles.button}
+              onPress={isLogin ? handleLogin : handleRegister}
+            >
+              <Text style={styles.buttonText}>{isLogin ? "Login" : "Sign Up"}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
+              <Text style={styles.toggleText}>
+                {isLogin
+                  ? "Don't have an account? Sign Up"
+                  : "Already have an account? Login"}
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </ThemedView>
   );
 }
@@ -119,8 +147,11 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center", // center by default
     padding: 20,
-    justifyContent: "center",
   },
   title: {
     fontSize: 28,
