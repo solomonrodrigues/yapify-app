@@ -69,8 +69,7 @@ export default function ApiTestScreen() {
   const handleLogout = async () => {
     try {
       await logout();
-      Alert.alert('Logged out');
-      // Optionally redirect or update UI after logout
+      // Redirect to auth is handled by (tabs) base layout
     } catch (e: any) {
       Alert.alert('Logout error', e.message);
     }

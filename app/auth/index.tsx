@@ -23,7 +23,6 @@ export default function AuthScreen() {
   async function handleLogin() {
     try {
       await login(email, password);
-      Alert.alert("Success", "Logged in successfully!");
       router.replace("/(tabs)"); // This navigates to app/(tabs)/index.tsx
     } catch (err: any) {
       Alert.alert("Login Failed", err.response?.data?.detail || err.message);
