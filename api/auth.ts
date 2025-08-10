@@ -1,6 +1,6 @@
-import api from './client';
-import { AuthTokens, RegisterResponse } from '../types/api';
-import { setToken, clearTokens } from '../utils/storage';
+import api from '@/api/client';
+import { AuthTokens, RegisterResponse } from '@/types/api';
+import { setToken } from '@/utils/storage';
 
 interface RegisterData {
   email: string;
@@ -26,8 +26,4 @@ export const refreshAccessToken = async (
 ): Promise<{ access: string }> => {
   const res = await api.post<{ access: string }>('/auth/refresh/', { refresh });
   return res.data;
-};
-
-export const logout = async (): Promise<void> => {
-  await clearTokens();
 };

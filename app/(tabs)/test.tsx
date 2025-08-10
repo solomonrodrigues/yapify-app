@@ -1,21 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, ScrollView, StyleSheet, Alert } from 'react-native';
-
-import { login, register } from '@/api/auth';
+import { useAuth } from '@/context/AuthContext';
 import { getProfile } from '@/api/profile';
 import { searchUsers, sendFriendRequest, getFriends } from '@/api/friends';
 import { getQuotes, createQuote } from '@/api/quotes';
 import { User, Quote } from '@/types/api';
 
 export default function ApiTestScreen() {
-  // Auth inputs
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-
   // App state
-  const [loggedIn, setLoggedIn] = useState(false);
   const [profile, setProfile] = useState<User | null>(null);
   const [friends, setFriends] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,39 +15,25 @@ export default function ApiTestScreen() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [quoteText, setQuoteText] = useState('');
 
-  // Handlers
-  const handleRegister = async () => {
-    try {
-      await register({
-        email,
-        password,
-        password_confirm: password,
-        first_name: firstName,
-        last_name: lastName,
-      });
-      Alert.alert('Registered! Please log in now.');
-    } catch (e: any) {
-      Alert.alert('Register error', JSON.stringify(e.response?.data || e.message));
-    }
-  };
+  const { logout } = useAuth();
 
-  const handleLogin = async () => {
-    try {
-      await login(email, password);
-      setLoggedIn(true);
-    } catch (e: any) {
-      Alert.alert('Login error', JSON.stringify(e.response?.data || e.message));
-    }
-  };
-
-  // Fetch profile after login
+  // Fetch profile, friends, and quotes on mount
   useEffect(() => {
-    if (loggedIn) {
-      getProfile().then(setProfile).catch((e) => Alert.alert('Profile error', e.message));
-      getFriends().then(setFriends).catch((e) => Alert.alert('Friends error', e.message));
-      getQuotes().then(setQuotes).catch((e) => Alert.alert('Quotes error', e.message));
-    }
-  }, [loggedIn]);
+    (async () => {
+      try {
+        const [profileData, friendsData, quotesData] = await Promise.all([
+          getProfile(),
+          getFriends(),
+          getQuotes(),
+        ]);
+        setProfile(profileData);
+        setFriends(friendsData);
+        setQuotes(quotesData);
+      } catch (e: any) {
+        Alert.alert('Error', e.message);
+      }
+    })();
+  }, []);
 
   const handleSearchUsers = async () => {
     try {
@@ -77,7 +55,8 @@ export default function ApiTestScreen() {
 
   const handleCreateQuote = async () => {
     try {
-      await createQuote({ text: quoteText, quoted_user: profile!, is_public: true, is_active: true });
+      if (!profile) return;
+      await createQuote({ text: quoteText, quoted_user: profile, is_public: true, is_active: true });
       Alert.alert('Quote created');
       setQuoteText('');
       const freshQuotes = await getQuotes();
@@ -87,66 +66,81 @@ export default function ApiTestScreen() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      Alert.alert('Logged out');
+      // Optionally redirect or update UI after logout
+    } catch (e: any) {
+      Alert.alert('Logout error', e.message);
+    }
+  };
+
+  if (!profile) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading profile...</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <Text style={styles.header}>Register</Text>
-      <TextInput style={styles.input} placeholder="Email" onChangeText={setEmail} value={email} autoCapitalize="none" />
-      <TextInput style={styles.input} placeholder="Password" secureTextEntry onChangeText={setPassword} value={password} />
-      <TextInput style={styles.input} placeholder="First Name" onChangeText={setFirstName} value={firstName} />
-      <TextInput style={styles.input} placeholder="Last Name" onChangeText={setLastName} value={lastName} />
-      <Button title="Register" onPress={handleRegister} />
+      <Text style={styles.header}>Profile</Text>
+      <Text>{profile.first_name} {profile.last_name} ({profile.email})</Text>
 
-      <Text style={styles.header}>Login</Text>
-      <TextInput style={styles.input} placeholder="Email" onChangeText={setEmail} value={email} autoCapitalize="none" />
-      <TextInput style={styles.input} placeholder="Password" secureTextEntry onChangeText={setPassword} value={password} />
-      <Button title="Login" onPress={handleLogin} />
+      <Text style={styles.header}>Friends</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Search users"
+        onChangeText={setSearchTerm}
+        value={searchTerm}
+        autoCapitalize="none"
+      />
+      <Button title="Search" onPress={handleSearchUsers} />
+      {searchResults.map((user) => (
+        <View key={user.id} style={styles.friendItem}>
+          <Text>{user.first_name} {user.last_name}</Text>
+          <Button title="Add Friend" onPress={() => handleSendFriendRequest(user.id)} />
+        </View>
+      ))}
 
-      {loggedIn && profile && (
-        <>
-          <Text style={styles.header}>Profile</Text>
-          <Text>{profile.first_name} {profile.last_name} ({profile.email})</Text>
+      <Text style={styles.header}>My Friends</Text>
+      {friends.map((f) => (
+        <Text key={f.id}>{f.first_name} {f.last_name}</Text>
+      ))}
 
-          <Text style={styles.header}>Friends</Text>
-          <TextInput style={styles.input} placeholder="Search users" onChangeText={setSearchTerm} value={searchTerm} />
-          <Button title="Search" onPress={handleSearchUsers} />
-          {searchResults.map((user: any) => (
-            <View key={user.id} style={styles.friendItem}>
-              <Text>{user.first_name} {user.last_name}</Text>
-              <Button title="Add Friend" onPress={() => handleSendFriendRequest(user.id)} />
-            </View>
-          ))}
+      <Text style={styles.header}>Quotes</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Write a quote"
+        value={quoteText}
+        onChangeText={setQuoteText}
+      />
+      <Button title="Create Quote" onPress={handleCreateQuote} />
+      {quotes.map((q) => (
+        <View key={q.id} style={styles.quoteItem}>
+          <Text>"{q.text}" — {q.author.first_name}</Text>
+        </View>
+      ))}
 
-          <Text style={styles.header}>My Friends</Text>
-          {friends.map((f: any) => (
-            <Text key={f.id}>{f.first_name} {f.last_name}</Text>
-          ))}
-
-          <Text style={styles.header}>Quotes</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Write a quote"
-            value={quoteText}
-            onChangeText={setQuoteText}
-          />
-          <Button title="Create Quote" onPress={handleCreateQuote} />
-          {quotes.map((q: any) => (
-            <View key={q.id} style={styles.quoteItem}>
-              <Text>"{q.text}" — {q.author.first_name}</Text>
-            </View>
-          ))}
-        </>
-      )}
+      <Button title="Logout" onPress={handleLogout} />
     </ScrollView>
   );
 }
 
-const styles = {
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fafafa',
   },
   contentContainer: {
     padding: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     fontSize: 18,
@@ -167,4 +161,4 @@ const styles = {
   quoteItem: {
     marginBottom: 8,
   },
-};
+});

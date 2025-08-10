@@ -1,6 +1,7 @@
+// api/client.ts
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
-import { getAccessToken, getRefreshToken, setToken, clearTokens } from '../utils/storage';
-import { refreshAccessToken } from './auth';
+import { getAccessToken, getRefreshToken, setToken, clearTokens } from '@/utils/storage';
+import { refreshAccessToken } from '@/api/auth';
 
 const API_BASE_URL = 'https://yapify-production.up.railway.app/api';
 
@@ -21,12 +22,18 @@ const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue = [];
 };
 
+// Placeholder logout handler — to be set from outside
+let onLogoutHandler: (() => void) | null = null;
+
+export function setOnLogoutHandler(handler: () => void) {
+  onLogoutHandler = handler;
+}
+
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach token to every request
 api.interceptors.request.use(async (config) => {
   const token = await getAccessToken();
   if (token && config.headers) {
@@ -35,19 +42,16 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Handle expired tokens automatically
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    console.warn(error.response?.data || 'No response data'); // Log the error response for debugging
+    console.warn(error.response?.data || 'No response data');
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 
-    // If request is unauthorized and we haven’t retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       if (isRefreshing) {
-        // Queue requests while refresh is happening
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
@@ -79,7 +83,12 @@ api.interceptors.response.use(
       } catch (err) {
         processQueue(err, null);
         await clearTokens();
-        // Optional: navigate to login here
+
+        // Call logout handler to update auth state / navigate user
+        if (onLogoutHandler) {
+          onLogoutHandler();
+        }
+
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

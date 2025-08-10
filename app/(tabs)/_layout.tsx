@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
@@ -7,9 +7,29 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/context/AuthContext';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
+  const [checkedAuth, setCheckedAuth] = useState(false);
+
+  useEffect(() => {
+    // Wait until isLoggedIn is initialized (true or false) before redirecting
+    setCheckedAuth(true);
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (checkedAuth && !isLoggedIn) {
+      router.replace("/auth");
+    }
+  }, [checkedAuth, isLoggedIn]);
+
+  if (!checkedAuth || !isLoggedIn) {
+    return null; // or loading indicator
+  }
 
   return (
     <Tabs
