@@ -10,6 +10,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { ActivityIndicator } from 'react-native';
+import { HeaderProfileLeft } from '@/components/HeaderProfileLeft';
 
 // Simple loading screen component
 const LoadingScreen = () => (
@@ -41,7 +42,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
+        headerShown: true,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
@@ -51,6 +52,7 @@ export default function TabLayout() {
           },
           default: {},
         }),
+        headerLeft: () => <HeaderProfileLeft size={36} />,
       }}>
       <Tabs.Screen
         name="index"

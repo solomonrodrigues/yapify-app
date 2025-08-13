@@ -83,7 +83,7 @@ export default function AuthScreen() {
     <>
       <Stack.Screen
         options={{
-          headerShown: false,
+          headerShown: true,
         }}
       />
       <ThemedView style={styles.container}>
@@ -128,45 +128,45 @@ export default function AuthScreen() {
                 value={email}
                 onChangeText={setEmail} />
 
-                {/* Confirm password field */}
+              {/* Confirm password field */}
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="Password"
+                  placeholderTextColor="#999"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.iconWrapper}>
+                  <IconSymbol
+                    name={showPassword ? 'eye.slash' : 'eye'}
+                    size={24}
+                    color="gray"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Confirm password field */}
+              {!isLogin && (
                 <View style={styles.inputContainer}>
                   <TextInput
                     style={styles.passwordInput}
-                    placeholder="Password"
+                    placeholder="Confirm Password"
                     placeholderTextColor="#999"
-                    secureTextEntry={!showPassword}
-                    value={password}
-                    onChangeText={setPassword}
+                    secureTextEntry={!showPasswordConfirm}
+                    value={passwordConfirm}
+                    onChangeText={setPasswordConfirm}
                   />
-                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.iconWrapper}>
+                  <TouchableOpacity onPress={() => setShowPasswordConfirm(!showPasswordConfirm)} style={styles.iconWrapper}>
                     <IconSymbol
-                      name={showPassword ? 'eye.slash' : 'eye'}
+                      name={showPasswordConfirm ? 'eye.slash' : 'eye'}
                       size={24}
                       color="gray"
                     />
                   </TouchableOpacity>
                 </View>
-
-                {/* Confirm password field */}
-                {!isLogin && (
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.passwordInput}
-                      placeholder="Confirm Password"
-                      placeholderTextColor="#999"
-                      secureTextEntry={!showPasswordConfirm}
-                      value={passwordConfirm}
-                      onChangeText={setPasswordConfirm}
-                    />
-                    <TouchableOpacity onPress={() => setShowPasswordConfirm(!showPasswordConfirm)} style={styles.iconWrapper}>
-                      <IconSymbol
-                        name={showPasswordConfirm ? 'eye.slash' : 'eye'}
-                        size={24}
-                        color="gray"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                )}
+              )}
 
               <TouchableOpacity
                 style={styles.button}
