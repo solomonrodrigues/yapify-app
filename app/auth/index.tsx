@@ -1,4 +1,5 @@
 import { register } from "@/api/auth";
+import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
@@ -99,7 +100,7 @@ export default function AuthScreen() {
               contentContainerStyle={styles.scrollContent}
               keyboardShouldPersistTaps="handled"
             >
-              <Text style={styles.title}>{isLogin ? "Login" : "Create an Account"}</Text>
+              <ThemedText type={'title'} style={styles.title}>{isLogin ? "Login" : "Create an Account"}</ThemedText>
 
               {!isLogin && (
                 <>
@@ -202,7 +203,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
-    color: "#ccc",
     alignSelf: "flex-start",
   },
   input: {
