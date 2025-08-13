@@ -36,6 +36,12 @@ export default function AuthScreen() {
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
   async function handleLogin() {
+    // Simple required field check
+    if (!email.trim() || !password.trim()) {
+      Alert.alert("Missing Information", "Please enter both email and password.");
+      return;
+    }
+
     try {
       await login(email, password);
       router.replace("/(tabs)");
@@ -45,6 +51,18 @@ export default function AuthScreen() {
   }
 
   async function handleRegister() {
+    // Required field validation
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || !password.trim() || !passwordConfirm.trim()) {
+      Alert.alert("Missing Information", "Please fill out all fields.");
+      return;
+    }
+
+    // Password match check
+    if (password !== passwordConfirm) {
+      Alert.alert("Password Mismatch", "Passwords do not match.");
+      return;
+    }
+
     try {
       await register({
         email,
