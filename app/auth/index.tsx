@@ -80,112 +80,106 @@ export default function AuthScreen() {
   }
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-        }}
-      />
-      <ThemedView style={styles.container}>
-        {/* KeyboardAvoidingView moves content up on keyboard open */}
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 100} // workable values from testing on-device - tweak if needed
-        >
-          {/* TouchableWithoutFeedback dismisses keyboard when tapping outside */}
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            {/* ScrollView allows scrolling if needed */}
-            <ScrollView
-              contentContainerStyle={styles.scrollContent}
-              keyboardShouldPersistTaps="handled"
-            >
-              <ThemedText type={'title'} style={styles.title}>{isLogin ? "Login" : "Create an Account"}</ThemedText>
+    <ThemedView style={styles.container}>
+      {/* KeyboardAvoidingView moves content up on keyboard open */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 100} // workable values from testing on-device - tweak if needed
+      >
+        {/* TouchableWithoutFeedback dismisses keyboard when tapping outside */}
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          {/* ScrollView allows scrolling if needed */}
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <ThemedText type={'title'} style={styles.title}>{isLogin ? "Login" : "Create an Account"}</ThemedText>
 
-              {!isLogin && (
-                <>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="First Name"
-                    placeholderTextColor="#999"
-                    value={firstName}
-                    onChangeText={setFirstName} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Last Name"
-                    placeholderTextColor="#999"
-                    value={lastName}
-                    onChangeText={setLastName} />
-                </>
-              )}
+            {!isLogin && (
+              <>
+                <TextInput
+                  style={styles.input}
+                  placeholder="First Name"
+                  placeholderTextColor="#999"
+                  value={firstName}
+                  onChangeText={setFirstName} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Last Name"
+                  placeholderTextColor="#999"
+                  value={lastName}
+                  onChangeText={setLastName} />
+              </>
+            )}
 
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#999"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail} />
+
+            {/* Confirm password field */}
+            <View style={styles.inputContainer}>
               <TextInput
-                style={styles.input}
-                placeholder="Email"
+                style={styles.passwordInput}
+                placeholder="Password"
                 placeholderTextColor="#999"
-                autoCapitalize="none"
-                keyboardType="email-address"
-                value={email}
-                onChangeText={setEmail} />
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.iconWrapper}>
+                <IconSymbol
+                  name={showPassword ? 'eye.slash' : 'eye'}
+                  size={24}
+                  color="gray"
+                />
+              </TouchableOpacity>
+            </View>
 
-              {/* Confirm password field */}
+            {/* Confirm password field */}
+            {!isLogin && (
               <View style={styles.inputContainer}>
                 <TextInput
                   style={styles.passwordInput}
-                  placeholder="Password"
+                  placeholder="Confirm Password"
                   placeholderTextColor="#999"
-                  secureTextEntry={!showPassword}
-                  value={password}
-                  onChangeText={setPassword}
+                  secureTextEntry={!showPasswordConfirm}
+                  value={passwordConfirm}
+                  onChangeText={setPasswordConfirm}
                 />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.iconWrapper}>
+                <TouchableOpacity onPress={() => setShowPasswordConfirm(!showPasswordConfirm)} style={styles.iconWrapper}>
                   <IconSymbol
-                    name={showPassword ? 'eye.slash' : 'eye'}
+                    name={showPasswordConfirm ? 'eye.slash' : 'eye'}
                     size={24}
                     color="gray"
                   />
                 </TouchableOpacity>
               </View>
+            )}
 
-              {/* Confirm password field */}
-              {!isLogin && (
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={styles.passwordInput}
-                    placeholder="Confirm Password"
-                    placeholderTextColor="#999"
-                    secureTextEntry={!showPasswordConfirm}
-                    value={passwordConfirm}
-                    onChangeText={setPasswordConfirm}
-                  />
-                  <TouchableOpacity onPress={() => setShowPasswordConfirm(!showPasswordConfirm)} style={styles.iconWrapper}>
-                    <IconSymbol
-                      name={showPasswordConfirm ? 'eye.slash' : 'eye'}
-                      size={24}
-                      color="gray"
-                    />
-                  </TouchableOpacity>
-                </View>
-              )}
+            <TouchableOpacity
+              style={styles.button}
+              onPress={isLogin ? handleLogin : handleRegister}
+            >
+              <Text style={styles.buttonText}>{isLogin ? "Login" : "Sign Up"}</Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.button}
-                onPress={isLogin ? handleLogin : handleRegister}
-              >
-                <Text style={styles.buttonText}>{isLogin ? "Login" : "Sign Up"}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
-                <Text style={styles.toggleText}>
-                  {isLogin
-                    ? "Don't have an account? Sign up"
-                    : "Already have an account? Login"}
-                </Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
-      </ThemedView></>
+            <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
+              <Text style={styles.toggleText}>
+                {isLogin
+                  ? "Don't have an account? Sign up"
+                  : "Already have an account? Login"}
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </ThemedView>
   );
 }
 
