@@ -1,22 +1,23 @@
+import { register } from "@/api/auth";
+import { ThemedView } from "@/components/ThemedView";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Colors } from "@/constants/Colors";
+import { useAuth } from "@/context/AuthContext";
+import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   Alert,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  View,
-  Keyboard,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
   TouchableWithoutFeedback,
+  View
 } from "react-native";
-import { useRouter } from "expo-router";
-import { register } from "@/api/auth";
-import { useAuth } from "@/context/AuthContext";
-import { ThemedView } from "@/components/ThemedView";
-import { Colors } from "@/constants/Colors";
 
 export default function AuthScreen() {
   const { login } = useAuth();
@@ -26,11 +27,13 @@ export default function AuthScreen() {
   // Shared fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   // Signup-only fields
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
   async function handleLogin() {
     try {
@@ -58,89 +61,112 @@ export default function AuthScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      {/* KeyboardAvoidingView moves content up on keyboard open */}
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 100} // workable values from testing on-device - tweak if needed
-      >
-        {/* TouchableWithoutFeedback dismisses keyboard when tapping outside */}
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          {/* ScrollView allows scrolling if needed */}
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-          >
-            <Text style={styles.title}>{isLogin ? "Login" : "Sign Up"}</Text>
+    <>
+      <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ThemedView style={styles.container}>
+        {/* KeyboardAvoidingView moves content up on keyboard open */}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 100} // workable values from testing on-device - tweak if needed
+        >
+          {/* TouchableWithoutFeedback dismisses keyboard when tapping outside */}
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            {/* ScrollView allows scrolling if needed */}
+            <ScrollView
+              contentContainerStyle={styles.scrollContent}
+              keyboardShouldPersistTaps="handled"
+            >
+              <Text style={styles.title}>{isLogin ? "Login" : "Create an Account"}</Text>
 
-            {!isLogin && (
-              <>
-                <TextInput
-                  style={styles.input}
-                  placeholder="First Name"
-                  placeholderTextColor="#999"
-                  value={firstName}
-                  onChangeText={setFirstName}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Last Name"
-                  placeholderTextColor="#999"
-                  value={lastName}
-                  onChangeText={setLastName}
-                />
-              </>
-            )}
+              {!isLogin && (
+                <>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="First Name"
+                    placeholderTextColor="#999"
+                    value={firstName}
+                    onChangeText={setFirstName} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Last Name"
+                    placeholderTextColor="#999"
+                    value={lastName}
+                    onChangeText={setLastName} />
+                </>
+              )}
 
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor="#999"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-            />
-
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor="#999"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
-
-            {!isLogin && (
               <TextInput
                 style={styles.input}
-                placeholder="Confirm Password"
+                placeholder="Email"
                 placeholderTextColor="#999"
-                secureTextEntry
-                value={passwordConfirm}
-                onChangeText={setPasswordConfirm}
-              />
-            )}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail} />
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={isLogin ? handleLogin : handleRegister}
-            >
-              <Text style={styles.buttonText}>{isLogin ? "Login" : "Sign Up"}</Text>
-            </TouchableOpacity>
+                {/* Confirm password field */}
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Password"
+                    placeholderTextColor="#999"
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={setPassword}
+                  />
+                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.iconWrapper}>
+                    <IconSymbol
+                      name={showPassword ? 'eye.slash' : 'eye'}
+                      size={24}
+                      color="gray"
+                    />
+                  </TouchableOpacity>
+                </View>
 
-            <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
-              <Text style={styles.toggleText}>
-                {isLogin
-                  ? "Don't have an account? Sign Up"
-                  : "Already have an account? Login"}
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </ThemedView>
+                {/* Confirm password field */}
+                {!isLogin && (
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.passwordInput}
+                      placeholder="Confirm Password"
+                      placeholderTextColor="#999"
+                      secureTextEntry={!showPasswordConfirm}
+                      value={passwordConfirm}
+                      onChangeText={setPasswordConfirm}
+                    />
+                    <TouchableOpacity onPress={() => setShowPasswordConfirm(!showPasswordConfirm)} style={styles.iconWrapper}>
+                      <IconSymbol
+                        name={showPasswordConfirm ? 'eye.slash' : 'eye'}
+                        size={24}
+                        color="gray"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                )}
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={isLogin ? handleLogin : handleRegister}
+              >
+                <Text style={styles.buttonText}>{isLogin ? "Login" : "Sign Up"}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
+                <Text style={styles.toggleText}>
+                  {isLogin
+                    ? "Don't have an account? Sign up"
+                    : "Already have an account? Login"}
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </ThemedView></>
   );
 }
 
@@ -159,6 +185,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
     color: "#ccc",
+    alignSelf: "flex-start",
   },
   input: {
     borderWidth: 1,
@@ -168,6 +195,26 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontSize: 16,
     color: "#ccc",
+  },
+  passwordInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 12,
+    paddingRight: 40, // extra space for icon
+    marginBottom: 12,
+    fontSize: 16,
+    color: "#ccc",
+  },
+  inputContainer: {
+    position: "relative",
+    justifyContent: "center",
+  },
+  iconWrapper: {
+    position: "absolute",
+    right: 12,
+    top: "38%",
+    transform: [{ translateY: -10 }],
   },
   button: {
     backgroundColor: Colors.dark.primary,

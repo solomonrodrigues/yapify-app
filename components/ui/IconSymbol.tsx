@@ -29,6 +29,9 @@ const MAPPING = {
   'magnifyingglass': { name: 'search' },
   'close': { name: 'circle-xmark' },
   'gear': { name: 'gear' },
+  // Eye icons (for password peek)
+  'eye': { name: 'eye' },
+  'eye.slash': { name: 'eye-slash' },
 } as const satisfies Record<string, IconMappingEntry>;
 
 // Component props for FontAwesome 7
