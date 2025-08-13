@@ -45,7 +45,7 @@ export default function AuthScreen() {
 
     try {
       await login(email, password);
-      router.replace("/(tabs)");
+      router.replace("/(drawer)/(tabs)");
     } catch (err: any) {
       Alert.alert("Login Failed", err.response?.data?.detail || err.message);
     }
