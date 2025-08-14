@@ -6,14 +6,13 @@ import {
     DrawerItem
 } from '@react-navigation/drawer';
 import { DrawerActions, useNavigation, NavigationProp } from '@react-navigation/native';
-import { ActivityIndicator, Alert, useWindowDimensions, View } from 'react-native';
+import { Alert, useWindowDimensions, View } from 'react-native';
 import { findDrawerParent } from '@/utils/nav';
 import { HeaderProfileLeft } from '@/components/HeaderProfileLeft';
 import { useUser } from '@/hooks/useUser';
-import { User } from '@/types/api';
-import { getInitials } from '@/utils/user';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
+import AuthenticatedLayout from '@/components/AuthenticatedLayout';
 
 function MenuContent() {
     const router = useRouter();
@@ -63,39 +62,37 @@ export default function DrawerLayout() {
     const { width } = useWindowDimensions();
     const drawerWidth = Math.min(width * 0.4, 300);
     //   const navigation = useNavigation();
-    const { user, loading } = useUser();
-
-    if (loading) {
-        return <ActivityIndicator></ActivityIndicator>
-    }
+    const { user } = useUser();
 
     return (
-        <Drawer
-            screenOptions={{
-                drawerPosition: 'left',
-                headerShown: true,
-                drawerStyle: { width: drawerWidth },
-                headerLeft: () => {
-                    const navigation = useNavigation<NavigationProp<any>>();
-                    return (
-                        <HeaderProfileLeft
-                            user={user}
-                            size={36}
-                            onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
-                        />
-                    );
-                },
-            }}
-            drawerContent={() => <MenuContent />}
-        >
-            {/* Hide the Tabs route from the drawer menu itself */}
-            <Drawer.Screen
-                name="(tabs)"
-                options={{
-                    title: 'Home',
-                    drawerItemStyle: { display: 'none' }
+        <AuthenticatedLayout>
+            <Drawer
+                screenOptions={{
+                    drawerPosition: 'left',
+                    headerShown: true,
+                    drawerStyle: { width: drawerWidth },
+                    headerLeft: () => {
+                        const navigation = useNavigation<NavigationProp<any>>();
+                        return (
+                            <HeaderProfileLeft
+                                user={user}
+                                size={36}
+                                onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+                            />
+                        );
+                    },
                 }}
-            />
-        </Drawer>
+                drawerContent={() => <MenuContent />}
+            >
+                {/* Hide the Tabs route from the drawer menu itself */}
+                <Drawer.Screen
+                    name="(tabs)"
+                    options={{
+                        title: 'Home',
+                        drawerItemStyle: { display: 'none' }
+                    }}
+                />
+            </Drawer>
+        </AuthenticatedLayout>
     );
 }

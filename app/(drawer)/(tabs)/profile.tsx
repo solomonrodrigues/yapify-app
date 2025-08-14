@@ -1,4 +1,4 @@
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -8,11 +8,7 @@ import { useUser } from '@/hooks/useUser';
 import { getInitials } from '@/utils/user';
 
 export default function ProfileScreen() {
-  const { user, loading } = useUser()
-
-  if (loading) {
-    return <ActivityIndicator></ActivityIndicator>
-  }
+  const { user } = useUser()
 
   return (
     <ThemedView style={{padding: 16}}>
