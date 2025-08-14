@@ -1,16 +1,19 @@
 import React from "react";
-import { Image, TouchableOpacity, StyleSheet } from "react-native";
+import { TouchableOpacity, StyleSheet, View, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { getInitials } from "@/utils/user"; // make sure to import this
+import { User } from "@/types/api";
+import { InitialsAvatar } from "@/components/InitialsAvatar";
 
 type HeaderProfileLeftProps = {
-  profileUri?: string;
+  user: User | null;
   onPress?: () => void;
   size?: number;
 };
 
 export const HeaderProfileLeft: React.FC<HeaderProfileLeftProps> = ({
-  profileUri = "https://randomuser.me/api/portraits/men/32.jpg",
+  user,
   onPress,
   size = 36,
 }) => {
@@ -22,17 +25,8 @@ export const HeaderProfileLeft: React.FC<HeaderProfileLeftProps> = ({
       onPress={onPress || (() => router.push("/profile"))}
       style={{ marginLeft: 12 }}
     >
-      <Image
-        source={{ uri: profileUri }}
-        style={[styles.image, { width: size, height: size, borderRadius: size / 2, borderColor }]}
-      />
+      <InitialsAvatar initials={getInitials(user)} size={size} style={{marginBottom: 8}} />
     </TouchableOpacity>
   );
 };
 
-const styles = StyleSheet.create({
-  image: {
-    borderWidth: 1,
-    marginBottom: 10,
-  },
-});

@@ -1,24 +1,28 @@
-import { Image } from 'expo-image';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { InitialsAvatar } from '@/components/InitialsAvatar';
+import { useUser } from '@/hooks/useUser';
+import { getInitials } from '@/utils/user';
 
 export default function ProfileScreen() {
+  const { user, loading } = useUser()
+
+  if (loading) {
+    return <ActivityIndicator></ActivityIndicator>
+  }
+
   return (
     <ThemedView style={{padding: 16}}>
     <SafeAreaView>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         {/* Profile Info */}
         <View style={styles.profileContainer}>
-          <Image
-            source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }}
-            style={styles.avatar}
-          />
-          <ThemedText type="title">John Doe</ThemedText>
-          <ThemedText style={styles.subtitle}>@johndoe</ThemedText>
+          <InitialsAvatar initials={getInitials(user)} size={100} style={{marginBottom: 24}} />
+          <ThemedText type="title">{user?.first_name} {user?.last_name}</ThemedText>
+          <ThemedText style={styles.subtitle}>@{user?.first_name.toLowerCase()}</ThemedText>
         </View>
 
         {/* Stats */}

@@ -6,9 +6,12 @@ import {
     DrawerItem
 } from '@react-navigation/drawer';
 import { DrawerActions, useNavigation, NavigationProp } from '@react-navigation/native';
-import { useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, useWindowDimensions, View } from 'react-native';
 import { findDrawerParent } from '@/utils/nav';
 import { HeaderProfileLeft } from '@/components/HeaderProfileLeft';
+import { useUser } from '@/hooks/useUser';
+import { User } from '@/types/api';
+import { getInitials } from '@/utils/user';
 
 function MenuContent() {
     const router = useRouter();
@@ -39,6 +42,11 @@ export default function DrawerLayout() {
     const { width } = useWindowDimensions();
     const drawerWidth = Math.min(width * 0.4, 300);
     //   const navigation = useNavigation();
+    const { user, loading } = useUser();
+
+    if (loading) {
+        return <ActivityIndicator></ActivityIndicator>
+    }
 
     return (
         <Drawer
@@ -50,6 +58,7 @@ export default function DrawerLayout() {
                     const navigation = useNavigation<NavigationProp<any>>();
                     return (
                         <HeaderProfileLeft
+                            user={user}
                             size={36}
                             onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
                         />
