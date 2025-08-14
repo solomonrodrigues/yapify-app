@@ -6,16 +6,19 @@ import {
     DrawerItem
 } from '@react-navigation/drawer';
 import { DrawerActions, useNavigation, NavigationProp } from '@react-navigation/native';
-import { ActivityIndicator, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Alert, useWindowDimensions, View } from 'react-native';
 import { findDrawerParent } from '@/utils/nav';
 import { HeaderProfileLeft } from '@/components/HeaderProfileLeft';
 import { useUser } from '@/hooks/useUser';
 import { User } from '@/types/api';
 import { getInitials } from '@/utils/user';
+import { Colors } from '@/constants/Colors';
+import { useAuth } from '@/context/AuthContext';
 
 function MenuContent() {
     const router = useRouter();
     const navigation = useNavigation();
+    const { logout } = useAuth()
 
     const go = (href: Href) => {
         // Safely close the drawer if we're inside one; otherwise skip closing.
@@ -27,12 +30,30 @@ function MenuContent() {
         router.push(href);
     };
 
+    async function handleLogout() {
+        Alert.alert(
+        "Confirm Logout",
+        "Are you sure you want to log out?",
+        [
+            { text: "Cancel", style: "cancel" },
+            { 
+                text: "Log out", 
+                style: "destructive",
+                onPress: async () => {
+                    await logout();
+                }
+            }
+        ]
+        );
+    }
+
     return (
         <DrawerContentScrollView>
             <View style={{ paddingTop: 8 }} />
             <DrawerItem label="Profile" onPress={() => go('/profile')} />
             <DrawerItem label="Post" onPress={() => go('/post')} />
             <DrawerItem label="Test" onPress={() => go('/test')} />
+            <DrawerItem label="Log out" onPress={handleLogout} inactiveTintColor={Colors.dark.error} />
         </DrawerContentScrollView>
     );
 }

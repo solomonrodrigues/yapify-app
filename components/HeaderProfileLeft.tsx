@@ -29,4 +29,3 @@ export const HeaderProfileLeft: React.FC<HeaderProfileLeftProps> = ({
     </TouchableOpacity>
   );
 };
-
