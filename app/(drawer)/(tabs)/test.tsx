@@ -56,7 +56,7 @@ export default function ApiTestScreen() {
   const handleCreateQuote = async () => {
     try {
       if (!profile) return;
-      await createQuote({ text: quoteText, quoted_user: profile, is_public: true, is_active: true });
+      await createQuote({ text: quoteText });
       Alert.alert('Quote created');
       setQuoteText('');
       const freshQuotes = await getQuotes();
@@ -110,7 +110,7 @@ export default function ApiTestScreen() {
       <Button title="Create Quote" onPress={handleCreateQuote} />
       {quotes.map((q) => (
         <View key={q.id} style={styles.quoteItem}>
-          <Text>"{q.text}" — {q.author.first_name}</Text>
+          <Text>"{q.text}" — {q.author_name}</Text>
         </View>
       ))}
     </ScrollView>

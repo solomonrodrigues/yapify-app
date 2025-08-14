@@ -22,11 +22,11 @@ export interface RegisterResponse {
 export interface Quote {
   id: number;
   text: string;
-  author: User;
-  quoted_user: User;
-  is_public: boolean;
-  is_active: boolean;
-  // Add more fields if needed
+  author_name: string;
+  quoted_user_name: string;
+  witness_count: number;
+  like_count: number;
+  is_liked: boolean;
 }
 
 // Notifications
