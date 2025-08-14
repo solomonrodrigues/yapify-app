@@ -66,15 +66,6 @@ export default function ApiTestScreen() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      // Redirect to auth is handled by (tabs) base layout
-    } catch (e: any) {
-      Alert.alert('Logout error', e.message);
-    }
-  };
-
   if (!profile) {
     return (
       <View style={styles.loadingContainer}>
@@ -122,8 +113,6 @@ export default function ApiTestScreen() {
           <Text>"{q.text}" — {q.author.first_name}</Text>
         </View>
       ))}
-
-      <Button title="Logout" onPress={handleLogout} />
     </ScrollView>
   );
 }
