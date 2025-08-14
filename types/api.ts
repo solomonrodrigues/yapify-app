@@ -29,6 +29,11 @@ export interface Quote {
   is_liked: boolean;
 }
 
+export interface CreateQuote {
+  text: string;
+  quoted_user_email: string;
+}
+
 // Notifications
 export interface Notification {
   id: number;

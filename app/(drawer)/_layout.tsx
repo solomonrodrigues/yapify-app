@@ -76,7 +76,7 @@ export default function DrawerLayout() {
                         return (
                             <HeaderProfileLeft
                                 user={user}
-                                size={36}
+                                size={30}
                                 onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
                             />
                         );

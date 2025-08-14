@@ -15,7 +15,7 @@ type HeaderProfileLeftProps = {
 export const HeaderProfileLeft: React.FC<HeaderProfileLeftProps> = ({
   user,
   onPress,
-  size = 36,
+  size = 30,
 }) => {
   const router = useRouter();
   const borderColor = useThemeColor({}, "text"); // optional: theme-aware border

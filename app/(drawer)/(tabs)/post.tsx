@@ -1,292 +1,452 @@
-import { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  useColorScheme,
+  Alert,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { createQuote } from '@/api/quotes';
+import { Quote, CreateQuote } from '@/types/api';
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+// Theme types
+interface Theme {
+  background: string;
+  cardBackground: string;
+  primaryText: string;
+  secondaryText: string;
+  accent: string;
+  border: string;
+  success: string;
+  error: string;
+  inputBackground: string;
+  placeholder: string;
+}
 
-export default function AddPostScreen() {
-  const [quote, setQuote] = useState('');
-  const [author, setAuthor] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+// Theme colors
+const themes: { light: Theme; dark: Theme } = {
+  light: {
+    background: '#FFFFFF',
+    cardBackground: '#F8F9FA',
+    primaryText: '#1A1A1A',
+    secondaryText: '#6B7280',
+    accent: '#3B82F6',
+    border: '#E5E7EB',
+    success: '#10B981',
+    error: '#EF4444',
+    inputBackground: '#FFFFFF',
+    placeholder: '#9CA3AF',
+  },
+  dark: {
+    background: '#000000',
+    cardBackground: '#1F2937',
+    primaryText: '#FFFFFF',
+    secondaryText: '#9CA3AF',
+    accent: '#60A5FA',
+    border: '#374151',
+    success: '#34D399',
+    error: '#F87171',
+    inputBackground: '#111827',
+    placeholder: '#6B7280',
+  },
+};
 
-  const handleSubmit = async () => {
-    if (!quote.trim()) {
-      Alert.alert('Error', 'Please enter a quote');
+// Component props
+interface CreateQuoteScreenProps {
+  onQuoteCreated?: (quote: Quote) => void;
+  onCancel?: () => void;
+}
+
+// Create Quote Screen Component
+const CreateQuoteScreen: React.FC<CreateQuoteScreenProps> = ({ 
+  onQuoteCreated, 
+  onCancel 
+}) => {
+  const colorScheme = useColorScheme();
+  const theme: Theme = themes[colorScheme || 'light'] || themes.light;
+
+  const [quoteContent, setQuoteContent] = useState<string>('');
+  const [quotedUserEmail, setQuotedUserEmail] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errors, setErrors] = useState<{
+    text?: string;
+    email?: string;
+    general?: string;
+  }>({});
+
+  const textInputRef = useRef<TextInput>(null);
+  const emailInputRef = useRef<TextInput>(null);
+
+  // Validate email format
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Validate form inputs
+  const validateForm = (): boolean => {
+    const newErrors: typeof errors = {};
+
+    // Validate quote text
+    if (!quoteContent.trim()) {
+      newErrors.text = 'Quote text is required';
+    } else if (quoteContent.trim().length < 3) {
+      newErrors.text = 'Quote must be at least 3 characters long';
+    } else if (quoteContent.trim().length > 500) {
+      newErrors.text = 'Quote must be less than 500 characters';
+    }
+
+    // Validate email
+    if (!quotedUserEmail.trim()) {
+      newErrors.email = 'User email is required';
+    } else if (!validateEmail(quotedUserEmail.trim())) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle quote submission
+  const handleSubmit = async (): Promise<void> => {
+    if (!validateForm()) {
       return;
     }
 
-    setIsSubmitting(true);
-    
+    setIsLoading(true);
+    setErrors({});
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const quoteData: Partial<CreateQuote> = {
+        text: quoteContent.trim(),
+        quoted_user_email: quotedUserEmail.trim(),
+      };
+
+      const newQuote = await createQuote(quoteData);
       
-      Alert.alert('Success', 'Quote posted successfully!', [
-        {
-          text: 'OK',
-          onPress: () => {
-            setQuote('');
-            setAuthor('');
-          }
-        }
-      ]);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to post quote. Please try again.');
+      // Show success message
+      Alert.alert(
+        'Success',
+        'Quote created successfully!',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Reset form
+              setQuoteContent('');
+              setQuotedUserEmail('');
+              // Call callback if provided
+              onQuoteCreated?.(newQuote);
+            },
+          },
+        ]
+      );
+    } catch (error: any) {
+      console.error('Error creating quote:', error);
+      
+      // Handle specific API errors
+      if (error?.response?.data) {
+        const apiErrors = error.response.data;
+        setErrors({
+          text: apiErrors.text?.[0],
+          email: apiErrors.quoted_user_email?.[0],
+          general: apiErrors.non_field_errors?.[0] || 'Failed to create quote',
+        });
+      } else {
+        setErrors({
+          general: 'Failed to create quote. Please try again.',
+        });
+      }
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  const clearForm = () => {
-    setQuote('');
-    setAuthor('');
+  // Handle cancel
+  const handleCancel = (): void => {
+    if (quoteContent.trim() || quotedUserEmail.trim()) {
+      Alert.alert(
+        'Discard Changes',
+        'Are you sure you want to discard your quote?',
+        [
+          { text: 'Keep Writing', style: 'cancel' },
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: () => {
+              setQuoteContent('');
+              setQuotedUserEmail('');
+              setErrors({});
+              onCancel?.();
+            },
+          },
+        ]
+      );
+    } else {
+      onCancel?.();
+    }
   };
 
-  const characterLimit = 280;
-  const remainingChars = characterLimit - quote.length;
+  // Clear specific error when user starts typing
+  const handleContentChange = (text: string): void => {
+    setQuoteContent(text);
+    if (errors.text) {
+      setErrors(prev => ({ ...prev, text: undefined }));
+    }
+  };
+
+  const handleEmailChange = (text: string): void => {
+    setQuotedUserEmail(text);
+    if (errors.email) {
+      setErrors(prev => ({ ...prev, email: undefined }));
+    }
+  };
 
   return (
-    <ThemedView>
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoid}
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          {/* Header */}
-          <View style={styles.header}>
-            <ThemedText type="title" style={styles.headerTitle}>Share a Quote</ThemedText>
-            <ThemedText style={styles.headerSubtitle}>
-              Inspire others with your favorite quotes
-            </ThemedText>
-          </View>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={handleCancel}
+            style={styles.headerButton}
+            disabled={isLoading}
+          >
+            <Text style={[styles.headerButtonText, { color: theme.secondaryText }]}>
+              Cancel
+            </Text>
+          </TouchableOpacity>
+          
+          <Text style={[styles.title, { color: theme.primaryText }]}>
+            Create Quote
+          </Text>
+          
+          <TouchableOpacity
+            onPress={handleSubmit}
+            style={[
+              styles.headerButton,
+              styles.submitButton,
+              { 
+                backgroundColor: theme.accent,
+                opacity: isLoading ? 0.6 : 1,
+              }
+            ]}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <Text style={styles.submitButtonText}>Post</Text>
+            )}
+          </TouchableOpacity>
+        </View>
 
-          {/* Quote Input */}
-          <View style={styles.section}>
-            <ThemedText type="subtitle" style={styles.label}>Quote *</ThemedText>
-            <TextInput
-              style={[
-                styles.textInput, 
-                styles.quoteInput,
-                quote.length > characterLimit && styles.inputError
-              ]}
-              placeholder="Enter your favorite quote..."
-              placeholderTextColor="#999"
-              value={quote}
-              onChangeText={setQuote}
-              multiline
-              textAlignVertical="top"
-              maxLength={characterLimit + 50} // Allow slight overflow for warning
-            />
-            <View style={styles.charCounter}>
-              <ThemedText style={[
-                styles.charCountText,
-                remainingChars < 0 && styles.charCountError
-              ]}>
-                {remainingChars} characters remaining
-              </ThemedText>
+        {/* General Error */}
+        {errors.general && (
+          <View style={[styles.errorContainer, { backgroundColor: theme.error + '20' }]}>
+            <Text style={[styles.errorText, { color: theme.error }]}>
+              {errors.general}
+            </Text>
+          </View>
+        )}
+
+        {/* Form */}
+        <View style={styles.form}>
+          {/* Quote Content */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: theme.primaryText }]}>
+              Quote Content *
+            </Text>
+            <View style={[
+              styles.textInputContainer,
+              { 
+                backgroundColor: theme.inputBackground,
+                borderColor: errors.text ? theme.error : theme.border,
+              }
+            ]}>
+              <TextInput
+                ref={textInputRef}
+                style={[
+                  styles.textInput,
+                  styles.multilineInput,
+                  { color: theme.primaryText }
+                ]}
+                value={quoteContent}
+                onChangeText={handleContentChange}
+                placeholder="Enter the quote..."
+                placeholderTextColor={theme.placeholder}
+                multiline
+                numberOfLines={4}
+                maxLength={500}
+                returnKeyType="next"
+                onSubmitEditing={() => emailInputRef.current?.focus()}
+                editable={!isLoading}
+              />
             </View>
-          </View>
-
-          {/* Author Input */}
-          <View style={styles.section}>
-            <ThemedText type="subtitle" style={styles.label}>Author</ThemedText>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Author name (optional)"
-              placeholderTextColor="#999"
-              value={author}
-              onChangeText={setAuthor}
-              maxLength={50}
-            />
-          </View>
-
-          {/* Preview */}
-          {quote.trim() && (
-            <View style={styles.section}>
-              <ThemedText type="subtitle" style={styles.label}>Preview</ThemedText>
-              <View style={styles.previewCard}>
-                <ThemedText style={styles.previewQuote}>{quote}</ThemedText>
-                {author && (
-                  <ThemedText style={styles.previewAuthor}>— {author}</ThemedText>
-                )}
-              </View>
-            </View>
-          )}
-
-          {/* Action Buttons */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity 
-              style={styles.clearButton} 
-              onPress={clearForm}
-              disabled={!quote && !author}
-            >
-              <ThemedText style={styles.clearButtonText}>Clear</ThemedText>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[
-                styles.submitButton,
-                (!quote.trim() || remainingChars < 0 || isSubmitting) && styles.submitButtonDisabled
-              ]}
-              onPress={handleSubmit}
-              disabled={!quote.trim() || remainingChars < 0 || isSubmitting}
-            >
-              {isSubmitting ? (
-                <ThemedText style={styles.submitButtonText}>Posting...</ThemedText>
-              ) : (
-                <>
-                  <ThemedText style={styles.submitButtonText}>Share Quote</ThemedText>
-                </>
+            <View style={styles.inputFooter}>
+              {errors.text && (
+                <Text style={[styles.errorText, { color: theme.error }]}>
+                  {errors.text}
+                </Text>
               )}
-            </TouchableOpacity>
+              <Text style={[styles.characterCount, { color: theme.secondaryText }]}>
+                {quoteContent.length}/500
+              </Text>
+            </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-    </ThemedView>
+
+          {/* Quoted User Email */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: theme.primaryText }]}>
+              User Email *
+            </Text>
+            <View style={[
+              styles.textInputContainer,
+              { 
+                backgroundColor: theme.inputBackground,
+                borderColor: errors.email ? theme.error : theme.border,
+              }
+            ]}>
+              <TextInput
+                ref={emailInputRef}
+                style={[styles.textInput, { color: theme.primaryText }]}
+                value={quotedUserEmail}
+                onChangeText={handleEmailChange}
+                placeholder="user@example.com"
+                placeholderTextColor={theme.placeholder}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="done"
+                onSubmitEditing={handleSubmit}
+                editable={!isLoading}
+              />
+            </View>
+            {errors.email && (
+              <Text style={[styles.errorText, { color: theme.error }]}>
+                {errors.email}
+              </Text>
+            )}
+          </View>
+
+          {/* Helper Text */}
+          <View style={styles.helperContainer}>
+            <Text style={[styles.helperText, { color: theme.secondaryText }]}>
+              💡 Tip: Make sure the email belongs to a registered user
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#0f0f0f',
-  },
-  keyboardAvoid: {
     flex: 1,
   },
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 16,
+  },
   header: {
-    alignItems: 'center',
-    paddingVertical: 30,
-    paddingHorizontal: 20,
-    backgroundColor: '#1a1a1a',
-    marginBottom: 20,
-  },
-  headerTitle: {
-    marginTop: 10,
-    marginBottom: 5,
-    color: '#ffffff',
-  },
-  headerSubtitle: {
-    color: '#a0a0a0',
-    textAlign: 'center',
-  },
-  section: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-  },
-  label: {
-    marginBottom: 8,
-    color: '#ffffff',
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#333333',
-    borderRadius: 12,
-    padding: 15,
-    fontSize: 16,
-    backgroundColor: '#1a1a1a',
-    color: '#ffffff',
-  },
-  quoteInput: {
-    height: 120,
-    textAlignVertical: 'top',
-  },
-  inputError: {
-    borderColor: '#e74c3c',
-  },
-  charCounter: {
-    alignItems: 'flex-end',
-    marginTop: 5,
-  },
-  charCountText: {
-    fontSize: 12,
-    color: '#a0a0a0',
-  },
-  charCountError: {
-    color: '#e74c3c',
-  },
-  previewCard: {
-    backgroundColor: '#1a1a1a',
-    padding: 20,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#6c5ce7',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  quoteIcon: {
-    marginBottom: 10,
-  },
-  previewQuote: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontStyle: 'italic',
-    marginBottom: 10,
-    color: '#ffffff',
-  },
-  previewAuthor: {
-    fontSize: 14,
-    color: '#a0a0a0',
-    textAlign: 'right',
-  },
-  buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    gap: 15,
-  },
-  clearButton: {
-    flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 15,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e74c3c',
-    backgroundColor: '#1a1a1a',
-    gap: 8,
+    marginBottom: 24,
+    paddingVertical: 8,
   },
-  clearButtonText: {
-    color: '#e74c3c',
-    fontSize: 16,
-    fontWeight: '600',
+  headerButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
   },
   submitButton: {
-    flex: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
+    minWidth: 60,
     justifyContent: 'center',
-    paddingVertical: 15,
-    borderRadius: 12,
-    backgroundColor: '#6c5ce7',
-    gap: 8,
+    alignItems: 'center',
   },
-  submitButtonDisabled: {
-    backgroundColor: '#404040',
+  headerButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
   submitButtonText: {
-    color: '#fff',
+    color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  errorContainer: {
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  form: {
+    flex: 1,
+  },
+  inputContainer: {
+    marginBottom: 24,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  textInputContainer: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  textInput: {
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  multilineInput: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+  inputFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  characterCount: {
+    fontSize: 14,
+  },
+  errorText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  helperContainer: {
+    padding: 16,
+    borderRadius: 8,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+  },
+  helperText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
 });
+
+export default CreateQuoteScreen;
