@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { getQuotes, likeQuote, witnessQuote } from '@/api/quotes';
 import { Quote } from '@/types/api';
+import { useQuotes } from '@/context/QuotesContext';
 
 // Theme types
 interface Theme {
@@ -144,90 +145,10 @@ const QuotesFeed: React.FC = () => {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme: Theme = themes[colorScheme];
 
-  const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-
-  // Fetch quotes from API
-  const fetchQuotes = async (showRefreshIndicator: boolean = false): Promise<void> => {
-    try {
-      if (showRefreshIndicator) setRefreshing(true);
-      else setLoading(true);
-
-      const data = await getQuotes();
-      setQuotes(data);
-    } catch (error) {
-      console.error('Error fetching quotes:', error);
-      Alert.alert(
-        'Error',
-        'Failed to load quotes. Please try again.',
-        [{ text: 'OK' }]
-      );
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  // Handle like action
-  const handleLike = async (quoteId: number): Promise<void> => {
-    const updateQuote = (quote: typeof quotes[0], liked: boolean) => {
-      const currentCount = Number(quote.like_count);
-      return {
-        ...quote,
-        is_liked: liked ? "true" : "false",
-        like_count: (liked ? currentCount + 1 : currentCount - 1).toString()
-      };
-    };
-
-    try {
-      // Optimistic update
-      setQuotes(prevQuotes =>
-        prevQuotes.map(quote =>
-          quote.id === quoteId
-            ? updateQuote(quote, quote.is_liked !== "true")
-            : quote
-        )
-      );
-
-      // Make API call
-      await likeQuote(quoteId);
-    } catch (error) {
-      console.error('Error liking quote:', error);
-
-      // Revert optimistic update on error
-      setQuotes(prevQuotes =>
-        prevQuotes.map(quote =>
-          quote.id === quoteId
-            ? updateQuote(quote, quote.is_liked === "true")
-            : quote
-        )
-      );
-    }
-  };
-
-  // Handle witness action
-  const handleWitness = async (quoteId: number): Promise<void> => {
-    try {
-      // For now, we'll default to witnessing (true) with no comment
-      // You might want to show a modal for comment input in the future
-      await witnessQuote(quoteId, true, '');
-
-      // Refresh the quotes to get updated witness count
-      fetchQuotes();
-    } catch (error) {
-      console.error('Error witnessing quote:', error);
-      Alert.alert('Error', 'Failed to witness quote. Please try again.');
-    }
-  };
-
-  // Load quotes on component mount
-  useEffect(() => {
-    fetchQuotes();
-  }, []);
+  const { quotes, refreshing, refreshQuotes, likeQuoteById, witnessQuoteById } = useQuotes();
 
   // Render loading state
-  if (loading) {
+  if (refreshing) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
         <ActivityIndicator size="large" color={theme.accent} />
@@ -247,7 +168,7 @@ const QuotesFeed: React.FC = () => {
         </Text>
         <TouchableOpacity
           style={[styles.retryButton, { borderColor: theme.accent }]}
-          onPress={() => fetchQuotes()}
+          onPress={() => refreshQuotes()}
         >
           <Text style={[styles.retryText, { color: theme.accent }]}>
             Retry
@@ -267,12 +188,12 @@ const QuotesFeed: React.FC = () => {
           <FeedQuote
             quote={item}
             theme={theme}
-            onLike={handleLike}
-            onWitness={handleWitness}
+            onLike={likeQuoteById}
+            onWitness={witnessQuoteById}
           />
         )}
         refreshing={refreshing}
-        onRefresh={() => fetchQuotes(true)}
+        onRefresh={() => refreshQuotes()}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.feedContainer}
       />

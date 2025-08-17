@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '@/context/AuthContext';
 import { useColorScheme } from 'react-native';
+import { QuotesProvider } from '@/context/QuotesContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme() ?? 'dark';
@@ -22,11 +23,13 @@ export default function RootLayout() {
     <AuthProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <SafeAreaProvider>
+        <QuotesProvider>
         <Stack>
           <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
           <Stack.Screen name="auth/index" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
+        </QuotesProvider>
         <StatusBar style="auto" />
       </SafeAreaProvider>
       </ThemeProvider>
