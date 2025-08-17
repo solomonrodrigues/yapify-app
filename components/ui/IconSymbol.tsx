@@ -26,7 +26,7 @@ const MAPPING = {
   'plus.square.fill': { name: 'square-plus' },
   'bell.fill': { name: 'bell' },
   'message.fill': { name: 'comment' },
-  'magnifyingglass': { name: 'search' },
+  'magnifyingglass': { name: 'magnifying-glass' },
   'close': { name: 'circle-xmark' },
   'gear': { name: 'gear' },
   // Eye icons (for password peek)
@@ -77,3 +77,4 @@ export function IconSymbol({
 // Export the mapping for external use (e.g., for getting available icon names)
 export { MAPPING as ICON_MAPPING };
 export type { IconSymbolName };
+
