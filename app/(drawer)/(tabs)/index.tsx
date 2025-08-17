@@ -73,7 +73,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
   //   const date = new Date(dateString);
   //   const now = new Date();
   //   const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
-    
+
   //   if (diffInHours < 24) {
   //     return `${diffInHours}h ago`;
   //   } else {
@@ -83,9 +83,9 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
   // };
 
   return (
-    <View style={[styles.quoteCard, { 
+    <View style={[styles.quoteCard, {
       backgroundColor: theme.cardBackground,
-      borderColor: theme.border 
+      borderColor: theme.border
     }]}>
       {/* Header */}
       <View style={styles.header}>
@@ -111,13 +111,13 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
 
       {/* Actions Bar */}
       <View style={styles.actionsBar}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.actionButton}
           onPress={() => onLike(id)}
         >
           <Text style={[
-            styles.actionText, 
-            { 
+            styles.actionText,
+            {
               color: is_liked ? theme.likeButton : theme.secondaryText,
               fontWeight: is_liked ? '600' : '400'
             }
@@ -126,7 +126,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.actionButton}
           onPress={() => onWitness(id)}
         >
@@ -143,7 +143,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
 const QuotesFeed: React.FC = () => {
   const colorScheme = useColorScheme();
   const theme: Theme = themes[colorScheme || 'light'] || themes.light;
-  
+
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -159,7 +159,7 @@ const QuotesFeed: React.FC = () => {
     } catch (error) {
       console.error('Error fetching quotes:', error);
       Alert.alert(
-        'Error', 
+        'Error',
         'Failed to load quotes. Please try again.',
         [{ text: 'OK' }]
       );
@@ -173,7 +173,7 @@ const QuotesFeed: React.FC = () => {
   const handleLike = async (quoteId: number): Promise<void> => {
     try {
       // Optimistic update
-      setQuotes(prevQuotes => 
+      setQuotes(prevQuotes =>
         prevQuotes.map(quote => {
           if (quote.id === quoteId) {
             return {
@@ -191,7 +191,7 @@ const QuotesFeed: React.FC = () => {
     } catch (error) {
       console.error('Error liking quote:', error);
       // Revert optimistic update on error
-      setQuotes(prevQuotes => 
+      setQuotes(prevQuotes =>
         prevQuotes.map(quote => {
           if (quote.id === quoteId) {
             return {
@@ -212,7 +212,7 @@ const QuotesFeed: React.FC = () => {
       // For now, we'll default to witnessing (true) with no comment
       // You might want to show a modal for comment input in the future
       await witnessQuote(quoteId, true, '');
-      
+
       // Refresh the quotes to get updated witness count
       fetchQuotes();
     } catch (error) {
@@ -245,7 +245,7 @@ const QuotesFeed: React.FC = () => {
         <Text style={[styles.emptyText, { color: theme.secondaryText }]}>
           No quotes available
         </Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.retryButton, { borderColor: theme.accent }]}
           onPress={() => fetchQuotes()}
         >

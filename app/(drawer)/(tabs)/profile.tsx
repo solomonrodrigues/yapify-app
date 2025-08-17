@@ -17,8 +17,8 @@ export default function ProfileScreen() {
         {/* Profile Info */}
         <View style={styles.profileContainer}>
           <InitialsAvatar initials={getInitials(user)} size={100} style={{marginBottom: 24}} />
-          <ThemedText type="title">{user?.first_name} {user?.last_name}</ThemedText>
-          <ThemedText style={styles.subtitle}>@{user?.first_name.toLowerCase()}</ThemedText>
+          <ThemedText type="title">{user?.display_name}</ThemedText>
+          <ThemedText style={styles.subtitle}>@{user?.username.toLowerCase()}</ThemedText>
         </View>
 
         {/* Stats */}

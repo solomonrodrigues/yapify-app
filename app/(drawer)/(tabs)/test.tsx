@@ -77,7 +77,7 @@ export default function ApiTestScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <Text style={styles.header}>Profile</Text>
-      <Text>{profile.first_name} {profile.last_name} ({profile.email})</Text>
+      <Text>{profile.username} {profile.display_name} ({profile.email})</Text>
 
       <Text style={styles.header}>Friends</Text>
       <TextInput
@@ -90,14 +90,14 @@ export default function ApiTestScreen() {
       <Button title="Search" onPress={handleSearchUsers} />
       {searchResults.map((user) => (
         <View key={user.id} style={styles.friendItem}>
-          <Text>{user.first_name} {user.last_name}</Text>
+          <Text>{user.username} {user.display_name}</Text>
           <Button title="Add Friend" onPress={() => handleSendFriendRequest(user.id)} />
         </View>
       ))}
 
       <Text style={styles.header}>My Friends</Text>
       {friends.map((f) => (
-        <Text key={f.id}>{f.first_name} {f.last_name}</Text>
+        <Text key={f.id}>{f.username} {f.display_name}</Text>
       ))}
 
       <Text style={styles.header}>Quotes</Text>

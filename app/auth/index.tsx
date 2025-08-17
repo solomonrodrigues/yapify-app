@@ -31,8 +31,8 @@ export default function AuthScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   // Signup-only fields
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
@@ -53,7 +53,7 @@ export default function AuthScreen() {
 
   async function handleRegister() {
     // Required field validation
-    if (!firstName.trim() || !lastName.trim() || !email.trim() || !password.trim() || !passwordConfirm.trim()) {
+    if (!username.trim() || !displayName.trim() || !email.trim() || !password.trim() || !passwordConfirm.trim()) {
       Alert.alert("Missing Information", "Please fill out all fields.");
       return;
     }
@@ -67,8 +67,8 @@ export default function AuthScreen() {
     try {
       await register({
         email,
-        first_name: firstName,
-        last_name: lastName,
+        username: username,
+        display_name: displayName,
         password,
         password_confirm: passwordConfirm,
       });
@@ -102,14 +102,14 @@ export default function AuthScreen() {
                   style={styles.input}
                   placeholder="First Name"
                   placeholderTextColor="#999"
-                  value={firstName}
-                  onChangeText={setFirstName} />
+                  value={username}
+                  onChangeText={setUsername} />
                 <TextInput
                   style={styles.input}
                   placeholder="Last Name"
                   placeholderTextColor="#999"
-                  value={lastName}
-                  onChangeText={setLastName} />
+                  value={displayName}
+                  onChangeText={setDisplayName} />
               </>
             )}
 

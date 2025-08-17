@@ -4,8 +4,8 @@ import { setToken } from '@/utils/storage';
 
 interface RegisterData {
   email: string;
-  first_name: string;
-  last_name: string;
+  username: string;
+  display_name: string;
   password: string;
   password_confirm: string;
 }
