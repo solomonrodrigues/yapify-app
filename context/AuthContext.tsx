@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { getAccessToken, clearTokens } from "@/utils/storage";
 import { setOnLogoutHandler } from "@/api/client";
 import { apiLogin } from "@/api/auth";
-import { AuthTokens } from "@/types/api";
 
 interface AuthContextType {
   isLoggedIn: boolean;

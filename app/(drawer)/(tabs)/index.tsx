@@ -61,8 +61,8 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
   const {
     id,
     text,
-    author_name,
-    quoted_user_name,
+    author,
+    quoted_user,
     witness_count,
     like_count,
     is_liked,
@@ -91,10 +91,10 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
       <View style={styles.header}>
         <View style={styles.headerText}>
           <Text style={[styles.authorName, { color: theme.primaryText }]}>
-            {author_name}
+            {author.display_name}
           </Text>
           <Text style={[styles.quotedText, { color: theme.secondaryText }]}>
-            quoted {quoted_user_name}
+            quoted {quoted_user.display_name}
           </Text>
         </View>
         {/* <Text style={[styles.timestamp, { color: theme.secondaryText }]}>
@@ -141,8 +141,8 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
 
 // Main Feed Component
 const QuotesFeed: React.FC = () => {
-  const colorScheme = useColorScheme();
-  const theme: Theme = themes[colorScheme || 'light'] || themes.light;
+  const colorScheme = useColorScheme() ?? 'dark';
+  const theme: Theme = themes[colorScheme];
 
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -171,37 +171,37 @@ const QuotesFeed: React.FC = () => {
 
   // Handle like action
   const handleLike = async (quoteId: number): Promise<void> => {
+    const updateQuote = (quote: typeof quotes[0], liked: boolean) => {
+      const currentCount = Number(quote.like_count);
+      return {
+        ...quote,
+        is_liked: liked ? "true" : "false",
+        like_count: (liked ? currentCount + 1 : currentCount - 1).toString()
+      };
+    };
+
     try {
       // Optimistic update
       setQuotes(prevQuotes =>
-        prevQuotes.map(quote => {
-          if (quote.id === quoteId) {
-            return {
-              ...quote,
-              is_liked: !quote.is_liked,
-              like_count: quote.is_liked ? quote.like_count - 1 : quote.like_count + 1
-            };
-          }
-          return quote;
-        })
+        prevQuotes.map(quote =>
+          quote.id === quoteId
+            ? updateQuote(quote, quote.is_liked !== "true")
+            : quote
+        )
       );
 
       // Make API call
       await likeQuote(quoteId);
     } catch (error) {
       console.error('Error liking quote:', error);
+
       // Revert optimistic update on error
       setQuotes(prevQuotes =>
-        prevQuotes.map(quote => {
-          if (quote.id === quoteId) {
-            return {
-              ...quote,
-              is_liked: !quote.is_liked,
-              like_count: quote.is_liked ? quote.like_count + 1 : quote.like_count - 1
-            };
-          }
-          return quote;
-        })
+        prevQuotes.map(quote =>
+          quote.id === quoteId
+            ? updateQuote(quote, quote.is_liked === "true")
+            : quote
+        )
       );
     }
   };

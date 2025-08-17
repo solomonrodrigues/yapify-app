@@ -1,46 +1,20 @@
 import { Tabs } from 'expo-router';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Platform } from 'react-native';
-
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
-import { useAuth } from '@/context/AuthContext';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { useRouter } from 'expo-router';
-import { ActivityIndicator } from 'react-native';
-
-// Simple loading screen component
-const LoadingScreen = () => (
-  <React.Fragment>
-    <ActivityIndicator size="large" color={Colors.light.tint} />
-  </React.Fragment>
-);
+import { useColorScheme } from 'react-native';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const { isLoading, isLoggedIn } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && !isLoggedIn) {
-      router.replace('/auth');
-    }
-  }, [isLoading, isLoggedIn]);
-
-  if (isLoading) {
-    return <LoadingScreen />; // Or null or a spinner
-  }
-
-  if (!isLoggedIn) {
-    return null; // Or fallback UI if needed, since redirect will happen
-  }
+  const colorScheme = useColorScheme() ?? 'dark';
+  const theme = Colors[colorScheme]
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: theme.tint,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,

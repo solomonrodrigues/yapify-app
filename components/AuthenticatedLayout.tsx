@@ -1,15 +1,19 @@
 // app/(drawer)/BaseLayout.tsx
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, useColorScheme, Text } from "react-native";
 import { useAuth } from "@/context/AuthContext";
 import { useUser } from "@/hooks/useUser";
 import { useRouter } from "expo-router";
+import { ThemedView } from "@/components/ThemedView";
+import { Colors } from "@/constants/Colors";
 
 export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const { isLoading: authLoading, isLoggedIn } = useAuth();
   const { loading: userLoading } = useUser();
   const router = useRouter();
   const [redirecting, setRedirecting] = useState(false);
+  const colorScheme = useColorScheme() ?? 'dark';
+  const theme = Colors[colorScheme]
 
   // If not logged in, redirect to /auth
   useEffect(() => {
@@ -22,9 +26,10 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
   // Show loading until auth + user finish
   if (authLoading || userLoading || redirecting || !isLoggedIn) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-      </View>
+      <ThemedView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color={theme.text} />
+        <Text style={{ padding: 10, color: theme.text }}>Slaying goblins...</Text>
+      </ThemedView>
     );
   }
 

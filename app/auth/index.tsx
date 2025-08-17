@@ -36,6 +36,33 @@ export default function AuthScreen() {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
+  // Validation functions
+  const validateUsername = (text: string): boolean => {
+    const usernameRegex = /^[a-z._]+$/;
+    return text.length <= 30 && usernameRegex.test(text);
+  };
+
+  const validateDisplayName = (text: string): boolean => {
+    return text.length <= 50;
+  };
+
+  // Handle username input with validation
+  const handleUsernameChange = (text: string) => {
+    // Only allow valid characters as user types
+    const filteredText = text.toLowerCase().replace(/[^a-z._]/g, '');
+    
+    if (filteredText.length <= 30) {
+      setUsername(filteredText);
+    }
+  };
+
+  // Handle display name input with validation
+  const handleDisplayNameChange = (text: string) => {
+    if (text.length <= 50) {
+      setDisplayName(text);
+    }
+  };
+
   async function handleLogin() {
     // Simple required field check
     if (!email.trim() || !password.trim()) {
@@ -55,6 +82,21 @@ export default function AuthScreen() {
     // Required field validation
     if (!username.trim() || !displayName.trim() || !email.trim() || !password.trim() || !passwordConfirm.trim()) {
       Alert.alert("Missing Information", "Please fill out all fields.");
+      return;
+    }
+
+    // Username validation
+    if (!validateUsername(username)) {
+      Alert.alert(
+        "Invalid Username", 
+        "Username must be 30 characters or less and can only contain lowercase letters, underscores, and periods."
+      );
+      return;
+    }
+
+    // Display name validation
+    if (!validateDisplayName(displayName)) {
+      Alert.alert("Invalid Display Name", "Display name must be 50 characters or less.");
       return;
     }
 
@@ -98,18 +140,28 @@ export default function AuthScreen() {
 
             {!isLogin && (
               <>
-                <TextInput
-                  style={styles.input}
-                  placeholder="First Name"
-                  placeholderTextColor="#999"
-                  value={username}
-                  onChangeText={setUsername} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Last Name"
-                  placeholderTextColor="#999"
-                  value={displayName}
-                  onChangeText={setDisplayName} />
+                <View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Username"
+                    placeholderTextColor="#999"
+                    value={username}
+                    onChangeText={handleUsernameChange}
+                    maxLength={30}
+                    autoCapitalize="none"
+                  />
+                </View>
+                
+                <View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Display Name"
+                    placeholderTextColor="#999"
+                    value={displayName}
+                    onChangeText={handleDisplayNameChange}
+                    maxLength={50}
+                  />
+                </View>
               </>
             )}
 

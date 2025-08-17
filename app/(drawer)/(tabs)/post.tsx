@@ -68,8 +68,8 @@ const CreateQuoteScreen: React.FC<CreateQuoteScreenProps> = ({
   onQuoteCreated, 
   onCancel 
 }) => {
-  const colorScheme = useColorScheme();
-  const theme: Theme = themes[colorScheme || 'light'] || themes.light;
+  const colorScheme = useColorScheme() ?? 'dark';
+  const theme: Theme = themes[colorScheme];
 
   const [quoteContent, setQuoteContent] = useState<string>('');
   const [quotedUserEmail, setQuotedUserEmail] = useState<string>('');
