@@ -1,15 +1,16 @@
 import { searchUsers } from "@/api/friends";
 import { InitialsAvatar } from "@/components/InitialsAvatar";
+import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { User } from "@/types/api";
 import { getInitials } from "@/utils/user";
 import React, { useState } from "react";
-import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, StyleSheet, TextInput, TouchableOpacity, useColorScheme, View } from "react-native";
 const Search = () => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  
+  const colorScheme = useColorScheme();
 
   const handleSearch = async (text: string) => {
     setQuery(text);
@@ -44,8 +45,8 @@ const Search = () => {
     <TouchableOpacity style={styles.activityCard}>
       <InitialsAvatar initials={getInitials(item)} size={24}  />
       <View style={styles.activityText}>
-        <Text style={{color: "#ccc"}}>{item.username}</Text>
-        <Text style={{color: "#ccc"}}>{item.display_name}</Text>
+        <ThemedText>{item.display_name}</ThemedText>
+        <ThemedText style={{fontSize:12}}>{item.username}</ThemedText>
       </View>
     </TouchableOpacity>
   );
@@ -63,6 +64,7 @@ const Search = () => {
           style={[
            styles.input, // keep existing stylesheet ref
             {
+              color: colorScheme === "dark" ? 'white' : 'black',
               paddingLeft: 40,    // shifts text & placeholder right
             },
           ]}
@@ -77,13 +79,13 @@ const Search = () => {
   
     
       {loading ? (
-        <Text style={{ textAlign: "center", marginTop: 20 }}>Searching...</Text>
+        <ThemedText style={{ textAlign: "center", marginTop: 20 }}>Searching...</ThemedText>
       ) : (
         <FlatList
           data={results}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
-          ListEmptyComponent={<Text style={{ textAlign: "center", marginTop: 20 }}>No users found</Text>}
+          ListEmptyComponent={<ThemedText style={{ textAlign: "center", marginTop: 20 }}>No users found</ThemedText>}
         />
       )}
     </View>
@@ -144,9 +146,10 @@ const styles = StyleSheet.create({
   inputContainer: {
     position: "relative",
     justifyContent: "center",
-    margin: 16
+    margin: 16,
+    marginBottom: 0
   },
-    iconWrapper: {
+  iconWrapper: {
     position: "absolute",
     left: 12,
     top: "38%",
