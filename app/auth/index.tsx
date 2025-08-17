@@ -100,13 +100,13 @@ export default function AuthScreen() {
               <>
                 <TextInput
                   style={styles.input}
-                  placeholder="First Name"
+                  placeholder="Username"
                   placeholderTextColor="#999"
                   value={username}
                   onChangeText={setUsername} />
                 <TextInput
                   style={styles.input}
-                  placeholder="Last Name"
+                  placeholder="Display Name"
                   placeholderTextColor="#999"
                   value={displayName}
                   onChangeText={setDisplayName} />
