@@ -141,8 +141,8 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
 
 // Main Feed Component
 const QuotesFeed: React.FC = () => {
-  const colorScheme = useColorScheme();
-  const theme: Theme = themes[colorScheme || 'light'] || themes.light;
+  const colorScheme = useColorScheme() ?? 'dark';
+  const theme: Theme = themes[colorScheme];
 
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
