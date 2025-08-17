@@ -4,13 +4,16 @@ import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { User } from "@/types/api";
 import { getInitials } from "@/utils/user";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, FlatList, StyleSheet, TextInput, TouchableOpacity, useColorScheme, View } from "react-native";
+import { FlatList, StyleSheet, TextInput, TouchableOpacity, useColorScheme, View } from "react-native";
+
 const Search = () => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const colorScheme = useColorScheme();
+  const router = useRouter();
 
   const handleSearch = async (text: string) => {
     setQuery(text);
@@ -27,14 +30,9 @@ const Search = () => {
 
       const data = await searchUsers(text);
       setResults(data);
-      console.log(data);
     } catch (error) {
-      console.error('Error fetching quotes:', error);
-      Alert.alert(
-        'Error',
-        'Failed to load quotes. Please try again.',
-        [{ text: 'OK' }]
-      );
+      console.error('Error fetching results:', error);
+      setResults([])
     } finally {
       setLoading(false);
     }
@@ -42,7 +40,14 @@ const Search = () => {
 
   // results card
   const renderItem = ({ item }: { item: User }) => (
-    <TouchableOpacity style={styles.activityCard}>
+    <TouchableOpacity style={styles.activityCard}
+      onPress={() => {
+        router.push({
+          pathname: '/user/[userID]',
+          params: { userID: item.id }
+        })} // navigate with param
+      }
+    >
       <InitialsAvatar initials={getInitials(item)} size={24}  />
       <View style={styles.activityText}>
         <ThemedText>{item.display_name}</ThemedText>
@@ -75,9 +80,6 @@ const Search = () => {
         />
       </View>
 
-      
-  
-    
       {loading ? (
         <ThemedText style={{ textAlign: "center", marginTop: 20 }}>Searching...</ThemedText>
       ) : (

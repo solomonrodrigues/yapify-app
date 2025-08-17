@@ -1,18 +1,18 @@
 // app/(drawer)/_layout.tsx
-import { Drawer } from 'expo-router/drawer';
-import { Href, useRouter } from 'expo-router';
+import AuthenticatedLayout from '@/components/AuthenticatedLayout';
+import { HeaderProfileLeft } from '@/components/HeaderProfileLeft';
+import { Colors } from '@/constants/Colors';
+import { useAuth } from '@/context/AuthContext';
+import { useUser } from '@/hooks/useUser';
+import { findDrawerParent } from '@/utils/nav';
 import {
     DrawerContentScrollView,
     DrawerItem
 } from '@react-navigation/drawer';
-import { DrawerActions, useNavigation, NavigationProp } from '@react-navigation/native';
+import { DrawerActions, NavigationProp, useNavigation } from '@react-navigation/native';
+import { Href, useRouter } from 'expo-router';
+import { Drawer } from 'expo-router/drawer';
 import { Alert, useWindowDimensions, View } from 'react-native';
-import { findDrawerParent } from '@/utils/nav';
-import { HeaderProfileLeft } from '@/components/HeaderProfileLeft';
-import { useUser } from '@/hooks/useUser';
-import { Colors } from '@/constants/Colors';
-import { useAuth } from '@/context/AuthContext';
-import AuthenticatedLayout from '@/components/AuthenticatedLayout';
 
 function MenuContent() {
     const router = useRouter();
@@ -88,7 +88,7 @@ export default function DrawerLayout() {
                 <Drawer.Screen
                     name="(tabs)"
                     options={{
-                        title: 'Home',
+                        title: '',
                         drawerItemStyle: { display: 'none' }
                     }}
                 />
