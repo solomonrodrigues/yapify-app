@@ -1,4 +1,17 @@
-# Welcome to your Expo app 👋
+# Yapify - React Native/Expo mobile app
+
+## Generating TypeScript Types from OpenAPI
+
+We use the openapi-typescript package to generate TypeScript type definitions from our OpenAPI schema. This step only needs to be done when the API specification has changed.
+
+Run the following command, updating the paths to match your local environment:
+```
+npx openapi-typescript "C:\Users\Solom\Downloads\yapifySchema.yaml" -o C:\Users\Solom\Sites\yapify-app\types\schema.ts
+```
+Notes
+- The first path points to your OpenAPI schema file (.yaml or .json).
+- The -o option specifies the output file where the generated TypeScript types will be saved.
+
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
