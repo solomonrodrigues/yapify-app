@@ -29,12 +29,6 @@ type FriendsParams = paths["/api/friends/"]["parameters"];
 // type ErrorResponse =
 //   paths["/my/endpoint"]["get"]["responses"][500]["content"]["application/json"]["schema"];
 
-// Auth
-export interface AuthTokens {
-  access: string;
-  refresh: string;
-}
-
 export interface RegisterResponse {
   user: User;
   message: string;
