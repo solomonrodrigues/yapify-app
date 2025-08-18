@@ -1,8 +1,8 @@
 import api from './client';
-import { Notification } from '../types/api';
+import { PaginatedNotificationList } from '../types/api';
 
-export const getNotifications = async (): Promise<Notification[]> => {
-  const res = await api.get<Notification[]>('/notifications/');
+export const getNotifications = async (): Promise<PaginatedNotificationList> => {
+  const res = await api.get<PaginatedNotificationList>('/notifications/');
   return res.data;
 };
 
