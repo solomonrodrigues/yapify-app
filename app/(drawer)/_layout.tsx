@@ -50,8 +50,6 @@ function MenuContent() {
         <DrawerContentScrollView>
             <View style={{ paddingTop: 8 }} />
             <DrawerItem label="Profile" onPress={() => go('/profile')} />
-            <DrawerItem label="Post" onPress={() => go('/post')} />
-            <DrawerItem label="Test" onPress={() => go('/test')} />
             <DrawerItem label="Log out" onPress={handleLogout} inactiveTintColor={Colors.dark.error} />
         </DrawerContentScrollView>
     );

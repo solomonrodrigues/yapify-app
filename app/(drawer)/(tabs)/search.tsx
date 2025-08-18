@@ -5,89 +5,118 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { User } from "@/types/api";
 import { getInitials } from "@/utils/user";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { FlatList, StyleSheet, TextInput, TouchableOpacity, useColorScheme, View } from "react-native";
+import React, { useState, useRef } from "react";
+import {
+  FlatList,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from "react-native";
+import { debounce } from "lodash";
 
 const Search = () => {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
+
   const colorScheme = useColorScheme();
   const router = useRouter();
 
-  const handleSearch = async (text: string) => {
-    setQuery(text);
-    if (text.length < 2) {
-      setResults([]);
-      return;
-    }
-    fetchSearchResults(text)
-  };
-
-  const fetchSearchResults= async (text: string): Promise<void> => {
+  const fetchSearchResults = async (text: string) => {
     try {
       setLoading(true);
-
       const data = await searchUsers(text);
       setResults(data);
     } catch (error) {
-      console.error('Error fetching results:', error);
-      setResults([])
+      console.error("Error fetching results:", error);
+      setResults([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // results card
+  const debouncedSearch = useRef(
+    debounce((text: string) => {
+      if (text.length >= 2) fetchSearchResults(text);
+      else setResults([]);
+    }, 300)
+  ).current;
+
+  const handleSearch = (text: string) => {
+    setQuery(text);
+    debouncedSearch(text);
+  };
+
   const renderItem = ({ item }: { item: User }) => (
-    <TouchableOpacity style={styles.activityCard}
-      onPress={() => {
+    <TouchableOpacity
+      style={styles.activityCard}
+      onPress={() =>
         router.push({
-          pathname: '/user/[userID]',
-          params: { userID: item.id }
-        })} // navigate with param
+          pathname: "/user/[userID]",
+          params: { userID: item.id },
+        })
       }
     >
-      <InitialsAvatar initials={getInitials(item)} size={24}  />
+      <InitialsAvatar initials={getInitials(item)} size={30} />
       <View style={styles.activityText}>
-        <ThemedText>{item.display_name}</ThemedText>
-        <ThemedText style={{fontSize:12}}>{item.username}</ThemedText>
+        <ThemedText style={styles.displayName}>{item.display_name}</ThemedText>
+        <ThemedText style={styles.username}>{item.username}</ThemedText>
       </View>
     </TouchableOpacity>
   );
 
-  // search bar
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colorScheme === "dark" ? "#121212" : "#fff" },
+      ]}
+    >
+      {/* Search Bar */}
       <View style={styles.inputContainer}>
-        <TouchableOpacity style={styles.iconWrapper} >
-          <IconSymbol
-            size={20} name="magnifyingglass" color={"#ccc"}
-          />
-        </TouchableOpacity>
-        <TextInput
+        <View
           style={[
-           styles.input, // keep existing stylesheet ref
+            styles.searchBox,
             {
-              color: colorScheme === "dark" ? 'white' : 'black',
-              paddingLeft: 40,    // shifts text & placeholder right
+              backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#f1f1f1",
+              shadowColor: colorScheme === "dark" ? "#000" : "#aaa",
             },
           ]}
-          placeholder="Search for friends..."
-          placeholderTextColor="#999"   // makes placeholder white
-          value={query}
-          onChangeText={handleSearch}
-        />
+        >
+          <IconSymbol
+            size={20}
+            name="magnifyingglass"
+            color={colorScheme === "dark" ? "#888" : "#666"}
+            style={styles.icon}
+          />
+          <TextInput
+            style={[
+              styles.input,
+              { color: colorScheme === "dark" ? "#fff" : "#000" },
+            ]}
+            placeholder="Search for friends..."
+            placeholderTextColor={colorScheme === "dark" ? "#888" : "#999"}
+            value={query}
+            onChangeText={handleSearch}
+          />
+        </View>
       </View>
 
+      {/* Results */}
       {loading ? (
-        <ThemedText style={{ textAlign: "center", marginTop: 20 }}>Searching...</ThemedText>
+        <ThemedText style={styles.message}>Searching...</ThemedText>
       ) : (
         <FlatList
           data={results}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
-          ListEmptyComponent={<ThemedText style={{ textAlign: "center", marginTop: 20 }}>No users found</ThemedText>}
+          ListEmptyComponent={
+            query.length >= 2 ? (
+              <ThemedText style={styles.message}>No users found</ThemedText>
+            ) : null
+          }
         />
       )}
     </View>
@@ -100,70 +129,51 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerImage: {
-    width: "100%",
-    height: 250,
+  inputContainer: {
+    margin: 16,
+    marginBottom: 12,
   },
-  profileContainer: {
+  searchBox: {
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: 20,
-    marginBottom: 20,
-    backgroundColor: "none",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: "#fff",
+  icon: {
     marginRight: 10,
   },
-  subtitle: {
-    color: "#888",
-  },
-  statsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginVertical: 15,
-  },
-  statBox: {
-    alignItems: "center",
-  },
-  section: {
-    marginHorizontal: 20,
-    marginVertical: 10,
+  input: {
+    flex: 1,
+    fontSize: 16,
   },
   activityCard: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 2,
-    paddingVertical: 1,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#414040ff",
   },
   activityText: {
-    marginLeft: 10,
+    marginLeft: 12,
   },
-  inputContainer: {
-    position: "relative",
-    justifyContent: "center",
-    margin: 16,
-    marginBottom: 0
-  },
-  iconWrapper: {
-    position: "absolute",
-    left: 12,
-    top: "38%",
-    transform: [{ translateY: -10 }],
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
+  displayName: {
     fontSize: 16,
-    color: "#ccc",
+    fontWeight: "500",
+  },
+  username: {
+    fontSize: 12,
+    color: "#666",
+  },
+  message: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 14,
+    color: "#999",
   },
 });
