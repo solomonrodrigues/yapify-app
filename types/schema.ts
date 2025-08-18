@@ -317,6 +317,11 @@ export interface components {
             readonly id: number;
             readonly username: string;
             readonly display_name: string;
+            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
+             *
+             *     * `mutuals` - Mutual Friends Only
+             *     * `extended` - Friends of Friends */
+            readonly quote_visibility: components["schemas"]["QuoteVisibilityEnum"];
         };
         /** @description Serializer for notifications */
         Notification: {
@@ -406,11 +411,8 @@ export interface components {
             text?: string;
             readonly author?: components["schemas"]["MinimalUser"];
             readonly quoted_user?: components["schemas"]["MinimalUser"];
-            quoted_user_id?: number;
-            /** @description Optional context about when/where the quote was said */
-            context?: string;
-            /** @description Whether the quote is visible to all users or just friends */
-            is_public?: boolean;
+            quoted_user_id?: number | null;
+            quoted_name?: string | null;
             /** Format: date-time */
             readonly created_at?: string;
             /** Format: date-time */
@@ -432,6 +434,11 @@ export interface components {
             readonly date_joined?: string;
             readonly friends_count?: string;
             readonly quotes_count?: string;
+            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
+             *
+             *     * `mutuals` - Mutual Friends Only
+             *     * `extended` - Friends of Friends */
+            quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
         };
         /** @description Serializer for quotes */
         Quote: {
@@ -439,11 +446,8 @@ export interface components {
             text: string;
             readonly author: components["schemas"]["MinimalUser"];
             readonly quoted_user: components["schemas"]["MinimalUser"];
-            quoted_user_id?: number;
-            /** @description Optional context about when/where the quote was said */
-            context?: string;
-            /** @description Whether the quote is visible to all users or just friends */
-            is_public?: boolean;
+            quoted_user_id?: number | null;
+            quoted_name?: string | null;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -453,6 +457,12 @@ export interface components {
             readonly like_count: string;
             readonly is_liked: string;
         };
+        /**
+         * @description * `mutuals` - Mutual Friends Only
+         *     * `extended` - Friends of Friends
+         * @enum {string}
+         */
+        QuoteVisibilityEnum: "mutuals" | "extended";
         /** @description Serializer for quote witnesses */
         QuoteWitness: {
             readonly id: number;
@@ -488,6 +498,11 @@ export interface components {
             readonly date_joined: string;
             readonly friends_count: string;
             readonly quotes_count: string;
+            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
+             *
+             *     * `mutuals` - Mutual Friends Only
+             *     * `extended` - Friends of Friends */
+            quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
         };
         /** @description Serializer for user registration */
         UserRegistration: {

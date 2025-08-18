@@ -14,6 +14,7 @@ export type PaginatedUserList = components["schemas"]["PaginatedUserList"];
 export type PatchedQuote = components["schemas"]["PatchedQuote"];
 export type PatchedUser = components["schemas"]["PatchedUser"];
 export type Quote = components["schemas"]["Quote"];
+export type QuoteVisibilityEnum = components["schemas"]["QuoteVisibilityEnum"];
 export type QuoteWitness = components["schemas"]["QuoteWitness"];
 export type StatusEnum = components["schemas"]["StatusEnum"];
 export type TokenRefresh = components["schemas"]["TokenRefresh"];
