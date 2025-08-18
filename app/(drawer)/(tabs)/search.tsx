@@ -69,10 +69,7 @@ const Search = () => {
 
   return (
     <View
-      style={[
-        styles.container,
-        { backgroundColor: colorScheme === "dark" ? "#121212" : "#fff" },
-      ]}
+      style={styles.container}
     >
       {/* Search Bar */}
       <View style={styles.inputContainer}>
