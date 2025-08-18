@@ -192,12 +192,12 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
         >
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <IconSymbol name="xmark" size={20} color={colorScheme === 'dark' ? '#fff' : '#000'} />
-            </TouchableOpacity>
             <Text style={[styles.headerTitle, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
               Let's <Text style={styles.quoteText}>quote</Text>
             </Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <IconSymbol name="xmark" size={20} color={colorScheme === 'dark' ? '#fff' : '#000'} />
+            </TouchableOpacity>
           </View>
 
           {/* Integrated Search Input */}
