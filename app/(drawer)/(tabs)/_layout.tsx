@@ -74,7 +74,7 @@ export default function TabLayout() {
         />
       </Tabs>
 
-      // React Native Modal lives alongside the Tabs
+      {/* React Native Modal lives alongside the Tabs */}
       <QuotePostModal
         visible={showQuoteModal}
         onClose={() => setShowQuoteModal(false)}
