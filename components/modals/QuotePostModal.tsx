@@ -122,6 +122,8 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       // Add quoted_user_id only if it's a real user
       if (selectedUser.id !== null) {
         quoteData.quoted_user_id = selectedUser.id;
+      } else {
+        quoteData.quoted_name = selectedUser.display_name;
       }
 
       const newQuote = await createQuote(quoteData);
