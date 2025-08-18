@@ -15,18 +15,21 @@ export const Colors = {
     background: '#fff',          // page background
     cardBackground: '#f8f9fa',   // activity cards or sections
     border: '#fff',              // avatar border
+    divider: '#f8f8f8ff',
     tint: tintColorLight,        // active tint
     icon: '#687076',             // default icon color
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
     primary: primaryColor,       // primary action color
     error: error,
+    buttonText: '#fff',
+    buttonDisabled: '#666',
     pastels: {
-      pink: '#ffd6e0',
-      blue: '#d6f0ff',
-      green: '#d6ffe1',
-      yellow: '#fff3d6',
-      purple: '#e6d6ff',
+      pink: '#ffb6c1',
+      blue: '#a3d8ff',
+      green: '#b6ffcf',
+      yellow: '#fff1a8',
+      purple: '#d1b6ff',
     },
   },
   dark: {
@@ -35,12 +38,15 @@ export const Colors = {
     background: '#151718',
     cardBackground: '#1e1f1f',    // activity cards or sections
     border: '#fff',               // avatar border
+    divider: '#1d1d1dff',
     tint: tintColorDark,
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
     primary: primaryColor,
     error: error,
+    buttonText: '#fff',
+    buttonDisabled: '#666',
     pastels: {
       pink: '#ffb6c1',
       blue: '#a3d8ff',

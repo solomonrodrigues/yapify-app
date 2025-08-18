@@ -21,6 +21,9 @@ import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { User, Quote } from "@/types/api";
 import { getInitials } from "@/utils/user";
+import { Colors } from "@/constants/Colors";
+import { useThemedStyles } from "@/hooks/useThemedStyles";
+import { hexToRgba } from "@/utils/style";
 
 interface QuotePostModalProps {
   visible: boolean;
@@ -43,6 +46,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   const [quoteText, setQuoteText] = useState("");
   const [creatingQuote, setCreatingQuote] = useState(false);
   const colorScheme = useColorScheme();
+  const styles = useThemedStyles(getStyles);
 
   // Load friends when modal opens
   useEffect(() => {
@@ -374,7 +378,8 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
+  StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -394,7 +399,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   quoteText: {
-    color: '#ff1493',
+    color: theme.pastels.purple,
   },
   searchContainer: {
     paddingHorizontal: 20,
@@ -407,7 +412,7 @@ const styles = StyleSheet.create({
   },
   integratedInputContainer: {
     borderBottomWidth: 2,
-    borderBottomColor: '#ff1493',
+    borderBottomColor: theme.pastels.purple,
   },
   integratedInput: {
     fontSize: 28,
@@ -454,13 +459,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     marginTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#333',
+    borderTopColor: theme.divider,
   },
   customIconWrapper: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#ff1493',
+    backgroundColor: theme.pastels.purple,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -489,13 +494,13 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderRadius: 12,
-    backgroundColor: 'rgba(255, 20, 147, 0.1)',
+    backgroundColor: hexToRgba(theme.pastels.purple, 0.2),
   },
   customUserIcon: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#ff1493',
+    backgroundColor: theme.pastels.purple,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -519,7 +524,7 @@ const styles = StyleSheet.create({
   },
   quoteInputWrapper: {
     borderBottomWidth: 2,
-    borderBottomColor: '#ff1493',
+    borderBottomColor: theme.pastels.purple,
   },
   quoteTextInput: {
     fontSize: 24,
@@ -530,7 +535,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   createButton: {
-    backgroundColor: '#ff1493',
+    backgroundColor: theme.pastels.purple,
     paddingVertical: 16,
     marginHorizontal: 20,
     marginBottom: 40,
@@ -538,10 +543,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   createButtonDisabled: {
-    backgroundColor: '#666',
+    backgroundColor: theme.buttonDisabled,
   },
   createButtonText: {
-    color: '#fff',
+    color: theme.buttonText,
     fontSize: 18,
     fontWeight: '600',
   },
