@@ -29,6 +29,8 @@ const MAPPING = {
   'magnifyingglass': { name: 'magnifying-glass' },
   'close': { name: 'circle-xmark' },
   'gear': { name: 'gear' },
+  'xmark': { name: 'xmark' },
+  'plus': { name: 'plus' },
   // Eye icons (for password peek)
   'eye': { name: 'eye' },
   'eye.slash': { name: 'eye-slash' },
