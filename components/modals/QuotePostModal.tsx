@@ -11,7 +11,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  Keyboard,
 } from "react-native";
 import { searchUsers, getFriends } from "@/api/friends";
 import { createQuote } from "@/api/quotes";
@@ -40,8 +39,6 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | { display_name: string; username: string; id: null } | null>(null);
   const [quoteText, setQuoteText] = useState("");
-  const [context, setContext] = useState("");
-  const [isPublic, setIsPublic] = useState(true);
   const [creatingQuote, setCreatingQuote] = useState(false);
   const colorScheme = useColorScheme();
 
@@ -59,8 +56,6 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       setSearchResults([]);
       setSelectedUser(null);
       setQuoteText("");
-      setContext("");
-      setIsPublic(true);
     }
   }, [visible]);
 
@@ -122,8 +117,6 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       
       const quoteData: Partial<Quote> = {
         text: quoteText.trim(),
-        context: context.trim() || undefined,
-        is_public: isPublic,
       };
 
       // Add quoted_user_id only if it's a real user
@@ -150,7 +143,6 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   const goBack = () => {
     setSelectedUser(null);
     setQuoteText("");
-    setContext("");
   };
 
   const renderUserItem = ({ item }: { item: User }) => (
@@ -200,42 +192,36 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={[styles.headerTitle, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-              Let's <Text style={styles.quoteText}>quote</Text>
-            </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <IconSymbol name="xmark" size={20} color={colorScheme === 'dark' ? '#fff' : '#000'} />
             </TouchableOpacity>
+            <Text style={[styles.headerTitle, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+              Let's <Text style={styles.quoteText}>quote</Text>
+            </Text>
           </View>
 
-          <Text style={[styles.subtitle, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>
-            whom?
-          </Text>
-
-          {/* Search Input */}
-          <View style={styles.inputContainer}>
-            <TouchableOpacity style={styles.iconWrapper}>
-              <IconSymbol
-                size={20}
-                name="magnifyingglass"
-                color="#ccc"
+          {/* Integrated Search Input */}
+          <View style={styles.searchContainer}>
+            <Text style={[styles.subtitlePrefix, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>
+              whom?
+            </Text>
+            <View style={styles.integratedInputContainer}>
+              <TextInput
+                style={[
+                  styles.integratedInput,
+                  {
+                    color: colorScheme === "dark" ? 'white' : 'black',
+                    borderBottomColor: colorScheme === 'dark' ? '#333' : '#ccc',
+                  },
+                ]}
+                placeholder="Start typing a name..."
+                placeholderTextColor="#999"
+                value={query}
+                onChangeText={handleSearch}
+                autoCapitalize="words"
+                autoFocus
               />
-            </TouchableOpacity>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  color: colorScheme === "dark" ? 'white' : 'black',
-                  borderColor: colorScheme === 'dark' ? '#333' : '#ccc',
-                  backgroundColor: colorScheme === 'dark' ? '#111' : '#fff',
-                },
-              ]}
-              placeholder="Search for friends..."
-              placeholderTextColor="#999"
-              value={query}
-              onChangeText={handleSearch}
-              autoCapitalize="none"
-            />
+            </View>
           </View>
 
           {/* Content */}
@@ -255,7 +241,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
                 )}
                 
                 {/* Custom Quote Option */}
-                {showCustomOption && (
+                {query.trim() && (
                   <TouchableOpacity
                     style={styles.customOption}
                     onPress={handleCustomQuote}
@@ -264,13 +250,13 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
                       <IconSymbol name="plus" size={20} color="#fff" />
                     </View>
                     <View style={styles.userInfo}>
-                      <ThemedText style={styles.displayName}>Quote "{query}"</ThemedText>
+                      <ThemedText style={styles.displayName}>Quote "{query.trim()}"</ThemedText>
                       <ThemedText style={styles.customText}>Create quote for custom name</ThemedText>
                     </View>
                   </TouchableOpacity>
                 )}
                 
-                {searchResults.length === 0 && !showCustomOption && (
+                {searchResults.length === 0 && !query.trim() && (
                   <ThemedText style={styles.centerText}>No users found</ThemedText>
                 )}
               </View>
@@ -342,67 +328,27 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
         </View>
 
         {/* Quote Input */}
-        <View style={styles.quoteInputContainer}>
-          <Text style={[styles.inputLabel, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-            Quote *
+        <View style={styles.quoteContainer}>
+          <Text style={[styles.quotePrefix, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+            "{selectedUser.display_name}" said...
           </Text>
-          <TextInput
-            style={[
-              styles.quoteInput,
-              {
-                color: colorScheme === 'dark' ? 'white' : 'black',
-                borderColor: colorScheme === 'dark' ? '#333' : '#ccc',
-                backgroundColor: colorScheme === 'dark' ? '#111' : '#fff',
-              }
-            ]}
-            placeholder={`What did ${selectedUser.display_name} say?`}
-            placeholderTextColor="#999"
-            value={quoteText}
-            onChangeText={setQuoteText}
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
-            returnKeyType="done"
-            onSubmitEditing={() => {
-                Keyboard.dismiss();       // closes keyboard when "Done" tapped
-            }}
-          />
-        </View>
-
-        {/* Context Input */}
-        <View style={styles.quoteInputContainer}>
-          <Text style={[styles.inputLabel, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-            Context (Optional)
-          </Text>
-          <TextInput
-            style={[
-              styles.contextInput,
-              {
-                color: colorScheme === 'dark' ? 'white' : 'black',
-                borderColor: colorScheme === 'dark' ? '#333' : '#ccc',
-                backgroundColor: colorScheme === 'dark' ? '#111' : '#fff',
-              }
-            ]}
-            placeholder="When/where was this said?"
-            placeholderTextColor="#999"
-            value={context}
-            onChangeText={setContext}
-          />
-        </View>
-
-        {/* Privacy Toggle */}
-        <View style={styles.privacyContainer}>
-          <TouchableOpacity
-            style={styles.privacyToggle}
-            onPress={() => setIsPublic(!isPublic)}
-          >
-            <View style={[styles.toggleButton, isPublic && styles.toggleActive]}>
-              {isPublic && <IconSymbol name="checkmark" size={16} color="#fff" />}
-            </View>
-            <Text style={[styles.privacyLabel, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-              Make quote public
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.quoteInputWrapper}>
+            <TextInput
+              style={[
+                styles.quoteTextInput,
+                {
+                  color: colorScheme === 'dark' ? 'white' : 'black',
+                  borderBottomColor: colorScheme === 'dark' ? '#333' : '#ccc',
+                }
+              ]}
+              placeholder="What did they say?"
+              placeholderTextColor="#999"
+              value={quoteText}
+              onChangeText={setQuoteText}
+              multiline
+              autoFocus
+            />
+          </View>
         </View>
 
         {/* Create Button */}
@@ -442,31 +388,25 @@ const styles = StyleSheet.create({
   quoteText: {
     color: '#ff1493',
   },
-  subtitle: {
-    fontSize: 28,
-    fontWeight: '300',
+  searchContainer: {
     paddingHorizontal: 20,
     marginBottom: 30,
   },
-  inputContainer: {
-    position: "relative",
-    justifyContent: "center",
-    marginHorizontal: 20,
-    marginBottom: 20,
+  subtitlePrefix: {
+    fontSize: 28,
+    fontWeight: '300',
+    marginBottom: 10,
   },
-  iconWrapper: {
-    position: "absolute",
-    left: 12,
-    top: "50%",
-    transform: [{ translateY: -10 }],
-    zIndex: 1,
+  integratedInputContainer: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#ff1493',
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-    paddingLeft: 45,
-    fontSize: 16,
+  integratedInput: {
+    fontSize: 28,
+    fontWeight: '300',
+    paddingVertical: 8,
+    paddingHorizontal: 0,
+    minHeight: 40,
   },
   content: {
     flex: 1,
@@ -559,51 +499,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     opacity: 0.7,
   },
-  quoteInputContainer: {
+  quoteContainer: {
     paddingHorizontal: 20,
+    marginBottom: 40,
+    flex: 1,
+  },
+  quotePrefix: {
+    fontSize: 20,
+    fontWeight: '400',
     marginBottom: 20,
   },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
+  quoteInputWrapper: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#ff1493',
   },
-  quoteInput: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    minHeight: 100,
-  },
-  contextInput: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-  },
-  privacyContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 30,
-  },
-  privacyToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  toggleButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#ff1493',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  toggleActive: {
-    backgroundColor: '#ff1493',
-  },
-  privacyLabel: {
-    fontSize: 16,
+  quoteTextInput: {
+    fontSize: 24,
+    fontWeight: '300',
+    paddingVertical: 10,
+    paddingHorizontal: 0,
+    minHeight: 60,
+    textAlignVertical: 'top',
   },
   createButton: {
     backgroundColor: '#ff1493',
