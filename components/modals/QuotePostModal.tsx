@@ -11,6 +11,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { searchUsers, getFriends } from "@/api/friends";
 import { createQuote } from "@/api/quotes";
@@ -188,33 +190,34 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
         animationType="slide"
         presentationStyle="pageSheet"
       >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <KeyboardAvoidingView
-          style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#000' : '#fff' }]}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#000' : '#fff' }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          {/* Header */}
-          <View style={styles.header}>
+        {/* Header */}
+        <View style={styles.header}>
             <Text style={[styles.headerTitle, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-              Let's <Text style={styles.quoteText}>quote</Text>
+            Let's <Text style={styles.quoteText}>quote</Text>
             </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <IconSymbol name="xmark" size={20} color={colorScheme === 'dark' ? '#fff' : '#000'} />
+            <IconSymbol name="xmark" size={20} color={colorScheme === 'dark' ? '#fff' : '#000'} />
             </TouchableOpacity>
-          </View>
+        </View>
 
-          {/* Integrated Search Input */}
-          <View style={styles.searchContainer}>
+        {/* Integrated Search Input */}
+        <View style={styles.searchContainer}>
             <Text style={[styles.subtitlePrefix, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>
-              whom?
+            whom?
             </Text>
             <View style={styles.integratedInputContainer}>
-              <TextInput
+            <TextInput
                 style={[
-                  styles.integratedInput,
-                  {
+                styles.integratedInput,
+                {
                     color: colorScheme === "dark" ? 'white' : 'black',
                     borderBottomColor: colorScheme === 'dark' ? '#333' : '#ccc',
-                  },
+                },
                 ]}
                 placeholder="Start typing a name..."
                 placeholderTextColor="#999"
@@ -222,66 +225,67 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
                 onChangeText={handleSearch}
                 autoCapitalize="words"
                 autoFocus
-              />
+            />
             </View>
-          </View>
+        </View>
 
-          {/* Content */}
-          <View style={styles.content}>
+        {/* Content */}
+        <View style={styles.content}>
             {loading ? (
-              <ThemedText style={styles.centerText}>Searching...</ThemedText>
+            <ThemedText style={styles.centerText}>Searching...</ThemedText>
             ) : query.length > 0 ? (
-              <View>
+            <View>
                 {/* Search Results */}
                 {searchResults.length > 0 && (
-                  <FlatList
+                <FlatList
                     data={searchResults}
                     keyExtractor={(item) => `search-${item.id}`}
                     renderItem={renderUserItem}
                     style={styles.searchResults}
-                  />
+                />
                 )}
                 
                 {/* Custom Quote Option */}
                 {query.trim() && (
-                  <TouchableOpacity
+                <TouchableOpacity
                     style={styles.customOption}
                     onPress={handleCustomQuote}
-                  >
+                >
                     <View style={styles.customIconWrapper}>
-                      <IconSymbol name="plus" size={20} color="#fff" />
+                    <IconSymbol name="plus" size={20} color="#fff" />
                     </View>
                     <View style={styles.userInfo}>
-                      <ThemedText style={styles.displayName}>Quote "{query.trim()}"</ThemedText>
-                      <ThemedText style={styles.customText}>Create quote for custom name</ThemedText>
+                    <ThemedText style={styles.displayName}>Quote "{query.trim()}"</ThemedText>
+                    <ThemedText style={styles.customText}>Create quote for custom name</ThemedText>
                     </View>
-                  </TouchableOpacity>
+                </TouchableOpacity>
                 )}
                 
                 {searchResults.length === 0 && !query.trim() && (
-                  <ThemedText style={styles.centerText}>No users found</ThemedText>
+                <ThemedText style={styles.centerText}>No users found</ThemedText>
                 )}
-              </View>
+            </View>
             ) : (
-              <View>
+            <View>
                 {friendsLoading ? (
-                  <ThemedText style={styles.centerText}>Loading friends...</ThemedText>
+                <ThemedText style={styles.centerText}>Loading friends...</ThemedText>
                 ) : (
-                  <>
+                <>
                     {renderSection("Recent", recentUsers)}
                     {renderSection("Friends", friends)}
                     
                     {recentUsers.length === 0 && friends.length === 0 && (
-                      <ThemedText style={styles.centerText}>
+                    <ThemedText style={styles.centerText}>
                         Start typing to search for friends
-                      </ThemedText>
+                    </ThemedText>
                     )}
-                  </>
+                </>
                 )}
-              </View>
+            </View>
             )}
-          </View>
+        </View>
         </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
       </Modal>
     );
   }
@@ -293,6 +297,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       animationType="slide"
       presentationStyle="pageSheet"
     >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView
         style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#000' : '#fff' }]}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -364,6 +369,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
           </Text>
         </TouchableOpacity>
       </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
