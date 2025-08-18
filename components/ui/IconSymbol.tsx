@@ -31,6 +31,9 @@ const MAPPING = {
   'gear': { name: 'gear' },
   'xmark': { name: 'xmark' },
   'plus': { name: 'plus' },
+  'chevron.left': { name: 'chevron-left' },
+  'person': { name: 'person' },
+  'checkmark': { name: 'checkmark' },
   // Eye icons (for password peek)
   'eye': { name: 'eye' },
   'eye.slash': { name: 'eye-slash' },
