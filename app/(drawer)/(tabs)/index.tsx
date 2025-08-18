@@ -64,6 +64,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
     text,
     author,
     quoted_user,
+    quoted_name,
     witness_count,
     like_count,
     is_liked,
@@ -95,7 +96,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
             {author.display_name}
           </Text>
           <Text style={[styles.quotedText, { color: theme.secondaryText }]}>
-            quoted {quoted_user.display_name}
+            quoted {quoted_user?.display_name ?? quoted_name}
           </Text>
         </View>
         {/* <Text style={[styles.timestamp, { color: theme.secondaryText }]}>
