@@ -6,9 +6,12 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { useUser } from '@/hooks/useUser';
 import { getInitials } from '@/utils/user';
+import { Colors } from '@/constants/Colors';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 
 export default function ProfileScreen() {
   const { user } = useUser()
+  const styles = useThemedStyles(getStyles);
 
   return (
     <ThemedView style={{padding: 16}}>
@@ -65,7 +68,8 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
+  StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -84,7 +88,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     borderWidth: 3,
-    borderColor: '#fff',
+    borderColor: theme.border,
     marginBottom: 10,
   },
   subtitle: {
