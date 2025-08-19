@@ -410,6 +410,21 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["Notification"][];
         };
+        PaginatedPublicUserList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["PublicUser"][];
+        };
         PaginatedQuoteList: {
             /** @example 123 */
             count: number;
@@ -424,21 +439,6 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["Quote"][];
-        };
-        PaginatedUserList: {
-            /** @example 123 */
-            count: number;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=4
-             */
-            next?: string | null;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=2
-             */
-            previous?: string | null;
-            results: components["schemas"]["User"][];
         };
         /** @description Serializer for quotes */
         PatchedQuote: {
@@ -686,7 +686,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedUserList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserList"];
                 };
             };
         };
@@ -708,7 +708,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedUserList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserList"];
                 };
             };
         };
@@ -1148,7 +1148,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedUserList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserList"];
                 };
             };
         };
