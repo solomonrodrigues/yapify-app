@@ -538,7 +538,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     backgroundColor: theme.pastels.purple,
     paddingVertical: 16,
     marginHorizontal: 20,
-    marginBottom: 40,
+    marginBottom: 80,
     borderRadius: 12,
     alignItems: 'center',
   },
