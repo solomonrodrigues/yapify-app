@@ -34,6 +34,7 @@ const MAPPING = {
   'chevron.left': { name: 'chevron-left' },
   'person': { name: 'person' },
   'checkmark': { name: 'checkmark' },
+  'quote.bubble.fill': { name: 'comment-dots' },
   // Eye icons (for password peek)
   'eye': { name: 'eye' },
   'eye.slash': { name: 'eye-slash' },
