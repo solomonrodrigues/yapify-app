@@ -498,6 +498,7 @@ export interface components {
             readonly id: number;
             readonly username: string;
             readonly display_name: string;
+            readonly profile_color: string;
             /** Format: date-time */
             readonly date_joined: string;
             readonly total_quotes_posted: string;

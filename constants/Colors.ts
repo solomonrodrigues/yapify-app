@@ -3,6 +3,8 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
+import { ProfileColorEnum } from "@/types/api";
+
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
 const primaryColor = '#4F46E5';
@@ -55,4 +57,20 @@ export const Colors = {
       purple: '#d1b6ff',
     },
   },
+};
+
+export const ProfileColorHexMap: Record<ProfileColorEnum, string> = {
+  RED: "#FF0000",
+  BLUE: "#0000FF",
+  GREEN: "#008000",
+  YELLOW: "#FFFF00",
+  ORANGE: "#FFA500",
+  PURPLE: "#800080",
+  PINK: "#FFC0CB",
+  BROWN: "#A52A2A",
+  BLACK: "#000000",
+  WHITE: "#FFFFFF",
+  GREY: "#808080",
+  CYAN: "#00FFFF",
+  MAGENTA: "#FF00FF",
 };
