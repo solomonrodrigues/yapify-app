@@ -1,7 +1,6 @@
-import { User } from "@/types/api";
-import { use } from "react";
+import { User, PublicUser } from "@/types/api";
 
-export function getInitials(user: User | null) {
+export function getInitials(user: User | PublicUser | null) {
   if (user == null) {
     return "?"
   }
