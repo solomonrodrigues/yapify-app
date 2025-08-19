@@ -63,8 +63,25 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description List user's friends */
+        /** @description List and search user's friends */
         get: operations["api_friends_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/friends/recent-quoted/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description List up to 5 most recent friends that the user has made quotes for */
+        get: operations["api_friends_recent_quoted_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -269,6 +286,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/users/{user_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Retrieve public details about any user */
+        get: operations["api_users_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/users/search/": {
         parameters: {
             query?: never;
@@ -276,7 +310,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Search users by email or name */
+        /** @description Search users by username or display name */
         get: operations["api_users_search_list"];
         put?: never;
         post?: never;
@@ -322,6 +356,7 @@ export interface components {
              *     * `mutuals` - Mutual Friends Only
              *     * `extended` - Friends of Friends */
             readonly quote_visibility: components["schemas"]["QuoteVisibilityEnum"];
+            readonly profile_color: components["schemas"]["ProfileColorEnum"];
         };
         /** @description Serializer for notifications */
         Notification: {
@@ -439,6 +474,37 @@ export interface components {
              *     * `mutuals` - Mutual Friends Only
              *     * `extended` - Friends of Friends */
             quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
+            profile_color?: components["schemas"]["ProfileColorEnum"];
+        };
+        /**
+         * @description * `RED` - Red
+         *     * `BLUE` - Blue
+         *     * `GREEN` - Green
+         *     * `YELLOW` - Yellow
+         *     * `ORANGE` - Orange
+         *     * `PURPLE` - Purple
+         *     * `PINK` - Pink
+         *     * `BROWN` - Brown
+         *     * `BLACK` - Black
+         *     * `WHITE` - White
+         *     * `GREY` - Grey
+         *     * `CYAN` - Cyan
+         *     * `MAGENTA` - Magenta
+         * @enum {string}
+         */
+        ProfileColorEnum: "RED" | "BLUE" | "GREEN" | "YELLOW" | "ORANGE" | "PURPLE" | "PINK" | "BROWN" | "BLACK" | "WHITE" | "GREY" | "CYAN" | "MAGENTA";
+        /** @description Public serializer for viewing other users' details */
+        PublicUser: {
+            readonly id: number;
+            readonly username: string;
+            readonly display_name: string;
+            /** Format: date-time */
+            readonly date_joined: string;
+            readonly total_quotes_posted: string;
+            readonly total_quotes_received: string;
+            readonly recent_quotes_posted: string;
+            readonly is_friend: string;
+            readonly quotes_i_made_about_user: string;
         };
         /** @description Serializer for quotes */
         Quote: {
@@ -503,6 +569,7 @@ export interface components {
              *     * `mutuals` - Mutual Friends Only
              *     * `extended` - Friends of Friends */
             quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
+            profile_color?: components["schemas"]["ProfileColorEnum"];
         };
         /** @description Serializer for user registration */
         UserRegistration: {
@@ -599,6 +666,32 @@ export interface operations {
         };
     };
     api_friends_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description A search term. */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedUserList"];
+                };
+            };
+        };
+    };
+    api_friends_recent_quoted_list: {
         parameters: {
             query?: {
                 /** @description A page number within the paginated result set. */
@@ -1013,11 +1106,36 @@ export interface operations {
             };
         };
     };
+    api_users_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicUser"];
+                };
+            };
+        };
+    };
     api_users_search_list: {
         parameters: {
             query?: {
                 /** @description A page number within the paginated result set. */
                 page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description A search term. */
+                search?: string;
             };
             header?: never;
             path?: never;
