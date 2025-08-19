@@ -3,7 +3,6 @@ import { InitialsAvatar } from "@/components/InitialsAvatar";
 import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { User } from "@/types/api";
-import { getInitials } from "@/utils/user";
 import { useRouter } from "expo-router";
 import React, { useState, useRef } from "react";
 import {
@@ -59,7 +58,7 @@ const Search = () => {
         })
       }
     >
-      <InitialsAvatar initials={getInitials(item)} size={30} />
+      <InitialsAvatar user={item} size={30} />
       <View style={styles.activityText}>
         <ThemedText style={styles.displayName}>{item.display_name}</ThemedText>
         <ThemedText style={styles.username}>{item.username}</ThemedText>

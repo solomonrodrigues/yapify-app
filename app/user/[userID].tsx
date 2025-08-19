@@ -7,11 +7,10 @@ import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { getInitials } from '@/utils/user';
 import { getUser } from '@/api/friends';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import { Colors, ProfileColorHexMap } from '@/constants/Colors';
-import type { ProfileColorEnum, PublicUser } from '@/types/api';
+import { Colors } from '@/constants/Colors';
+import type { PublicUser } from '@/types/api';
 
 export default function UserScreen() {
   const params = useLocalSearchParams();
@@ -58,7 +57,7 @@ export default function UserScreen() {
         <ScrollView contentContainerStyle={styles.scroll}>
           {/* Profile Info */}
           <View style={styles.profileContainer}>
-            <InitialsAvatar initials={getInitials(user)} size={100} style={{ marginBottom: 16 }} color={ProfileColorHexMap[user.profile_color as ProfileColorEnum]} />
+            <InitialsAvatar user={user} size={100} style={{ marginBottom: 16 }} />
             <ThemedText type="title">{user.display_name}</ThemedText>
             <ThemedText style={styles.username}>@{user.username}</ThemedText>
           </View>

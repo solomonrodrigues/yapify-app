@@ -20,7 +20,6 @@ import { InitialsAvatar } from "@/components/InitialsAvatar";
 import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { User, Quote } from "@/types/api";
-import { getInitials } from "@/utils/user";
 import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { hexToRgba } from "@/utils/style";
@@ -158,7 +157,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       style={styles.userItem}
       onPress={() => handleUserSelect(item)}
     >
-      <InitialsAvatar initials={getInitials(item)} size={40} />
+      <InitialsAvatar user={item} size={40} />
       <View style={styles.userInfo}>
         <ThemedText style={styles.displayName}>{item.display_name}</ThemedText>
         <ThemedText style={styles.username}>@{item.username}</ThemedText>
@@ -323,7 +322,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
         <View style={styles.selectedUserContainer}>
           <View style={styles.selectedUser}>
             {selectedUser.id ? (
-              <InitialsAvatar initials={getInitials(selectedUser as User)} size={50} />
+              <InitialsAvatar user={selectedUser as User} size={50} />
             ) : (
               <View style={styles.customUserIcon}>
                 <IconSymbol name="person" size={24} color="#fff" />

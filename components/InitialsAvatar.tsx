@@ -1,17 +1,18 @@
 // components/InitialsAvatar.tsx
+import { ProfileColorHexMap } from "@/constants/Colors";
+import { User, PublicUser, ProfileColorEnum } from "@/types/api";
+import { getInitials } from "@/utils/user";
 import React from "react";
 import { View, Text, StyleSheet, StyleProp, ViewStyle } from "react-native";
 
 type InitialsAvatarProps = {
-  initials: string;
-  color?: string;
+  user: User | PublicUser;
   size?: number;
   style?: StyleProp<ViewStyle>;
 };
 
 export const InitialsAvatar: React.FC<InitialsAvatarProps> = ({
-  initials,
-  color = "#4A90E2", // default color
+  user,
   size = 36,
   style,
 }) => {
@@ -23,12 +24,12 @@ export const InitialsAvatar: React.FC<InitialsAvatarProps> = ({
           width: size,
           height: size,
           borderRadius: size / 2,
-          backgroundColor: color,
+          backgroundColor: ProfileColorHexMap[user.profile_color as ProfileColorEnum],
         },
         style,
       ]}
     >
-      <Text style={[styles.initials, { fontSize: size * 0.4 }]}>{initials}</Text>
+      <Text style={[styles.initials, { fontSize: size * 0.4 }]}>{getInitials(user)}</Text>
     </View>
   );
 };

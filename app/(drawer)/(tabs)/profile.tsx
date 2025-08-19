@@ -3,7 +3,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/ThemedText';
 import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { useUser } from '@/hooks/useUser';
-import { getInitials } from '@/utils/user';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 
@@ -19,7 +18,7 @@ export default function ProfileScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          <InitialsAvatar initials={getInitials(user)} size={80} />
+          <InitialsAvatar user={user} size={80} />
           <View style={styles.headerText}>
             <ThemedText type="title">{user.display_name}</ThemedText>
             <ThemedText style={styles.username}>@{user.username}</ThemedText>

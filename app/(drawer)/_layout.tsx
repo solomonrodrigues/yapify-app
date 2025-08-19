@@ -62,6 +62,8 @@ export default function DrawerLayout() {
     //   const navigation = useNavigation();
     const { user } = useUser();
 
+    if (!user) return null;
+
     return (
         <AuthenticatedLayout>
             <Drawer
