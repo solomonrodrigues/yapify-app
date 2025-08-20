@@ -1,7 +1,6 @@
 import api from '@/api/client';
-import { TokenRefresh, RegisterResponse } from '@/types/api';
+import { TokenRefresh, RegisterResponse, UserRegistration } from '@/types/api';
 import { setToken } from '@/utils/storage';
-import { UserRegistration } from '@/types/api';
 
 export const register = async (data: UserRegistration): Promise<RegisterResponse> => {
   const res = await api.post<RegisterResponse>('/auth/register/', data);
