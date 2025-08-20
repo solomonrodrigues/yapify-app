@@ -1,18 +1,20 @@
 import { Tabs } from 'expo-router';
 import React, { useState } from 'react';
-import { Platform } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from 'react-native';
 import QuotePostModal from '@/components/modals/QuotePostModal';
 import { Quote } from '@/types/api';
+import { InitialsAvatar } from '@/components/InitialsAvatar';
+import { useUser } from '@/context/UserContext';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme]
   const [showQuoteModal, setShowQuoteModal] = useState(false);
+  const { user } = useUser();
 
   const handleQuoteCreated = (newQuote: Quote) => {
     console.log('New quote created:', newQuote);
@@ -76,7 +78,7 @@ export default function TabLayout() {
           name="profile"
           options={{
             title: 'Profile',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.circle.fill" color={color} />,
+            tabBarIcon: () => <InitialsAvatar user={user!} size={28} style={{marginBottom: 2}} />,
           }}
         />
       </Tabs>
