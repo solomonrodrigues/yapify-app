@@ -32,7 +32,7 @@ export const getFriendRequests = async () => {
 };
 
 export const sendFriendRequest = async (receiverId: number) => {
-    const res = await api.post('/friends/send/', { receiver: receiverId });
+    const res = await api.post('/friends/send/', { receiver_id: receiverId });
     console.log('Friend request sent:', res.data);
     return res.data;
 };
