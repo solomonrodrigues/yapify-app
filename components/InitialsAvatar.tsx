@@ -36,7 +36,7 @@ export const InitialsAvatar: React.FC<InitialsAvatarProps> = ({
         style,
       ]}
     >
-      <Text style={[styles.initials, { fontSize: size * 0.4 }]}>{getInitials(user)}</Text>
+      <Text style={[styles.initials, { fontSize: size * 0.45 }]}>{getInitials(user)}</Text>
     </View>
   );
 };
@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   initials: {
+    fontFamily: 'Sansation',
     color: "white",
     fontWeight: "bold",
   },

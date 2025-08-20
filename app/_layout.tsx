@@ -44,6 +44,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme() ?? 'dark';
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    Sansation: require('../assets/fonts/Sansation-Bold.ttf'),
   });
 
   if (!loaded) {
