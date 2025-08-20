@@ -9,12 +9,14 @@ type InitialsAvatarProps = {
   user: User | PublicUser;
   size?: number;
   style?: StyleProp<ViewStyle>;
+  defaultBorder?: boolean;
 };
 
 export const InitialsAvatar: React.FC<InitialsAvatarProps> = ({
   user,
   size = 36,
   style,
+  defaultBorder = true,
 }) => {
   return (
     <View
@@ -25,6 +27,8 @@ export const InitialsAvatar: React.FC<InitialsAvatarProps> = ({
           height: size,
           borderRadius: size / 2,
           backgroundColor: ProfileColorHexMap[user.profile_color as ProfileColorEnum],
+          borderWidth: defaultBorder ? 1.5 : 0,
+          borderColor: defaultBorder ? "white" : "transparent", // tweak color as needed
         },
         style,
       ]}

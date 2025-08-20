@@ -78,7 +78,17 @@ export default function TabLayout() {
           name="profile"
           options={{
             title: 'Profile',
-            tabBarIcon: () => <InitialsAvatar user={user!} size={28} style={{marginBottom: 2}} />,
+            tabBarIcon: ({ focused }) => (
+              <InitialsAvatar
+                user={user!}
+                size={28}
+                style={{
+                  marginBottom: 2,
+                  borderWidth: focused ? 1.5 : 1.5,
+                  borderColor: focused ? theme.tabIconSelected : theme.tabIconDefault,
+                }}
+              />
+            ),
           }}
         />
       </Tabs>
