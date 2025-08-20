@@ -1,9 +1,7 @@
 // app/(drawer)/_layout.tsx
-// import AuthenticatedLayout from '@/components/AuthenticatedLayout';
 import { HeaderProfileLeft } from '@/components/HeaderProfileLeft';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
-import { useUser } from '@/hooks/useUser';
 import { findDrawerParent } from '@/utils/nav';
 import {
     DrawerContentScrollView,
@@ -13,6 +11,8 @@ import { DrawerActions, NavigationProp, useNavigation } from '@react-navigation/
 import { Href, useRouter } from 'expo-router';
 import { Drawer } from 'expo-router/drawer';
 import { Alert, useWindowDimensions, View } from 'react-native';
+import { DataPreloader } from '@/components/DataPreloader';
+import { useUser } from '@/context/UserContext';
 
 function MenuContent() {
     const router = useRouter();
@@ -55,13 +55,10 @@ function MenuContent() {
     );
 }
 
-export default function DrawerLayout() {
-    // responsive width (e.g., 40% of screen, max 300dip)
+function DrawerContent() {
     const { width } = useWindowDimensions();
     const drawerWidth = Math.min(width * 0.4, 300);
     const { user } = useUser();
-
-    if (!user) return null;
 
     return (
         <Drawer
@@ -74,7 +71,7 @@ export default function DrawerLayout() {
                     const navigation = useNavigation<NavigationProp<any>>();
                     return (
                         <HeaderProfileLeft
-                            user={user}
+                            user={user!}
                             size={30}
                             onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
                         />
@@ -83,7 +80,6 @@ export default function DrawerLayout() {
             }}
             drawerContent={() => <MenuContent />}
         >
-            {/* Hide the Tabs route from the drawer menu itself */}
             <Drawer.Screen
                 name="(tabs)"
                 options={{
@@ -92,5 +88,13 @@ export default function DrawerLayout() {
                 }}
             />
         </Drawer>
+    );
+}
+
+export default function DrawerLayout() {
+    return (
+        <DataPreloader>
+            <DrawerContent />
+        </DataPreloader>
     );
 }

@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/ThemedText';
 import { InitialsAvatar } from '@/components/InitialsAvatar';
-import { useUser } from '@/hooks/useUser';
+import { useUser } from '@/context/UserContext';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 

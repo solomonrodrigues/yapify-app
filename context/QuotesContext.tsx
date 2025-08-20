@@ -1,12 +1,15 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Quote } from '@/types/api';
 import { getQuotes, likeQuote, witnessQuote } from '@/api/quotes';
-import { useAuth } from '@/context/AuthContext';
+import { getErrorMessage } from '@/utils/error';
 
 interface QuotesContextValue {
   quotes: Quote[];
-  initialLoading: boolean; // first fetch only
-  refreshing: boolean;     // subsequent refreshes
+  initialLoading: boolean;
+  refreshing: boolean;
+  error: string | null;
+  hasLoadedOnce: boolean;
+  loadQuotes: (isRefresh?: boolean) => Promise<void>;
   refreshQuotes: () => Promise<void>;
   likeQuoteById: (id: number) => Promise<void>;
   witnessQuoteById: (id: number) => Promise<void>;
@@ -16,24 +19,34 @@ const QuotesContext = createContext<QuotesContextValue | undefined>(undefined);
 
 export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const { isLoggedIn, isLoading: authLoading } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
-  const fetchQuotes = async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    else setInitialLoading(true);
+  const loadQuotes = useCallback(async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else if (!hasLoadedOnce) {
+      setInitialLoading(true);
+    }
 
     try {
       const data = await getQuotes();
       setQuotes(data);
+      setError(null);
+      setHasLoadedOnce(true);
     } catch (error) {
       console.error('Failed to load quotes', error);
+      setError(getErrorMessage(error));
     } finally {
-      if (isRefresh) setRefreshing(false);
-      else setInitialLoading(false);
+      if (isRefresh) {
+        setRefreshing(false);
+      } else {
+        setInitialLoading(false);
+      }
     }
-  };
+  }, [hasLoadedOnce]);
 
   const likeQuoteById = async (id: number) => {
     setQuotes(prev =>
@@ -57,21 +70,24 @@ export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const witnessQuoteById = async (id: number) => {
     try {
       await witnessQuote(id, true, '');
-      fetchQuotes(true); // refresh
+      loadQuotes(true);
     } catch (e) {
       console.error(e);
     }
   };
 
-  useEffect(() => {
-    // Only fetch quotes when authenticated and auth check is complete
-    if (isLoggedIn && !authLoading) {
-      fetchQuotes(); // initial fetch
-    }
-  }, [isLoggedIn, authLoading]);
-
   return (
-    <QuotesContext.Provider value={{ quotes, initialLoading, refreshing, refreshQuotes: () => fetchQuotes(true), likeQuoteById, witnessQuoteById }}>
+    <QuotesContext.Provider value={{ 
+      quotes, 
+      initialLoading, 
+      refreshing,
+      error,
+      hasLoadedOnce,
+      loadQuotes,
+      refreshQuotes: () => loadQuotes(true), 
+      likeQuoteById, 
+      witnessQuoteById 
+    }}>
       {children}
     </QuotesContext.Provider>
   );

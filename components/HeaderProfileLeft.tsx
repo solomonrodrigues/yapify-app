@@ -1,7 +1,6 @@
 import React from "react";
 import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-import { useThemeColor } from "@/hooks/useThemeColor";
 import { User } from "@/types/api";
 import { InitialsAvatar } from "@/components/InitialsAvatar";
 
@@ -17,7 +16,6 @@ export const HeaderProfileLeft: React.FC<HeaderProfileLeftProps> = ({
   size = 30,
 }) => {
   const router = useRouter();
-  const borderColor = useThemeColor({}, "text"); // optional: theme-aware border
 
   return (
     <TouchableOpacity

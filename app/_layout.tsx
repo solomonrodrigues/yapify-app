@@ -8,6 +8,7 @@ import { useColorScheme } from 'react-native';
 import { QuotesProvider } from '@/context/QuotesContext';
 import { useEffect } from 'react';
 import { useRouter, useSegments, Stack } from 'expo-router';
+import { UserProvider } from '@/context/UserContext';
 
 function RootLayoutNav() {
   const { isLoggedIn, isLoading } = useAuth();
@@ -52,14 +53,16 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <SafeAreaProvider>
-          <QuotesProvider>
-            <RootLayoutNav />
-            <StatusBar style="auto" />
-          </QuotesProvider>
-        </SafeAreaProvider>
-      </ThemeProvider>
+      <UserProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <SafeAreaProvider>
+            <QuotesProvider>
+              <RootLayoutNav />
+              <StatusBar style="auto" />
+            </QuotesProvider>
+          </SafeAreaProvider>
+        </ThemeProvider>
+      </UserProvider>
     </AuthProvider>
   );
 }
