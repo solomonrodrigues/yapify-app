@@ -66,21 +66,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
     witness_count,
     like_count,
     is_liked,
-    // created_at,
   } = quote;
-
-  // const formatDate = (dateString: string): string => {
-  //   const date = new Date(dateString);
-  //   const now = new Date();
-  //   const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
-
-  //   if (diffInHours < 24) {
-  //     return `${diffInHours}h ago`;
-  //   } else {
-  //     const diffInDays = Math.floor(diffInHours / 24);
-  //     return `${diffInDays}d ago`;
-  //   }
-  // };
 
   return (
     <View style={[styles.quoteCard, {
@@ -97,9 +83,6 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
             quoted {quoted_user?.display_name ?? quoted_name}
           </Text>
         </View>
-        {/* <Text style={[styles.timestamp, { color: theme.secondaryText }]}>
-          {formatDate(created_at)}
-        </Text> */}
       </View>
 
       {/* Quote Content */}
