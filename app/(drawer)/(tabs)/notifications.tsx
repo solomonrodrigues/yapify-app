@@ -91,6 +91,7 @@ const NotificationsView: React.FC = () => {
       const res = await getNotifications();
       setNotifications(res.results);
     } catch (error) {
+      console.error(error);
       Alert.alert('Error', 'Failed to load notifications');
     } finally {
       setLoading(false);
@@ -105,6 +106,7 @@ const NotificationsView: React.FC = () => {
         prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
       );
     } catch (error) {
+      console.error(error);
       Alert.alert('Error', 'Failed to mark notification as read');
     }
   };
