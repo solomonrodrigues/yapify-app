@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,7 @@ import {
   TouchableOpacity,
   useColorScheme,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
-import { getQuotes, likeQuote, witnessQuote } from '@/api/quotes';
 import { Quote } from '@/types/api';
 import { useQuotes } from '@/context/QuotesContext';
 
@@ -107,7 +105,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
       {/* Quote Content */}
       <View style={styles.contentContainer}>
         <Text style={[styles.quoteContent, { color: theme.primaryText }]}>
-          "{text}"
+          &quot;{text}&quot;
         </Text>
       </View>
 
