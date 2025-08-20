@@ -27,13 +27,13 @@ function RootLayoutNav() {
     } else if (isLoggedIn && inAuthGroup) {
       // Redirect to main app if logged in but still in auth
       console.log('Redirecting to main app - logged in');
-      router.replace('/(drawer)/(tabs)');
+      router.replace('/(app)/(drawer)/(tabs)');
     }
   }, [isLoggedIn, isLoading, segments, router]);
 
   return (
     <Stack>
-      <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+      <Stack.Screen name="(app)/(drawer)" options={{ headerShown: false }} />
       <Stack.Screen name="auth/index" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>
