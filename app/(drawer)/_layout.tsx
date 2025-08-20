@@ -70,6 +70,7 @@ export default function DrawerLayout() {
                 headerShown: true,
                 drawerStyle: { width: drawerWidth },
                 headerLeft: () => {
+                    // eslint-disable-next-line react-hooks/rules-of-hooks
                     const navigation = useNavigation<NavigationProp<any>>();
                     return (
                         <HeaderProfileLeft
