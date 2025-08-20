@@ -201,7 +201,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
         {/* Header */}
         <View style={styles.header}>
             <Text style={[styles.headerTitle, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-            Let's <Text style={styles.quoteText}>quote</Text>
+            Let&apos;s <Text style={styles.quoteText}>quote</Text>
             </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <IconSymbol name="xmark" size={20} color={colorScheme === 'dark' ? '#fff' : '#000'} />
@@ -258,7 +258,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
                     <IconSymbol name="plus" size={20} color="#fff" />
                     </View>
                     <View style={styles.userInfo}>
-                    <ThemedText style={styles.displayName}>Quote "{query.trim()}"</ThemedText>
+                    <ThemedText style={styles.displayName}>Quote &ldquo;{query.trim()}&rdquo;</ThemedText>
                     <ThemedText style={styles.customText}>Create quote for custom name</ThemedText>
                     </View>
                 </TouchableOpacity>
@@ -340,7 +340,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
         {/* Quote Input */}
         <View style={styles.quoteContainer}>
           <Text style={[styles.quotePrefix, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-            "{selectedUser.display_name}" said...
+            &ldquo;{selectedUser.display_name}&rdquo; said...
           </Text>
           <View style={styles.quoteInputWrapper}>
             <TextInput
