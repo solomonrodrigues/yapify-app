@@ -51,7 +51,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
       setRedirecting(true);
       router.replace("/auth");
     }
-  }, [authLoading, userLoading, isLoggedIn]);
+  }, [authLoading, userLoading, isLoggedIn, router]);
 
   // Show loading until auth + user finish
   if (isLoading) {

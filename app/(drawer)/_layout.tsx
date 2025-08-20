@@ -9,7 +9,7 @@ import {
     DrawerContentScrollView,
     DrawerItem
 } from '@react-navigation/drawer';
-import { DrawerActions, NavigationProp, useNavigation } from '@react-navigation/native';
+import { DrawerActions, useNavigation } from '@react-navigation/native';
 import { Href, useRouter } from 'expo-router';
 import { Drawer } from 'expo-router/drawer';
 import { Alert, useWindowDimensions, View } from 'react-native';
@@ -59,7 +59,7 @@ export default function DrawerLayout() {
     // responsive width (e.g., 40% of screen, max 300dip)
     const { width } = useWindowDimensions();
     const drawerWidth = Math.min(width * 0.4, 300);
-    //   const navigation = useNavigation();
+    const navigation = useNavigation();
     const { user } = useUser();
 
     if (!user) return null;
@@ -72,7 +72,6 @@ export default function DrawerLayout() {
                     headerShown: true,
                     drawerStyle: { width: drawerWidth },
                     headerLeft: () => {
-                        const navigation = useNavigation<NavigationProp<any>>();
                         return (
                             <HeaderProfileLeft
                                 user={user}
