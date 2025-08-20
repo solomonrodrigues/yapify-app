@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   useColorScheme,
+  SafeAreaView,
 } from 'react-native';
 import { Quote } from '@/types/api';
 import { useQuotes } from '@/context/QuotesContext';
@@ -72,6 +73,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
       backgroundColor: theme.cardBackground,
       borderColor: theme.border
     }]}>
+      <SafeAreaView>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerText}>
@@ -117,6 +119,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
           </Text>
         </TouchableOpacity>
       </View>
+      </SafeAreaView>
     </View>
   );
 };

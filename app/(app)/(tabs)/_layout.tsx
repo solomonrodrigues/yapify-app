@@ -9,8 +9,9 @@ import QuotePostModal from '@/components/modals/QuotePostModal';
 import { Quote } from '@/types/api';
 import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { useUser } from '@/context/UserContext';
+import { DataPreloader } from '@/components/DataPreloader';
 
-export default function TabLayout() {
+function TabContent() {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme]
   const [showQuoteModal, setShowQuoteModal] = useState(false);
@@ -75,7 +76,7 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="profile"
+          name="profile/index"
           options={{
             title: 'Profile',
             tabBarIcon: ({ focused }) => (
@@ -101,4 +102,12 @@ export default function TabLayout() {
       />
     </>
   );
+}
+
+export default function TabLayout() {
+    return (
+        <DataPreloader>
+            <TabContent />
+        </DataPreloader>
+    );
 }
