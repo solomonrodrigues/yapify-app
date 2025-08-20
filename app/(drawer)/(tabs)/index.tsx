@@ -6,7 +6,6 @@ import {
   FlatList,
   TouchableOpacity,
   useColorScheme,
-  ActivityIndicator,
 } from 'react-native';
 import { Quote } from '@/types/api';
 import { useQuotes } from '@/context/QuotesContext';
@@ -129,20 +128,8 @@ const QuotesFeed: React.FC = () => {
 
   const { quotes, refreshing, refreshQuotes, likeQuoteById, witnessQuoteById } = useQuotes();
 
-  // Render loading state
-  if (refreshing) {
-    return (
-      <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
-        <ActivityIndicator size="large" color={theme.accent} />
-        <Text style={[styles.loadingText, { color: theme.secondaryText }]}>
-          Loading quotes...
-        </Text>
-      </View>
-    );
-  }
-
-  // Render empty state
-  if (quotes.length === 0) {
+  // If no quotes at all (initial load or empty)
+  if (!refreshing && quotes.length === 0) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
         <Text style={[styles.emptyText, { color: theme.secondaryText }]}>
