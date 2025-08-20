@@ -1,5 +1,5 @@
 // app/(drawer)/_layout.tsx
-import AuthenticatedLayout from '@/components/AuthenticatedLayout';
+// import AuthenticatedLayout from '@/components/AuthenticatedLayout';
 import { HeaderProfileLeft } from '@/components/HeaderProfileLeft';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
@@ -9,7 +9,7 @@ import {
     DrawerContentScrollView,
     DrawerItem
 } from '@react-navigation/drawer';
-import { DrawerActions, useNavigation } from '@react-navigation/native';
+import { DrawerActions, NavigationProp, useNavigation } from '@react-navigation/native';
 import { Href, useRouter } from 'expo-router';
 import { Drawer } from 'expo-router/drawer';
 import { Alert, useWindowDimensions, View } from 'react-native';
@@ -17,7 +17,7 @@ import { Alert, useWindowDimensions, View } from 'react-native';
 function MenuContent() {
     const router = useRouter();
     const navigation = useNavigation();
-    const { logout } = useAuth()
+    const { logout } = useAuth();
 
     const go = (href: Href) => {
         // Safely close the drawer if we're inside one; otherwise skip closing.
@@ -59,39 +59,37 @@ export default function DrawerLayout() {
     // responsive width (e.g., 40% of screen, max 300dip)
     const { width } = useWindowDimensions();
     const drawerWidth = Math.min(width * 0.4, 300);
-    const navigation = useNavigation();
     const { user } = useUser();
 
     if (!user) return null;
 
     return (
-        <AuthenticatedLayout>
-            <Drawer
-                screenOptions={{
-                    drawerPosition: 'left',
-                    headerShown: true,
-                    drawerStyle: { width: drawerWidth },
-                    headerLeft: () => {
-                        return (
-                            <HeaderProfileLeft
-                                user={user}
-                                size={30}
-                                onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
-                            />
-                        );
-                    },
+        <Drawer
+            screenOptions={{
+                drawerPosition: 'left',
+                headerShown: true,
+                drawerStyle: { width: drawerWidth },
+                headerLeft: () => {
+                    const navigation = useNavigation<NavigationProp<any>>();
+                    return (
+                        <HeaderProfileLeft
+                            user={user}
+                            size={30}
+                            onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+                        />
+                    );
+                },
+            }}
+            drawerContent={() => <MenuContent />}
+        >
+            {/* Hide the Tabs route from the drawer menu itself */}
+            <Drawer.Screen
+                name="(tabs)"
+                options={{
+                    title: '',
+                    drawerItemStyle: { display: 'none' }
                 }}
-                drawerContent={() => <MenuContent />}
-            >
-                {/* Hide the Tabs route from the drawer menu itself */}
-                <Drawer.Screen
-                    name="(tabs)"
-                    options={{
-                        title: '',
-                        drawerItemStyle: { display: 'none' }
-                    }}
-                />
-            </Drawer>
-        </AuthenticatedLayout>
+            />
+        </Drawer>
     );
 }
