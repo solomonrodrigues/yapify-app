@@ -14,7 +14,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { searchUsers, getFriends } from "@/api/friends";
+import { searchFriends, getFriends, getRecentFriends } from "@/api/friends";
 import { createQuote } from "@/api/quotes";
 import { InitialsAvatar } from "@/components/InitialsAvatar";
 import { ThemedText } from "@/components/ThemedText";
@@ -51,6 +51,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   useEffect(() => {
     if (visible) {
       loadFriends();
+      loadRecent();
     }
   }, [visible]);
 
@@ -77,6 +78,19 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
     }
   };
 
+  const loadRecent = async () => {
+    try {
+      setFriendsLoading(true);
+      const recentData = await getRecentFriends();
+      setRecentUsers(recentData);
+    } catch (error) {
+      console.error('Error loading recent friends:', error);
+      Alert.alert('Error', 'Failed to load recent friends');
+    } finally {
+      setFriendsLoading(false);
+    }
+  };
+
   const handleSearch = async (text: string) => {
     setQuery(text);
     if (text.length < 2) {
@@ -86,7 +100,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
     
     try {
       setLoading(true);
-      const data = await searchUsers(text);
+      const data = await searchFriends(text);
       setSearchResults(data);
     } catch (error) {
       console.error('Error searching users:', error);
@@ -182,8 +196,6 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       </View>
     );
   };
-
-  const showCustomOption = query.length > 0 && searchResults.length === 0 && !loading;
 
   // User selection screen
   if (!selectedUser) {

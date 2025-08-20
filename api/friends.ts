@@ -16,6 +16,11 @@ export const getFriends = async (): Promise<User[]> => {
     return res.data.results || [];
 };
 
+export const getRecentFriends = async (): Promise<User[]> => {
+    const res = await api.get<{ results: User[] }>('/friends/recent-quoted/');
+    return res.data.results || [];
+};
+
 export const searchFriends = async (query: string): Promise<User[]> => {
     const res = await api.get<{ results: User[] }>(`/friends/?search=${encodeURIComponent(query)}`);
     return res.data.results || [];
