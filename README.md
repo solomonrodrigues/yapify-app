@@ -6,7 +6,10 @@ We use the openapi-typescript package to generate TypeScript type definitions fr
 
 Run the following command, updating the paths to match your local environment:
 ```
+Windows
 npx openapi-typescript "C:\Users\Solom\Downloads\yapifySchema.yaml" -o C:\Users\Solom\Sites\yapify-app\types\schema.ts
+MacOS:
+npx openapi-typescript "C:\Users\solomonrodrigues\Downloads\yapifySchema.yaml" -o /Users/solomonrodrigues/Personal/yapify-app/types/schema.ts
 ```
 Notes
 - The first path points to your OpenAPI schema file (.yaml or .json).

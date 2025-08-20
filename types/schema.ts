@@ -14,7 +14,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** @description Custom JWT login endpoint */
-        post: operations["api_auth_login_create"];
+        post: operations["auth_login_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -32,7 +32,7 @@ export interface paths {
         put?: never;
         /** @description Takes a refresh type JSON web token and returns an access type JSON web
          *     token if the refresh token is valid. */
-        post: operations["api_auth_refresh_create"];
+        post: operations["auth_refresh_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -49,7 +49,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** @description User registration endpoint */
-        post: operations["api_auth_register_create"];
+        post: operations["auth_register_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -64,7 +64,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description List and search user's friends */
-        get: operations["api_friends_list"];
+        get: operations["friends_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -81,7 +81,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description List up to 5 most recent friends that the user has made quotes for */
-        get: operations["api_friends_recent_quoted_list"];
+        get: operations["friends_recent_quoted_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -98,7 +98,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description List pending friend requests */
-        get: operations["api_friends_requests_list"];
+        get: operations["friends_requests_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -117,7 +117,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** @description Accept or reject friend request */
-        post: operations["api_friends_respond_create"];
+        post: operations["friends_respond_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -134,7 +134,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** @description Send friend request */
-        post: operations["api_friends_send_create"];
+        post: operations["friends_send_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -149,7 +149,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description List user notifications */
-        get: operations["api_notifications_list"];
+        get: operations["notifications_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -168,7 +168,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** @description Mark notification as read */
-        post: operations["api_notifications_read_create"];
+        post: operations["notifications_read_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -183,15 +183,15 @@ export interface paths {
             cookie?: never;
         };
         /** @description User profile endpoint */
-        get: operations["api_profile_retrieve"];
+        get: operations["profile_retrieve"];
         /** @description User profile endpoint */
-        put: operations["api_profile_update"];
+        put: operations["profile_update"];
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
         /** @description User profile endpoint */
-        patch: operations["api_profile_partial_update"];
+        patch: operations["profile_partial_update"];
         trace?: never;
     };
     "/api/quotes/": {
@@ -202,10 +202,10 @@ export interface paths {
             cookie?: never;
         };
         /** @description List and create quotes */
-        get: operations["api_quotes_list"];
+        get: operations["quotes_list"];
         put?: never;
         /** @description List and create quotes */
-        post: operations["api_quotes_create"];
+        post: operations["quotes_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -220,16 +220,16 @@ export interface paths {
             cookie?: never;
         };
         /** @description Quote detail view */
-        get: operations["api_quotes_retrieve"];
+        get: operations["quotes_retrieve"];
         /** @description Quote detail view */
-        put: operations["api_quotes_update"];
+        put: operations["quotes_update"];
         post?: never;
         /** @description Quote detail view */
-        delete: operations["api_quotes_destroy"];
+        delete: operations["quotes_destroy"];
         options?: never;
         head?: never;
         /** @description Quote detail view */
-        patch: operations["api_quotes_partial_update"];
+        patch: operations["quotes_partial_update"];
         trace?: never;
     };
     "/api/quotes/{quote_id}/like/": {
@@ -242,7 +242,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** @description Like/unlike a quote */
-        post: operations["api_quotes_like_create"];
+        post: operations["quotes_like_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -259,7 +259,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** @description Witness a quote */
-        post: operations["api_quotes_witness_create"];
+        post: operations["quotes_witness_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -277,7 +277,7 @@ export interface paths {
          *
          *     - YAML: application/vnd.oai.openapi
          *     - JSON: application/vnd.oai.openapi+json */
-        get: operations["api_schema_retrieve"];
+        get: operations["schema_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -294,7 +294,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description Retrieve public details about any user */
-        get: operations["api_users_retrieve"];
+        get: operations["users_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -311,7 +311,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description Search users by username or display name */
-        get: operations["api_users_search_list"];
+        get: operations["users_search_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -332,8 +332,7 @@ export interface components {
         };
         /** @description Serializer for sending friend requests */
         FriendRequest: {
-            /** Format: email */
-            receiver_email: string;
+            receiver_id: number;
         };
         /** @description Serializer for friendship relationships */
         Friendship: {
@@ -503,8 +502,8 @@ export interface components {
             readonly date_joined: string;
             readonly total_quotes_posted: string;
             readonly total_quotes_received: string;
-            readonly recent_quotes_posted: string;
-            readonly is_friend: string;
+            readonly recent_quotes_posted: components["schemas"]["Quote"][];
+            readonly friendship: components["schemas"]["Friendship"] | null;
             readonly quotes_i_made_about_user: string;
         };
         /** @description Serializer for quotes */
@@ -591,7 +590,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    api_auth_login_create: {
+    auth_login_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -616,7 +615,7 @@ export interface operations {
             };
         };
     };
-    api_auth_refresh_create: {
+    auth_refresh_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -641,7 +640,7 @@ export interface operations {
             };
         };
     };
-    api_auth_register_create: {
+    auth_register_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -666,7 +665,7 @@ export interface operations {
             };
         };
     };
-    api_friends_list: {
+    friends_list: {
         parameters: {
             query?: {
                 /** @description A page number within the paginated result set. */
@@ -692,7 +691,7 @@ export interface operations {
             };
         };
     };
-    api_friends_recent_quoted_list: {
+    friends_recent_quoted_list: {
         parameters: {
             query?: {
                 /** @description A page number within the paginated result set. */
@@ -714,7 +713,7 @@ export interface operations {
             };
         };
     };
-    api_friends_requests_list: {
+    friends_requests_list: {
         parameters: {
             query?: {
                 /** @description A page number within the paginated result set. */
@@ -736,7 +735,7 @@ export interface operations {
             };
         };
     };
-    api_friends_respond_create: {
+    friends_respond_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -756,7 +755,7 @@ export interface operations {
             };
         };
     };
-    api_friends_send_create: {
+    friends_send_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -781,7 +780,7 @@ export interface operations {
             };
         };
     };
-    api_notifications_list: {
+    notifications_list: {
         parameters: {
             query?: {
                 /** @description A page number within the paginated result set. */
@@ -803,7 +802,7 @@ export interface operations {
             };
         };
     };
-    api_notifications_read_create: {
+    notifications_read_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -823,7 +822,7 @@ export interface operations {
             };
         };
     };
-    api_profile_retrieve: {
+    profile_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -842,7 +841,7 @@ export interface operations {
             };
         };
     };
-    api_profile_update: {
+    profile_update: {
         parameters: {
             query?: never;
             header?: never;
@@ -867,7 +866,7 @@ export interface operations {
             };
         };
     };
-    api_profile_partial_update: {
+    profile_partial_update: {
         parameters: {
             query?: never;
             header?: never;
@@ -892,7 +891,7 @@ export interface operations {
             };
         };
     };
-    api_quotes_list: {
+    quotes_list: {
         parameters: {
             query?: {
                 /** @description A page number within the paginated result set. */
@@ -914,7 +913,7 @@ export interface operations {
             };
         };
     };
-    api_quotes_create: {
+    quotes_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -939,7 +938,7 @@ export interface operations {
             };
         };
     };
-    api_quotes_retrieve: {
+    quotes_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -960,7 +959,7 @@ export interface operations {
             };
         };
     };
-    api_quotes_update: {
+    quotes_update: {
         parameters: {
             query?: never;
             header?: never;
@@ -987,7 +986,7 @@ export interface operations {
             };
         };
     };
-    api_quotes_destroy: {
+    quotes_destroy: {
         parameters: {
             query?: never;
             header?: never;
@@ -1007,7 +1006,7 @@ export interface operations {
             };
         };
     };
-    api_quotes_partial_update: {
+    quotes_partial_update: {
         parameters: {
             query?: never;
             header?: never;
@@ -1034,7 +1033,7 @@ export interface operations {
             };
         };
     };
-    api_quotes_like_create: {
+    quotes_like_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -1054,7 +1053,7 @@ export interface operations {
             };
         };
     };
-    api_quotes_witness_create: {
+    quotes_witness_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -1074,7 +1073,7 @@ export interface operations {
             };
         };
     };
-    api_schema_retrieve: {
+    schema_retrieve: {
         parameters: {
             query?: {
                 format?: "json" | "yaml";
@@ -1107,7 +1106,7 @@ export interface operations {
             };
         };
     };
-    api_users_retrieve: {
+    users_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -1128,7 +1127,7 @@ export interface operations {
             };
         };
     };
-    api_users_search_list: {
+    users_search_list: {
         parameters: {
             query?: {
                 /** @description A page number within the paginated result set. */
