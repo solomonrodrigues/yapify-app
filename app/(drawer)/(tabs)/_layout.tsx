@@ -84,7 +84,7 @@ export default function TabLayout() {
                 size={28}
                 style={{
                   marginBottom: 2,
-                  borderWidth: focused ? 1.5 : 1.5,
+                  borderWidth: focused ? 1 : 0.5,
                   borderColor: focused ? theme.tabIconSelected : theme.avatarBorder,
                 }}
               />

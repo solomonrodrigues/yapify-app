@@ -30,7 +30,7 @@ export const InitialsAvatar: React.FC<InitialsAvatarProps> = ({
           height: size,
           borderRadius: size / 2,
           backgroundColor: ProfileColorHexMap[user.profile_color as ProfileColorEnum],
-          borderWidth: defaultBorder ? 1.5 : 0,
+          borderWidth: defaultBorder ? 0.5 : 0,
           borderColor: defaultBorder ? theme.avatarBorder : "transparent", // tweak color as needed
         },
         style,

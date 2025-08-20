@@ -41,7 +41,7 @@ export const Colors = {
     background: '#151718',
     cardBackground: '#1e1f1f',    // activity cards or sections
     cardBorder: '#fff',
-    avatarBorder: '#fff',
+    avatarBorder: '#2d2d2dff',
     divider: '#1d1d1dff',
     tint: tintColorDark,
     icon: '#9BA1A6',
