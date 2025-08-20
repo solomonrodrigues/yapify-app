@@ -4,15 +4,11 @@ import { useAuth } from "@/context/AuthContext";
 import { User } from "@/types/api";
 
 export function useUser() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchUser = useCallback(async () => {
-    if (!isLoggedIn) {
-      setUser(null);
-      return;
-    }
+  const fetchUser = async () => {
     setLoading(true);
     try {
       const profile = await getProfile();
@@ -20,7 +16,7 @@ export function useUser() {
     } finally {
       setLoading(false);
     }
-  }, [isLoggedIn]);
+  };
 
   const saveUser = useCallback(async (updates: Partial<User>) => {
     const updated = await updateProfile(updates);
@@ -28,8 +24,11 @@ export function useUser() {
   }, []);
 
   useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+    // Only fetch quotes when authenticated and auth check is complete
+    if (isLoggedIn && !authLoading) {
+      fetchUser(); // initial fetch
+    }
+  }, [isLoggedIn, authLoading]);
 
   return {
     user,

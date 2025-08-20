@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Quote } from '@/types/api';
 import { getQuotes, likeQuote, witnessQuote } from '@/api/quotes';
+import { useAuth } from '@/context/AuthContext';
 
 interface QuotesContextValue {
   quotes: Quote[];
@@ -17,6 +18,7 @@ export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
 
   const fetchQuotes = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -62,8 +64,11 @@ export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   useEffect(() => {
-    fetchQuotes(); // initial fetch
-  }, []);
+    // Only fetch quotes when authenticated and auth check is complete
+    if (isLoggedIn && !authLoading) {
+      fetchQuotes(); // initial fetch
+    }
+  }, [isLoggedIn, authLoading]);
 
   return (
     <QuotesContext.Provider value={{ quotes, initialLoading, refreshing, refreshQuotes: () => fetchQuotes(true), likeQuoteById, witnessQuoteById }}>
