@@ -2,8 +2,9 @@
 import { useQuotes } from '@/context/QuotesContext';
 import { useUser } from '@/context/UserContext';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Text } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from './ThemedText';
 
 const loadingMessages = [
   "Slaying goblins...",
@@ -16,14 +17,6 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
   const { loadQuotes, initialLoading: quotesInitialLoading, hasLoadedOnce: quotesLoaded } = useQuotes();
   const { loadUser, loading: userLoading, hasLoadedOnce: userLoaded, user } = useUser(); // Get user object
   const [loadingMessage, setLoadingMessage] = useState('');
-
-  console.log('DataPreloader render:', {
-    quotesInitialLoading,
-    quotesLoaded,
-    userLoading,
-    userLoaded,
-    hasUser: !!user // Log if we have user data
-  });
 
   // Preload data immediately
   useEffect(() => {
@@ -71,7 +64,7 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
     return (
       <ThemedView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
-        <Text style={{ padding: 10 }}>{loadingMessage || 'Loading...'}</Text>
+        <ThemedText style={{ padding: 10 }}>{loadingMessage || 'Loading...'}</ThemedText>
       </ThemedView>
     );
   }
@@ -82,7 +75,7 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
     return (
       <ThemedView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
-        <Text style={{ padding: 10 }}>Loading user data...</Text>
+        <ThemedText style={{ padding: 10 }}>Loading user data...</ThemedText>
       </ThemedView>
     );
   }
