@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { getAccessToken, clearTokens } from "@/utils/storage";
 import { setOnLogoutHandler } from "@/api/client";
 import { apiLogin } from "@/api/auth";
+import { View } from "react-native";
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -16,6 +17,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authKey, setAuthKey] = useState(0);
 
   async function checkAuth() {
     const token = await getAccessToken();
@@ -31,6 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function logout() {
     await clearTokens();
     setIsLoggedIn(false);
+    setAuthKey((k) => k + 1); // 🔄 forces remount of children
   }
 
   useEffect(() => {
@@ -44,7 +47,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ isLoading, isLoggedIn, login, logout, checkAuth }}>
-      {children}
+      {/* everything inside remounts on logout */}
+      <View key={authKey} style={{ flex: 1 }}>{children}</View>
     </AuthContext.Provider>
   );
 }

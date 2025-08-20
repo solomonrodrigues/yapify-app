@@ -54,16 +54,26 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <UserProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      {/* Pass props into Providers */}
+      <Providers
+        theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+      />
+    </AuthProvider>
+  );
+}
+
+
+function Providers({ theme }: { theme: any }) {
+  return (
+    <UserProvider>
+      <QuotesProvider>
+        <ThemeProvider value={theme}>
           <SafeAreaProvider>
-            <QuotesProvider>
-              <RootLayoutNav />
-              <StatusBar style="auto" />
-            </QuotesProvider>
+            <RootLayoutNav />
+            <StatusBar style="auto" />
           </SafeAreaProvider>
         </ThemeProvider>
-      </UserProvider>
-    </AuthProvider>
+      </QuotesProvider>
+    </UserProvider>
   );
 }
