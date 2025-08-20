@@ -1,9 +1,9 @@
 // components/InitialsAvatar.tsx
-import { ProfileColorHexMap } from "@/constants/Colors";
+import { Colors, ProfileColorHexMap } from "@/constants/Colors";
 import { User, PublicUser, ProfileColorEnum } from "@/types/api";
 import { getInitials } from "@/utils/user";
 import React from "react";
-import { View, Text, StyleSheet, StyleProp, ViewStyle } from "react-native";
+import { View, Text, StyleSheet, StyleProp, ViewStyle, useColorScheme } from "react-native";
 
 type InitialsAvatarProps = {
   user: User | PublicUser;
@@ -18,6 +18,9 @@ export const InitialsAvatar: React.FC<InitialsAvatarProps> = ({
   style,
   defaultBorder = true,
 }) => {
+  const colorScheme = useColorScheme() ?? 'dark';
+  const theme = Colors[colorScheme]
+
   return (
     <View
       style={[
@@ -28,7 +31,7 @@ export const InitialsAvatar: React.FC<InitialsAvatarProps> = ({
           borderRadius: size / 2,
           backgroundColor: ProfileColorHexMap[user.profile_color as ProfileColorEnum],
           borderWidth: defaultBorder ? 1.5 : 0,
-          borderColor: defaultBorder ? "white" : "transparent", // tweak color as needed
+          borderColor: defaultBorder ? theme.avatarBorder : "transparent", // tweak color as needed
         },
         style,
       ]}

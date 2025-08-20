@@ -16,7 +16,8 @@ export const Colors = {
     secondaryText: '#888',       // subtitles, lighter text
     background: '#fff',          // page background
     cardBackground: '#f8f9fa',   // activity cards or sections
-    border: '#fff',              // avatar border
+    cardBorder: '#fff',
+    avatarBorder: 'transparent',
     divider: '#f8f8f8ff',
     tint: tintColorLight,        // active tint
     icon: '#687076',             // default icon color
@@ -39,7 +40,8 @@ export const Colors = {
     secondaryText: '#aaa',        // lighter text in dark mode
     background: '#151718',
     cardBackground: '#1e1f1f',    // activity cards or sections
-    border: '#fff',               // avatar border
+    cardBorder: '#fff',
+    avatarBorder: '#fff',
     divider: '#1d1d1dff',
     tint: tintColorDark,
     icon: '#9BA1A6',
