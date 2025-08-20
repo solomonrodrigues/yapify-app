@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, View, ActivityIndicator, StyleSheet } from 'react-native';
+import { ScrollView, View, ActivityIndicator, StyleSheet, Button } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 
@@ -7,10 +7,10 @@ import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { getUser } from '@/api/friends';
+import { getUser, sendFriendRequest } from '@/api/friends';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { Colors } from '@/constants/Colors';
-import type { PublicUser } from '@/types/api';
+import type { Friendship, PublicUser } from '@/types/api';
 
 export default function UserScreen() {
   const params = useLocalSearchParams();
@@ -18,6 +18,24 @@ export default function UserScreen() {
 
   const [user, setUser] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [friendship, setFriendship] = useState<Friendship | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setFriendship(user.friendship as Friendship ?? undefined);
+    }
+  }, [user]);
+
+  const handleSendRequest = async () => {
+    try {
+      if (!user) return;
+      const res = await sendFriendRequest(user.id);
+      setFriendship(res.friendship); // assume backend returns the new Friendship object
+    } catch (err) {
+      console.error("Failed to send friend request:", err);
+    }
+  };
 
   const styles = useThemedStyles(getStyles);
 
@@ -74,15 +92,37 @@ export default function UserScreen() {
             </View>
           </View>
 
+          <View style={styles.section}>
+            <ThemedText type="subtitle">Friendship</ThemedText>
+            {friendship ? (
+              <>
+                {friendship.status === "pending" && (
+                  <ThemedText>Friend request pending</ThemedText>
+                )}
+                {friendship.status === "accepted" && (
+                  <ThemedText>You are friends</ThemedText>
+                )}
+                {friendship.status === "rejected" && (
+                  <ThemedText>Request rejected</ThemedText>
+                )}
+                {friendship.status === "blocked" && (
+                  <ThemedText>You are blocked</ThemedText>
+                )}
+              </>
+            ) : (
+              <Button title="Send Friend Request" onPress={handleSendRequest} />
+            )}
+          </View>
+
           {/* Recent Quotes */}
           <View style={styles.section}>
             <ThemedText type="subtitle">Recent Quotes</ThemedText>
             {user.recent_quotes_posted ? (
               <View style={styles.sectionCard}>
                 <IconSymbol name="quote.bubble.fill" size={20} color={"gray"} />
-                <ThemedText style={styles.activityText}>
+                {/* <ThemedText style={styles.activityText}>
                   {user.recent_quotes_posted}
-                </ThemedText>
+                </ThemedText> */}
               </View>
             ) : (
               <ThemedText>No recent quotes</ThemedText>
