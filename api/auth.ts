@@ -12,10 +12,3 @@ export const apiLogin = async (email: string, password: string): Promise<TokenRe
   await setToken(res.data.access, res.data.refresh);
   return res.data;
 };
-
-export const refreshAccessToken = async (
-  refresh: string
-): Promise<{ access: string }> => {
-  const res = await api.post<{ access: string }>('/auth/refresh/', { refresh });
-  return res.data;
-};

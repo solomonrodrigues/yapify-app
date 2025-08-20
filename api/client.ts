@@ -1,29 +1,13 @@
 // api/client.ts
-import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosError } from 'axios';
 import { getAccessToken, getRefreshToken, setToken, clearTokens } from '@/utils/storage';
-import { refreshAccessToken } from '@/api/auth';
 
 const API_BASE_URL = 'https://yapify-production.up.railway.app/api';
 
-let isRefreshing = false;
-let failedQueue: {
-  resolve: (value?: unknown) => void;
-  reject: (error: unknown) => void;
-}[] = [];
-
-const processQueue = (error: unknown, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
+// Default logout handler with warning
+let onLogoutHandler: () => void = () => {
+  console.warn('Logout triggered but no handler set. Call setOnLogoutHandler() to handle logout properly.');
 };
-
-// Placeholder logout handler — to be set from outside
-let onLogoutHandler: (() => void) | null = null;
 
 export function setOnLogoutHandler(handler: () => void) {
   onLogoutHandler = handler;
@@ -34,6 +18,14 @@ const api: AxiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+export const refreshAccessToken = async (
+  refresh: string
+): Promise<{ access: string }> => {
+  const res = await api.post<{ access: string }>('/auth/refresh/', { refresh });
+  return res.data;
+};
+
+// Add auth token to requests
 api.interceptors.request.use(async (config) => {
   const token = await getAccessToken();
   if (token && config.headers) {
@@ -42,56 +34,39 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+// Handle token refresh on 401 errors
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    console.warn(error.response?.data || 'No response data');
-    const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            if (originalRequest.headers) {
-              originalRequest.headers['Authorization'] = `Bearer ${token}`;
-            }
-            return api(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
-      }
-
-      isRefreshing = true;
-
+    const originalRequest = error.config as any; // Cast to any to add custom property
+    
+    // If 401 and we haven't already tried to refresh
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       try {
-        const refresh = await getRefreshToken();
-        if (!refresh) throw new Error('No refresh token available');
-
-        const newTokens = await refreshAccessToken(refresh);
-        await setToken(newTokens.access, refresh);
-
-        processQueue(null, newTokens.access);
-
-        if (originalRequest.headers) {
-          originalRequest.headers['Authorization'] = `Bearer ${newTokens.access}`;
+        const refreshToken = await getRefreshToken();
+        if (!refreshToken) {
+          throw new Error('No refresh token');
         }
 
-        return api(originalRequest);
-      } catch (err) {
-        processQueue(err, null);
-        await clearTokens();
+        // Try to refresh the token
+        const newTokens = await refreshAccessToken(refreshToken);
+        await setToken(newTokens.access, refreshToken);
 
-        // Call logout handler to update auth state / navigate user
+        // Mark this request as retried and try again
+        originalRequest._retry = true;
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newTokens.access}`;
+        }
+        
+        return api(originalRequest);
+        
+      } catch (refreshError) {
+        // Refresh failed - user needs to log in again
+        await clearTokens();
         if (onLogoutHandler) {
           onLogoutHandler();
         }
-
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
+        return Promise.reject(refreshError);
       }
     }
 
