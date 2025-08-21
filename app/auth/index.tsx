@@ -78,7 +78,7 @@ export default function AuthScreen() {
       await login(email, password);
       router.replace("/(app)/(tabs)");
     } catch (err: any) {
-      const errorHandler = new LoginErrorHandler(router);
+      const errorHandler = new LoginErrorHandler(router, email);
       errorHandler.handle(err);
     }
   }

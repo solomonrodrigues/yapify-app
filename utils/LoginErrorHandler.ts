@@ -1,30 +1,36 @@
 import { Alert } from "react-native";
 
 export interface LoginError {
-  code?: string;
+  non_field_errors?: string[];
   detail?: string;
   message?: string;
-  field_errors?: Record<string, string[]>;
 }
 
 export default class LoginErrorHandler {
   private router: any;
+  private email: string
 
-  constructor(router: any) {
+  constructor(router: any, email: string) {
     this.router = router;
+    this.email = email;
   }
 
   handle(error: any): void {
     const errorData: LoginError = error.response?.data || {};
     const status = error.response?.status;
 
+    // Get the first non_field_error message
+    const errorMessage = this.getErrorMessage(errorData);
+
     // Check for specific backend error messages from your Django serializer
-    if (this.isEmailVerificationError(errorData)) {
+    if (errorMessage === 'Email not verified') {
       this.showEmailVerificationDialog();
-    } else if (this.isAccountDisabledError(errorData)) {
+    } else if (errorMessage === 'User account is disabled') {
       this.showAccountDisabledDialog();
-    } else if (this.isCredentialsError(errorData)) {
+    } else if (errorMessage === 'Invalid credentials') {
       this.showCredentialsDialog();
+    } else if (errorMessage === 'Must include email and password') {
+      this.showMissingFieldsDialog();
     } else if (this.isRateLimitError(errorData, status)) {
       this.showRateLimitDialog();
     } else {
@@ -32,24 +38,19 @@ export default class LoginErrorHandler {
     }
   }
 
-  private isEmailVerificationError(errorData: LoginError): boolean {
-    const detail = errorData.detail || errorData.message || '';
-    return detail === 'Email not verified';
-  }
-
-  private isAccountDisabledError(errorData: LoginError): boolean {
-    const detail = errorData.detail || errorData.message || '';
-    return detail === 'User account is disabled';
+  private getErrorMessage(errorData: LoginError): string {
+    // Check non_field_errors first (Django DRF format)
+    if (errorData.non_field_errors && errorData.non_field_errors.length > 0) {
+      return errorData.non_field_errors[0];
+    }
+    
+    // Fallback to detail or message
+    return errorData.detail || errorData.message || '';
   }
 
   private isRateLimitError(errorData: LoginError, status?: number): boolean {
     // Keep status code check for rate limiting as it's typically handled at server/nginx level
     return status === 429;
-  }
-
-  private isCredentialsError(errorData: LoginError): boolean {
-    const detail = errorData.detail || errorData.message || '';
-    return detail === 'Invalid credentials';
   }
 
   private showEmailVerificationDialog(): void {
@@ -60,7 +61,7 @@ export default class LoginErrorHandler {
         { text: "Cancel", style: "cancel" },
         { 
           text: "Verify Now", 
-          onPress: () => this.router.push("/auth/email-verification") 
+          onPress: () => this.router.push(`/auth/email-verification?email=${encodeURIComponent(this.email)}`)
         }
       ]
     );
@@ -102,8 +103,16 @@ export default class LoginErrorHandler {
     );
   }
 
+  private showMissingFieldsDialog(): void {
+    Alert.alert(
+      "Missing Information",
+      "Please enter both email and password.",
+      [{ text: "OK" }]
+    );
+  }
+
   private showGenericError(errorData: LoginError): void {
-    const message = errorData.detail || errorData.message || "Login failed. Please try again.";
+    const message = this.getErrorMessage(errorData) || "Login failed. Please try again.";
     Alert.alert("Login Failed", message);
   }
 }
