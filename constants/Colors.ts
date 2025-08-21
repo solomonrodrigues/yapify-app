@@ -17,6 +17,7 @@ export const Colors = {
     background: '#fff',          // page background
     cardBackground: '#f8f9fa',   // activity cards or sections
     cardBorder: '#fff',
+    inputBorder: '#ccc',
     avatarBorder: 'transparent',
     divider: '#f8f8f8ff',
     tint: tintColorLight,        // active tint
@@ -41,6 +42,7 @@ export const Colors = {
     background: '#151718',
     cardBackground: '#1e1f1f',    // activity cards or sections
     cardBorder: '#fff',
+    inputBorder: '#ccc',
     avatarBorder: '#2d2d2dff',
     divider: '#1d1d1dff',
     tint: tintColorDark,

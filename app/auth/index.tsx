@@ -259,21 +259,21 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     input: {
       color: theme.text,
       borderWidth: 1,
-      borderColor: "#ccc",
+      borderColor: theme.inputBorder,
       borderRadius: 8,
       padding: 12,
       marginBottom: 12,
       fontSize: 16,
     },
     passwordInput: {
+      color: theme.text,
       borderWidth: 1,
-      borderColor: "#ccc",
+      borderColor: theme.inputBorder,
       borderRadius: 8,
       padding: 12,
       paddingRight: 40, // extra space for icon
       marginBottom: 12,
       fontSize: 16,
-      color: "#ccc",
     },
     inputContainer: {
       position: "relative",
