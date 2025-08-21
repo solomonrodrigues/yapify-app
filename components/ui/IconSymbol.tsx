@@ -35,6 +35,7 @@ const MAPPING = {
   'person': { name: 'person' },
   'checkmark': { name: 'checkmark' },
   'quote.bubble.fill': { name: 'comment-dots' },
+  'envelope.badge': { name: 'envelope' },
   // Eye icons (for password peek)
   'eye': { name: 'eye' },
   'eye.slash': { name: 'eye-slash' },

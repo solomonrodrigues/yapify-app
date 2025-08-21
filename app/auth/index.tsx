@@ -117,8 +117,7 @@ export default function AuthScreen() {
         password,
         password_confirm: passwordConfirm,
       });
-      Alert.alert("Success", "Account created! Please log in.");
-      setIsLogin(true);
+      router.push(`/auth/email-verification?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
       Alert.alert("Signup Failed", err.response?.data?.detail || err.message);
     }
