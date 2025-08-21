@@ -4,7 +4,8 @@ import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
-import { Stack, useRouter } from "expo-router";
+import { useThemedStyles } from "@/hooks/useThemedStyles";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -35,6 +36,8 @@ export default function AuthScreen() {
   const [displayName, setDisplayName] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+
+  const styles = useThemedStyles(getStyles);
 
   // Validation functions
   const validateUsername = (text: string): boolean => {
@@ -72,7 +75,7 @@ export default function AuthScreen() {
 
     try {
       await login(email, password);
-      router.replace("/(drawer)/(tabs)");
+      router.replace("/(app)/(tabs)");
     } catch (err: any) {
       Alert.alert("Login Failed", err.response?.data?.detail || err.message);
     }
@@ -235,66 +238,69 @@ export default function AuthScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: "center", // center by default
-    padding: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
-    alignSelf: "flex-start",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    fontSize: 16,
-    color: "#ccc",
-  },
-  passwordInput: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    paddingRight: 40, // extra space for icon
-    marginBottom: 12,
-    fontSize: 16,
-    color: "#ccc",
-  },
-  inputContainer: {
-    position: "relative",
-    justifyContent: "center",
-  },
-  iconWrapper: {
-    position: "absolute",
-    right: 12,
-    top: "38%",
-    transform: [{ translateY: -10 }],
-  },
-  button: {
-    backgroundColor: Colors.dark.primary,
-    paddingVertical: 14,
-    borderRadius: 8,
-    marginTop: 4,
-  },
-  buttonText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  toggleText: {
-    textAlign: "center",
-    color: Colors.dark.primary,
-    marginTop: 16,
-  },
-});
+const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: "center", // center by default
+      padding: 20,
+    },
+    title: {
+      color: theme.text,
+      fontSize: 28,
+      fontWeight: "bold",
+      marginBottom: 20,
+      textAlign: "center",
+      alignSelf: "flex-start",
+    },
+    input: {
+      color: theme.text,
+      borderWidth: 1,
+      borderColor: "#ccc",
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 12,
+      fontSize: 16,
+    },
+    passwordInput: {
+      borderWidth: 1,
+      borderColor: "#ccc",
+      borderRadius: 8,
+      padding: 12,
+      paddingRight: 40, // extra space for icon
+      marginBottom: 12,
+      fontSize: 16,
+      color: "#ccc",
+    },
+    inputContainer: {
+      position: "relative",
+      justifyContent: "center",
+    },
+    iconWrapper: {
+      position: "absolute",
+      right: 12,
+      top: "38%",
+      transform: [{ translateY: -10 }],
+    },
+    button: {
+      backgroundColor: theme.pastels.purple,
+      paddingVertical: 14,
+      borderRadius: 8,
+      marginTop: 4,
+    },
+    buttonText: {
+      color: theme.buttonText,
+      textAlign: "center",
+      fontWeight: "bold",
+      fontSize: 16,
+    },
+    toggleText: {
+      textAlign: "center",
+      color: theme.pastels.purple,
+      marginTop: 16,
+    },
+  }
+);
