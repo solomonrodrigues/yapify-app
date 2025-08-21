@@ -5,6 +5,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
+import LoginErrorHandler from "@/utils/LoginErrorHandler";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -77,7 +78,8 @@ export default function AuthScreen() {
       await login(email, password);
       router.replace("/(app)/(tabs)");
     } catch (err: any) {
-      Alert.alert("Login Failed", err.response?.data?.detail || err.message);
+      const errorHandler = new LoginErrorHandler(router);
+      errorHandler.handle(err);
     }
   }
 
