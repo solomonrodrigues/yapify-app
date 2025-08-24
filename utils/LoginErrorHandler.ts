@@ -1,3 +1,4 @@
+import { resendVerificationCode } from "@/api/auth";
 import { Alert } from "react-native";
 
 export interface LoginError {
@@ -61,7 +62,10 @@ export default class LoginErrorHandler {
         { text: "Cancel", style: "cancel" },
         { 
           text: "Verify Now", 
-          onPress: () => this.router.push(`/auth/email-verification?email=${encodeURIComponent(this.email)}`)
+          onPress: async () => {
+            await resendVerificationCode(this.email);
+            this.router.push(`/auth/email-verification?email=${encodeURIComponent(this.email)}`)
+          }
         }
       ]
     );
