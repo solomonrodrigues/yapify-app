@@ -2,7 +2,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { getAccessToken, getRefreshToken, setToken, clearTokens } from '@/utils/storage';
 
-const API_BASE_URL = 'https://yapify-production.up.railway.app/api';
+const API_BASE_URL = 'https://yapify.net/api';
 
 // Default logout handler with warning
 let onLogoutHandler: () => void = () => {

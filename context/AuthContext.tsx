@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function logout() {
     await clearTokens();
     setIsLoggedIn(false);
-    setAuthKey((k) => k + 1); // 🔄 forces remount of children
+    setAuthKey((k) => k + 1); // forces remount of children
   }
 
   useEffect(() => {
