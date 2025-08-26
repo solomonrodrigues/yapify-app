@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { debounce } from "lodash";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Search = () => {
   const [query, setQuery] = useState("");
@@ -67,9 +68,7 @@ const Search = () => {
   );
 
   return (
-    <View
-      style={styles.container}
-    >
+    <SafeAreaView style={styles.container}>
       {/* Search Bar */}
       <View style={styles.inputContainer}>
         <View
@@ -115,7 +114,7 @@ const Search = () => {
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

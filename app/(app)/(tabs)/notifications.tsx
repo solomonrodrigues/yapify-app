@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { getNotifications, markNotificationRead } from '@/api/notifications';
 import { Notification } from '@/types/api';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Theme types
 interface Theme {
@@ -146,7 +147,7 @@ const NotificationsView: React.FC = () => {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <FlatList
         data={notifications}
         keyExtractor={(item) => item.id.toString()}
@@ -165,7 +166,7 @@ const NotificationsView: React.FC = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

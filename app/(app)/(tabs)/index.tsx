@@ -73,7 +73,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
       backgroundColor: theme.cardBackground,
       borderColor: theme.border
     }]}>
-      <SafeAreaView>
+      <View>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerText}>
@@ -119,7 +119,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
           </Text>
         </TouchableOpacity>
       </View>
-      </SafeAreaView>
+      </View>
     </View>
   );
 };
@@ -152,7 +152,7 @@ const QuotesFeed: React.FC = () => {
 
   // Render quotes feed
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <FlatList
         data={quotes}
         keyExtractor={(item: Quote) => item.id.toString()}
@@ -169,7 +169,7 @@ const QuotesFeed: React.FC = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.feedContainer}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
