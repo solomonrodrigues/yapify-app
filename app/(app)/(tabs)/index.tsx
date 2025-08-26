@@ -179,6 +179,7 @@ const styles = StyleSheet.create({
   },
   feedContainer: {
     padding: 16,
+    paddingBottom: 48,
   },
   centerContainer: {
     flex: 1,
