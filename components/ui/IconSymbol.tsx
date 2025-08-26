@@ -37,6 +37,8 @@ const MAPPING = {
   'quote.bubble.fill': { name: 'comment-dots' },
   'envelope.badge': { name: 'envelope' },
   'line.horizontal.3': { name: 'bars' },
+  'heart': { name: 'heart' },
+  'heart.fill': { name: 'heart' },
   // Eye icons (for password peek)
   'eye': { name: 'eye' },
   'eye.slash': { name: 'eye-slash' },

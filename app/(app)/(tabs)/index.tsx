@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Quote } from '@/types/api';
 import { useQuotes } from '@/context/QuotesContext';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 
 // Theme types
 interface Theme {
@@ -99,15 +100,19 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
           style={styles.actionButton}
           onPress={() => onLike(id)}
         >
+          <IconSymbol 
+            name={is_liked ? 'heart.fill' : 'heart'}
+            color={is_liked ? theme.likeButton : theme.secondaryText}
+            size={16}
+            style={{ marginRight: 6 }}
+          />
           <Text style={[
             styles.actionText,
             {
               color: is_liked ? theme.likeButton : theme.secondaryText,
               fontWeight: is_liked ? '600' : '400'
             }
-          ]}>
-            ♥ {like_count}
-          </Text>
+          ]}>{like_count}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

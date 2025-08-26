@@ -50,20 +50,32 @@ export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const likeQuoteById = async (id: number) => {
     setQuotes(prev =>
-      prev.map(q =>
-        q.id === id
-          ? {
-              ...q,
-              is_liked: q.is_liked === 'true' ? 'false' : 'true',
-              like_count: (Number(q.like_count) + (q.is_liked === 'true' ? -1 : 1)).toString()
-            }
-          : q
-      )
+      prev.map(q => {
+        if (q.id !== id) return q;
+
+        const wasLiked = q.is_liked === 'true';
+        const newLiked = !wasLiked;
+
+        return {
+          ...q,
+          is_liked: newLiked ? 'true' : 'false',
+          like_count: (Number(q.like_count) + (newLiked ? 1 : -1)).toString(),
+        };
+      })
     );
+
     try {
-      await likeQuote(id);
+      await likeQuote(id); // should toggle user’s like in DB
     } catch (e) {
       console.error(e);
+      // rollback on failure
+      setQuotes(prev =>
+        prev.map(q =>
+          q.id === id
+            ? { ...q, is_liked: q.is_liked === 'true' ? 'false' : 'true' }
+            : q
+        )
+      );
     }
   };
 
