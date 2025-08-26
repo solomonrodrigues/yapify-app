@@ -119,8 +119,14 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({ quote, theme, onLike, onWitness }
           style={styles.actionButton}
           onPress={() => onWitness(id)}
         >
+          <IconSymbol
+            name="eye"
+            color={theme.witnessButton}
+            size={16}
+            style={{ marginRight: 6 }}
+          />
           <Text style={[styles.actionText, { color: theme.witnessButton }]}>
-            👁 {witness_count} witnesses
+            {witness_count} witnesses
           </Text>
         </TouchableOpacity>
       </View>
