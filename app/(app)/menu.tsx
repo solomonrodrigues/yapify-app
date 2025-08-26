@@ -32,24 +32,20 @@ export default function MenuScreen() {
 
   const menuItems: MenuItem[] = [
     {
-      title: "Profile",
-      onPress: () => router.push("/profile"),
-    },
-    {
       title: "Account Settings",
-      onPress: () => router.push("/settings/account"), // placeholder route
+      onPress: () => router.push("/profile"), // placeholder route
     },
     {
       title: "Notifications",
-      onPress: () => router.push("/settings/notifications"), // placeholder route
+      onPress: () => router.push("/profile"), // placeholder route
     },
     {
       title: "Privacy & Security",
-      onPress: () => router.push("/settings/privacy"), // placeholder route
+      onPress: () => router.push("/profile"), // placeholder route
     },
     {
       title: "Help & Support",
-      onPress: () => router.push("/settings/help"), // placeholder route
+      onPress: () => router.push("/profile"), // placeholder route
     },
     {
       title: "Log out",
