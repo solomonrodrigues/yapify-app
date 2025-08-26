@@ -26,6 +26,8 @@ export const Colors = {
     tabIconSelected: tintColorLight,
     primary: primaryColor,       // primary action color
     error: error,
+    destructive: '#D92D20',            // strong red for text/icons
+    destructiveBackground: '#FEE4E2',  // soft red-tint background
     buttonText: '#fff',
     buttonDisabled: '#666',
     pastels: {
@@ -51,6 +53,8 @@ export const Colors = {
     tabIconSelected: tintColorDark,
     primary: primaryColor,
     error: error,
+    destructive: '#F97066',            // brighter red for dark theme
+    destructiveBackground: '#3B1210',  // deep muted red background
     buttonText: '#fff',
     buttonDisabled: '#666',
     pastels: {

@@ -1,6 +1,6 @@
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 import React, { useState } from 'react';
-import { Platform, useColorScheme } from 'react-native';
+import { Platform, Pressable, useColorScheme } from 'react-native';
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
@@ -76,7 +76,7 @@ function TabContent() {
           }}
         />
         <Tabs.Screen
-          name="profile/index"
+          name="profile"
           options={{
             title: 'Profile',
             tabBarIcon: ({ focused }) => (
@@ -89,6 +89,18 @@ function TabContent() {
                   borderColor: focused ? theme.tabIconSelected : theme.avatarBorder,
                 }}
               />
+            ),
+            headerShown: true,
+            headerTitle: '',
+            headerRight: () => (
+              <Pressable onPress={() => router.push('/menu')}>
+                <IconSymbol
+                  name="line.horizontal.3"
+                  size={24}
+                  color={theme.text}
+                  style={{ marginRight: 12 }}
+                />
+              </Pressable>
             ),
           }}
         />
