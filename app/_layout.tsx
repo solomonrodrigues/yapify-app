@@ -33,9 +33,9 @@ function RootLayoutNav() {
 
   return (
     <Stack>
-      <Stack.Screen name="(app)/(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="(app)/menu" options={{ headerShown: true, headerTitle: 'Account settings', headerBackTitle: 'Back' }} />
-      <Stack.Screen name="(app)/user/[userID]" options={{ headerShown: true, headerTitle: '', headerBackTitle: 'Back' }} />
+      {isLoggedIn && (
+        <Stack.Screen name="(app)" options={{ headerShown: false }} />
+      )}
       <Stack.Screen name="auth/index" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>
