@@ -56,6 +56,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/resend-verification/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["auth_resend_verification_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/verify-email/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["auth_verify_email_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/friends/": {
         parameters: {
             query?: never;
@@ -451,10 +483,10 @@ export interface components {
             readonly created_at?: string;
             /** Format: date-time */
             readonly updated_at?: string;
-            readonly witness_count?: string;
+            readonly witness_count?: number;
             readonly witnesses?: components["schemas"]["QuoteWitness"][];
-            readonly like_count?: string;
-            readonly is_liked?: string;
+            readonly like_count?: number;
+            readonly is_liked?: boolean;
         };
         /** @description Serializer for user profile */
         PatchedUser: {
@@ -500,11 +532,13 @@ export interface components {
             readonly profile_color: string;
             /** Format: date-time */
             readonly date_joined: string;
-            readonly total_quotes_posted: string;
-            readonly total_quotes_received: string;
+            /** @description Total quotes this user has posted */
+            readonly total_quotes_posted: number;
+            /** @description Total quotes about this user */
+            readonly total_quotes_received: number;
             readonly recent_quotes_posted: components["schemas"]["Quote"][];
             readonly friendship: components["schemas"]["Friendship"] | null;
-            readonly quotes_i_made_about_user: string;
+            readonly quotes_i_made_about_user: components["schemas"]["Quote"][];
         };
         /** @description Serializer for quotes */
         Quote: {
@@ -518,10 +552,10 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
-            readonly witness_count: string;
+            readonly witness_count: number;
             readonly witnesses: components["schemas"]["QuoteWitness"][];
-            readonly like_count: string;
-            readonly is_liked: string;
+            readonly like_count: number;
+            readonly is_liked: boolean;
         };
         /**
          * @description * `mutuals` - Mutual Friends Only
@@ -662,6 +696,42 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["UserRegistration"];
                 };
+            };
+        };
+    };
+    auth_resend_verification_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    auth_verify_email_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
