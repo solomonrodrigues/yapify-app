@@ -9,10 +9,7 @@ export default function AppLayout() {
   return (
     <Stack
       screenOptions={{
-        headerTintColor: theme.text, // back arrow & title color
-        headerStyle: { backgroundColor: theme.background },
-        headerTitleStyle: { color: theme.text },
-        headerBackTitle: "Back", // iOS back label
+        headerShown: false
       }}
     >
         <Stack.Screen name="menu" options={{ headerShown: true, headerTitle: 'Account settings', headerBackTitle: 'Back' }} />
