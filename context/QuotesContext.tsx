@@ -53,13 +53,13 @@ export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       prev.map(q => {
         if (q.id !== id) return q;
 
-        const wasLiked = q.is_liked === 'true';
+        const wasLiked = q.is_liked;
         const newLiked = !wasLiked;
 
         return {
           ...q,
-          is_liked: newLiked ? 'true' : 'false',
-          like_count: (Number(q.like_count) + (newLiked ? 1 : -1)).toString(),
+          is_liked: newLiked,
+          like_count: q.like_count + (newLiked ? 1 : -1),
         };
       })
     );
@@ -72,7 +72,7 @@ export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setQuotes(prev =>
         prev.map(q =>
           q.id === id
-            ? { ...q, is_liked: q.is_liked === 'true' ? 'false' : 'true' }
+            ? { ...q, is_liked: !q.is_liked, like_count: q.like_count + (q.is_liked ? -1 : 1) }
             : q
         )
       );
