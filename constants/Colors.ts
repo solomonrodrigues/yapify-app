@@ -35,6 +35,8 @@ export const Colors = {
     inputBackground: '#f1f1f1',
     inputShadowColor: '#aaa',
 
+    modalBackground: '#fff',
+
     // Pastel accents
     pastels: {
       pink: '#ffb6c1',
@@ -73,6 +75,8 @@ export const Colors = {
     inputText: '#fff',
     inputBackground: '#1e1e1e',
     inputShadowColor: '#000',
+
+    modalBackground: '#0d1114',
 
     // Pastel accents
     pastels: {

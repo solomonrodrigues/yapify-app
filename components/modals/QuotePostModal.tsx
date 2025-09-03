@@ -207,7 +207,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <KeyboardAvoidingView
-        style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#000' : '#fff' }]}
+        style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
         {/* Header */}
@@ -314,7 +314,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView
-        style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#000' : '#fff' }]}
+        style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* Header */}
@@ -393,6 +393,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.modalBackground,
   },
   header: {
     flexDirection: 'row',
