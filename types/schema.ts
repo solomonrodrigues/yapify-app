@@ -504,8 +504,9 @@ export interface components {
             readonly like_count?: number;
             readonly is_liked?: boolean;
             readonly has_guessed?: boolean;
-            readonly guess?: string;
+            readonly guess?: components["schemas"]["QuoteGuess"] | null;
             readonly remaining_skips?: number;
+            readonly guess_options?: components["schemas"]["MinimalUser"][];
         };
         /** @description Serializer for user profile */
         PatchedUser: {
@@ -576,8 +577,9 @@ export interface components {
             readonly like_count: number;
             readonly is_liked: boolean;
             readonly has_guessed: boolean;
-            readonly guess: string;
+            readonly guess: components["schemas"]["QuoteGuess"] | null;
             readonly remaining_skips: number;
+            readonly guess_options: components["schemas"]["MinimalUser"][];
         };
         QuoteGuess: {
             readonly id: number;
