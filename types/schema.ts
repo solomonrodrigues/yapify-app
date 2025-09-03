@@ -173,6 +173,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/guesses/create/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["guesses_create_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notifications/": {
         parameters: {
             query?: never;
@@ -487,6 +503,9 @@ export interface components {
             readonly witnesses?: components["schemas"]["QuoteWitness"][];
             readonly like_count?: number;
             readonly is_liked?: boolean;
+            readonly has_guessed?: boolean;
+            readonly guess?: string;
+            readonly remaining_skips?: number;
         };
         /** @description Serializer for user profile */
         PatchedUser: {
@@ -556,6 +575,20 @@ export interface components {
             readonly witnesses: components["schemas"]["QuoteWitness"][];
             readonly like_count: number;
             readonly is_liked: boolean;
+            readonly has_guessed: boolean;
+            readonly guess: string;
+            readonly remaining_skips: number;
+        };
+        QuoteGuess: {
+            readonly id: number;
+            readonly user: number;
+            quote: number;
+            /** @description The friend they guessed. Null if skipped. */
+            guessed_user?: number | null;
+            readonly correct: boolean | null;
+            skipped?: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
         };
         /**
          * @description * `mutuals` - Mutual Friends Only
@@ -846,6 +879,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FriendRequest"];
+                };
+            };
+        };
+    };
+    guesses_create_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteGuess"];
+                "application/x-www-form-urlencoded": components["schemas"]["QuoteGuess"];
+                "multipart/form-data": components["schemas"]["QuoteGuess"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuoteGuess"];
                 };
             };
         };
