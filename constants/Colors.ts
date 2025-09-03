@@ -31,6 +31,10 @@ export const Colors = {
     buttonText: '#fff',
     buttonDisabled: '#666',
 
+    inputText: '#000',
+    inputBackground: '#f1f1f1',
+    inputShadowColor: '#aaa',
+
     // Pastel accents
     pastels: {
       pink: '#ffb6c1',
@@ -65,6 +69,10 @@ export const Colors = {
     destructiveBackground: '#3B1210',  // deep muted red background
     buttonText: '#fff',
     buttonDisabled: '#666',
+
+    inputText: '#fff',
+    inputBackground: '#1e1e1e',
+    inputShadowColor: '#000',
 
     // Pastel accents
     pastels: {
