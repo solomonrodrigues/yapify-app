@@ -5,6 +5,7 @@ import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { useUser } from '@/context/UserContext';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { ThemedView } from '@/components/ThemedView';
 
 export default function ProfileScreen() {
   const { user } = useUser()
@@ -13,7 +14,7 @@ export default function ProfileScreen() {
   if (!user) return null;
 
   return (
-    <View style={{ flex: 1 }}>
+    <ThemedView>
       <SafeAreaView style={{ padding: 16 }}>
 
         {/* Header */}
@@ -70,7 +71,7 @@ export default function ProfileScreen() {
         </View>
 
       </SafeAreaView>
-    </View>
+    </ThemedView>
   );
 }
 
