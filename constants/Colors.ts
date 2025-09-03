@@ -30,6 +30,8 @@ export const Colors = {
     destructiveBackground: '#FEE4E2',  // soft red-tint background
     buttonText: '#fff',
     buttonDisabled: '#666',
+
+    // Pastel accents
     pastels: {
       pink: '#ffb6c1',
       blue: '#a3d8ff',
@@ -37,6 +39,12 @@ export const Colors = {
       yellow: '#fff1a8',
       purple: '#d1b6ff',
     },
+
+    // Feed-specific accents
+    accent: '#3B82F6',        // pastel blue highlight
+    likeButton: '#EF4444',    // soft red
+    witnessButton: '#10B981', // soft green
+    border: '#f5f5f5ff',
   },
   dark: {
     text: '#ECEDEE',
@@ -57,6 +65,8 @@ export const Colors = {
     destructiveBackground: '#3B1210',  // deep muted red background
     buttonText: '#fff',
     buttonDisabled: '#666',
+
+    // Pastel accents
     pastels: {
       pink: '#ffb6c1',
       blue: '#a3d8ff',
@@ -64,6 +74,12 @@ export const Colors = {
       yellow: '#fff1a8',
       purple: '#d1b6ff',
     },
+
+    // Feed-specific accents
+    accent: '#60A5FA',        // lighter pastel blue
+    likeButton: '#F87171',    // soft coral red
+    witnessButton: '#34D399', // soft teal green
+    border: '#272727ff',
   },
 };
 
