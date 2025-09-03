@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Quote } from '@/types/api';
-import { getQuotes, likeQuote, witnessQuote } from '@/api/quotes';
+import { getQuotes, guessQuote, likeQuote, witnessQuote } from '@/api/quotes';
 import { getErrorMessage } from '@/utils/error';
 
 interface QuotesContextValue {
@@ -13,6 +13,7 @@ interface QuotesContextValue {
   refreshQuotes: () => Promise<void>;
   likeQuoteById: (id: number) => Promise<void>;
   witnessQuoteById: (id: number) => Promise<void>;
+  guessQuoteById: (id: number, guessedUserId?: number, skipped?: boolean) => Promise<void>;
 }
 
 const QuotesContext = createContext<QuotesContextValue | undefined>(undefined);
@@ -88,6 +89,49 @@ export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+  const guessQuoteById = async (id: number, guessedUserId?: number, skipped = false) => {
+    // Optimistic UI: immediately mark as guessed
+    setQuotes(prev =>
+      prev.map(q =>
+        q.id !== id
+          ? q
+          : {
+              ...q,
+              has_guessed: true,
+              guess: {
+                id: -1, // temporary placeholder
+                user: 0,
+                quote: q.id,
+                guessed_user: guessedUserId ?? null,
+                correct: null,
+                skipped: skipped,
+                created_at: new Date().toISOString(),
+              },
+              remaining_skips: q.remaining_skips - (skipped ? 1 : 0),
+            }
+      )
+    );
+
+    try {
+      const result = await guessQuote(id, guessedUserId, skipped);
+      setQuotes(prev =>
+        prev.map(q => (q.id === id ? { ...q, guess: result, has_guessed: true } : q))
+      );
+    } catch (e: any) {
+      console.error("Failed to submit guess", e);
+      setQuotes(prev =>
+        prev.map(q =>
+          q.id === id
+            ? { ...q, has_guessed: false, guess: null, remaining_skips: q.remaining_skips + (skipped ? 1 : 0) }
+            : q
+        )
+      );
+      // optionally show user an alert if ValidationError (skip limit exceeded)
+      if (e.response?.data?.detail) alert(e.response.data.detail);
+    }
+  };
+
+
   return (
     <QuotesContext.Provider value={{ 
       quotes, 
@@ -98,7 +142,8 @@ export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       loadQuotes,
       refreshQuotes: () => loadQuotes(true), 
       likeQuoteById, 
-      witnessQuoteById 
+      witnessQuoteById,
+      guessQuoteById
     }}>
       {children}
     </QuotesContext.Provider>

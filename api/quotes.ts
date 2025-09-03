@@ -30,3 +30,19 @@ export const likeQuote = async (quoteId: number) => {
   const res = await api.post(`/quotes/${quoteId}/like/`);
   return res.data;
 };
+
+export const guessQuote = async (
+  quoteId: number,
+  guessedUserId?: number,
+  skipped = false
+) => {
+  const res = await api.post<{ id: number; user: number; quote: number; guessed_user?: number | null; correct: boolean | null; skipped: boolean; created_at: string }>(
+    `/guesses/create/`,
+    {
+      quote: quoteId,
+      guessed_user: guessedUserId ?? null,
+      skipped,
+    }
+  );
+  return res.data;
+};
