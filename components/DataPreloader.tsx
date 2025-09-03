@@ -9,8 +9,10 @@ import { ThemedText } from './ThemedText';
 const loadingMessages = [
   "Slaying goblins...",
   "Untangling Christmas lights...",
-  "Launching rocket...",
-  "Collecting garbage..."
+  "Launching rockets...",
+  "Collecting garbage...",
+  "Feeding the dogs...",
+  "Picking berries..."
 ];
 
 export function DataPreloader({ children }: { children: React.ReactNode }) {
