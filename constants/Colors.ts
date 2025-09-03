@@ -41,7 +41,7 @@ export const Colors = {
   dark: {
     text: '#ECEDEE',
     secondaryText: '#aaa',        // lighter text in dark mode
-    background: '#151718',
+    background: '#0d1114',
     cardBackground: '#1e1f1f',    // activity cards or sections
     cardBorder: '#fff',
     inputBorder: '#ccc',
