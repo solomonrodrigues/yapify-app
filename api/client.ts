@@ -18,10 +18,16 @@ const api: AxiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+// a separate, interceptor-free client for auth endpoints
+const authClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: { 'Content-Type': 'application/json' },
+});
+
 export const refreshAccessToken = async (
   refresh: string
 ): Promise<{ access: string }> => {
-  const res = await api.post<{ access: string }>('/auth/refresh/', { refresh });
+  const res = await authClient.post<{ access: string }>('/auth/refresh/', { refresh });
   return res.data;
 };
 

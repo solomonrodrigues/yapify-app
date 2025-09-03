@@ -31,15 +31,22 @@ function RootLayoutNav() {
     }
   }, [isLoggedIn, isLoading, segments, router]);
 
-  return (
-    <Stack>
-      {isLoggedIn && (
+  if (isLoggedIn) {
+    return (
+      <Stack>
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
-      )}
-      <Stack.Screen name="auth/index" options={{ headerShown: false }} />
-      <Stack.Screen name="+not-found" />
-    </Stack>
-  );
+        <Stack.Screen name="auth/index" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+    );
+  } else {
+    return (
+      <Stack>
+        <Stack.Screen name="auth/index" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+    );
+  }
 }
 
 export default function RootLayout() {
