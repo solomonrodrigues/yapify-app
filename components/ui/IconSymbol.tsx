@@ -39,6 +39,7 @@ const MAPPING = {
   'line.horizontal.3': { name: 'bars' },
   'heart': { name: 'heart' },
   'heart.fill': { name: 'heart' },
+  'questionmark.circle.fill': { name: 'circle-question' },
   // Eye icons (for password peek)
   'eye': { name: 'eye' },
   'eye.slash': { name: 'eye-slash' },
