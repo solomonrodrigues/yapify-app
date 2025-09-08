@@ -19,6 +19,7 @@ import {
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  useColorScheme,
   View
 } from "react-native";
 
@@ -39,6 +40,7 @@ export default function AuthScreen() {
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
   const styles = useThemedStyles(getStyles);
+  const colorScheme = useColorScheme() ?? 'dark';
 
   // Validation functions
   const validateUsername = (text: string): boolean => {
@@ -170,7 +172,8 @@ export default function AuthScreen() {
             )}
 
             <TextInput
-              style={styles.input}
+              key={`login-email-${colorScheme}`}
+              style={[styles.input, { letterSpacing: 0 }]}
               placeholder="Email"
               placeholderTextColor="#999"
               autoCapitalize="none"

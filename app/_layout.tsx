@@ -36,6 +36,8 @@ function RootLayoutNav() {
       <Stack>
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
         <Stack.Screen name="auth/index" options={{ headerShown: false }} />
+        <Stack.Screen name="auth/email-verification" options={{ headerShown: true, headerTitle: '', headerBackTitle: 'Back' }} />
+        <Stack.Screen name="auth/reset-password" options={{ headerShown: true, headerTitle: '', headerBackTitle: 'Back' }} />
         <Stack.Screen name="+not-found" />
       </Stack>
     );
@@ -43,6 +45,8 @@ function RootLayoutNav() {
     return (
       <Stack>
         <Stack.Screen name="auth/index" options={{ headerShown: false }} />
+        <Stack.Screen name="auth/email-verification" options={{ headerShown: true, headerTitle: '', headerBackTitle: 'Back' }} />
+        <Stack.Screen name="auth/reset-password" options={{ headerShown: true, headerTitle: '', headerBackTitle: 'Back' }} />
         <Stack.Screen name="+not-found" />
       </Stack>
     );
