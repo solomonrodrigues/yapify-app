@@ -24,3 +24,7 @@ export const resendVerificationCode = async (email: string): Promise<SimpleDetai
   const res = await api.post<SimpleDetail>('/auth/resend-verification/', { email });
   return res.data;
 };
+
+export const sendPasswordReset = async (email: string): Promise<void> => {
+  console.log("ToDo: Implement sendPasswordReset API call");
+}

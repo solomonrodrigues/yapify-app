@@ -13,6 +13,7 @@ import { getNotifications, markNotificationRead } from '@/api/notifications';
 import { Notification } from '@/types/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
 
 // Theme types
 interface Theme {
@@ -119,21 +120,21 @@ const NotificationsView: React.FC = () => {
 
   if (loading) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
+      <ThemedView style={styles.centerContainer}>
         <ActivityIndicator size="large" color={theme.accent} />
-        <Text style={[styles.loadingText, { color: theme.secondaryText }]}>
+        <ThemedText style={styles.loadingText}>
           Loading notifications...
-        </Text>
-      </View>
+        </ThemedText>
+      </ThemedView>
     );
   }
 
   if (notifications.length === 0) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
-        <Text style={[styles.emptyText, { color: theme.secondaryText }]}>
+      <ThemedView style={styles.centerContainer}>
+        <ThemedText style={styles.emptyText}>
           No notifications
-        </Text>
+        </ThemedText>
         <TouchableOpacity
           style={[styles.retryButton, { borderColor: theme.accent }]}
           onPress={() => {
@@ -143,7 +144,7 @@ const NotificationsView: React.FC = () => {
         >
           <Text style={[styles.retryText, { color: theme.accent }]}>Retry</Text>
         </TouchableOpacity>
-      </View>
+      </ThemedView>
     );
   }
 

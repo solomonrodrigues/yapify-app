@@ -40,6 +40,7 @@ const MAPPING = {
   'heart': { name: 'heart' },
   'heart.fill': { name: 'heart' },
   'questionmark.circle.fill': { name: 'circle-question' },
+  'lock.open': { name: 'lock-open' },
   // Eye icons (for password peek)
   'eye': { name: 'eye' },
   'eye.slash': { name: 'eye-slash' },
