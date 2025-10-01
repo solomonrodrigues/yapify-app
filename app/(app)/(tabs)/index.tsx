@@ -16,6 +16,7 @@ import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import GuessGameModal from '@/components/modals/GuessGameModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useUser } from '@/context/UserContext';
 
 interface FeedQuoteProps {
   quote: Quote;
@@ -36,11 +37,13 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
 }) => {
   const [guessMade, setGuessMade] = useState(!!quote.has_guessed);
   const [showGuessModal, setShowGuessModal] = useState(false);
+  const { user } = useUser();
 
   // Random but deterministic pastel for the background (based on ID)
   const pastelKeys = Object.keys(theme.pastels) as (keyof typeof theme.pastels)[];
   const index = Number(quote.id) % pastelKeys.length;
   const randomPastel = theme.pastels[pastelKeys[index]];
+  const guessable = (!guessMade && quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
 
   const handleGuess = (userId?: number, skipped?: boolean) => {
     onGuess(quote.id, userId, skipped);
@@ -53,39 +56,6 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
     }
   };
 
-  // If not guessed yet, show as a big mysterious button
-  if (!guessMade && quote.guess_options?.length > 1) {
-    return (
-      <>
-        <TouchableOpacity 
-          style={[styles.mysteryCard, { backgroundColor: randomPastel }]}
-          onPress={openGuessModal}
-          activeOpacity={0.85}
-        >
-          <View style={styles.mysteryContent}>
-            <IconSymbol 
-              name="questionmark.circle.fill" 
-              size={64} 
-              color="rgba(0,0,0,0.2)" 
-              style={styles.mysteryIcon}
-            />
-            <Text style={styles.mysteryQuote} numberOfLines={4}>
-              &ldquo;{quote.text}&rdquo;
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        <GuessGameModal
-          quote={quote}
-          visible={showGuessModal}
-          onClose={() => setShowGuessModal(false)}
-          onGuess={handleGuess}
-          theme={theme}
-        />
-      </>
-    );
-  }
-
   // If guessed or no options, show normal card
   return (
     <View style={[styles.quoteCard, { backgroundColor: theme.cardBackground }]}>
@@ -95,7 +65,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
           <View style={styles.headerText}>
             <Text style={styles.authorName}>{quote.author.display_name}</Text>
             <Text style={styles.quotedText}>
-              quoted {quote.quoted_user?.display_name ?? quote.quoted_name}
+              quoted {guessable ? '???' : quote.quoted_user?.display_name ?? quote.quoted_name}
             </Text>
           </View>
         </View>
@@ -136,20 +106,41 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
               {quote.like_count}
             </Text>
           </TouchableOpacity>
+          
+          {guessable && (
+            <TouchableOpacity style={styles.actionButton} onPress={openGuessModal}>
+              <Text style={[styles.actionText, { color: randomPastel, paddingRight: 6 }]}>Guess</Text>
+              <IconSymbol
+                name="questionmark.circle.fill"
+                color={randomPastel}
+                size={16}
+              />
+            </TouchableOpacity>
+          )}
 
-          <TouchableOpacity style={styles.actionButton} onPress={() => onWitness(quote.id)}>
-            <IconSymbol
-              name="eye"
-              color={theme.witnessButton}
-              size={16}
-              style={{ marginRight: 6 }}
-            />
-            <Text style={[styles.actionText, { color: theme.witnessButton }]}>
-              {quote.witness_count} witnesses
-            </Text>
-          </TouchableOpacity>
+          {!guessable && (
+            <TouchableOpacity style={styles.actionButton} onPress={() => onWitness(quote.id)}>
+              <IconSymbol
+                name="eye"
+                color={theme.witnessButton}
+                size={16}
+                style={{ marginRight: 6 }}
+              />
+              <Text style={[styles.actionText, { color: theme.witnessButton }]}>
+                {quote.witness_count} witnesses
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
+
+      <GuessGameModal
+        quote={quote}
+        visible={showGuessModal}
+        onClose={() => setShowGuessModal(false)}
+        onGuess={handleGuess}
+        theme={theme}
+      />
     </View>
   );
 };
@@ -236,21 +227,18 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       shadowRadius: 8,
       elevation: 8,
       overflow: 'hidden',
+      backgroundColor: theme.cardBackground,
     },
     mysteryContent: {
       padding: 24,
       alignItems: 'center',
     },
-    mysteryIcon: {
-      marginBottom: 8,
-    },
     mysteryQuote: {
       fontSize: 16,
       fontStyle: 'italic',
-      color: 'rgba(0,0,0,0.7)',
+      color: theme.text,
       textAlign: 'center',
       lineHeight: 22,
-      marginBottom: 20,
     },
     // Regular card styles for guessed quotes
     quoteCard: {
