@@ -38,7 +38,6 @@ export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setError(null);
       setHasLoadedOnce(true);
     } catch (error) {
-      console.error('Failed to load quotes', error);
       setError(getErrorMessage(error));
     } finally {
       if (isRefresh) {

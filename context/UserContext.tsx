@@ -35,7 +35,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       const errorMessage = getErrorMessage(err);
       setError(errorMessage);
-      console.error('Failed to load user:', errorMessage);
     } finally {
       setLoading(false);
     }
