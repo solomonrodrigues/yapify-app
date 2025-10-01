@@ -17,6 +17,7 @@ import { useThemedStyles } from '@/hooks/useThemedStyles';
 import GuessGameModal from '@/components/modals/GuessGameModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUser } from '@/context/UserContext';
+import GuessButton from '@/components/GuessButton';
 
 interface FeedQuoteProps {
   quote: Quote;
@@ -108,14 +109,17 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
           </TouchableOpacity>
           
           {guessable && (
-            <TouchableOpacity style={styles.actionButton} onPress={openGuessModal}>
-              <Text style={[styles.actionText, { color: randomPastel, paddingRight: 6 }]}>Guess</Text>
-              <IconSymbol
-                name="questionmark.circle.fill"
-                color={randomPastel}
-                size={16}
-              />
-            </TouchableOpacity>
+            <GuessButton
+              color={randomPastel}
+              onPress={openGuessModal}
+              icon={
+                <IconSymbol
+                  name="questionmark.circle.fill"
+                  color={randomPastel}
+                  size={16}
+                />
+              }
+            />
           )}
 
           {!guessable && (
@@ -277,9 +281,8 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       marginBottom: 16,
     },
     quoteContent: {
-      fontSize: 16,
-      lineHeight: 24,
-      fontStyle: 'italic',
+      fontSize: 28,
+      fontWeight: '300',
       color: theme.text,
     },
     actionsBar: {
