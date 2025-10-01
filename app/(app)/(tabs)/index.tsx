@@ -5,8 +5,8 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  SafeAreaView,
   useColorScheme,
+  Platform,
 } from 'react-native';
 import { Quote } from '@/types/api';
 import { useQuotes } from '@/context/QuotesContext';
@@ -15,6 +15,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import GuessGameModal from '@/components/modals/GuessGameModal';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface FeedQuoteProps {
   quote: Quote;
@@ -159,6 +160,8 @@ const QuotesFeed: React.FC = () => {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
   const { quotes, refreshing, refreshQuotes, likeQuoteById, witnessQuoteById, guessQuoteById } = useQuotes();
+  const insets = useSafeAreaInsets();
+  const paddingTop = Platform.OS === 'ios' ? 0 : 16;  // extra padding for android
 
   if (!refreshing && quotes.length === 0) {
     return (
@@ -173,7 +176,15 @@ const QuotesFeed: React.FC = () => {
 
   return (
     <ThemedView>
-      <SafeAreaView style={styles.container}>
+      <View
+      style={{
+          flex: 1,
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        }}
+      >
         <FlatList
           data={quotes}
           keyExtractor={(item: Quote) => item.id.toString()}
@@ -191,8 +202,9 @@ const QuotesFeed: React.FC = () => {
           onRefresh={refreshQuotes}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.feedContainer}
+          style={{ paddingTop: paddingTop }}
         />
-      </SafeAreaView>
+      </View>
     </ThemedView>
   );
 };
