@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   useColorScheme,
   ActivityIndicator,
@@ -14,6 +13,7 @@ import { Notification } from '@/types/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
+import { LegendList } from '@legendapp/list';
 
 // Theme types
 interface Theme {
@@ -151,7 +151,7 @@ const NotificationsView: React.FC = () => {
   return (
     <ThemedView>
     <SafeAreaView style={styles.container}>
-      <FlatList
+      <LegendList
         data={notifications}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (

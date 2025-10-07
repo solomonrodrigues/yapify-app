@@ -6,7 +6,6 @@ import { User } from "@/types/api";
 import { useRouter } from "expo-router";
 import React, { useState, useRef } from "react";
 import {
-  FlatList,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -18,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { Colors } from "@/constants/Colors";
 import { ThemedView } from "@/components/ThemedView";
+import { LegendList } from "@legendapp/list";
 
 const Search = () => {
   const [query, setQuery] = useState("");
@@ -97,7 +97,7 @@ const Search = () => {
       {loading ? (
         <ThemedText style={styles.message}>Searching...</ThemedText>
       ) : (
-        <FlatList
+        <LegendList
           data={results}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}

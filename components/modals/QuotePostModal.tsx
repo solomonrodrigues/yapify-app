@@ -5,7 +5,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  FlatList,
   StyleSheet,
   useColorScheme,
   KeyboardAvoidingView,
@@ -23,6 +22,7 @@ import { User, Quote } from "@/types/api";
 import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { hexToRgba } from "@/utils/style";
+import { LegendList } from "@legendapp/list";
 
 interface QuotePostModalProps {
   visible: boolean;
@@ -187,7 +187,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
         <Text style={[styles.sectionTitle, { color: colorScheme === 'dark' ? '#666' : '#888' }]}>
           {title.toUpperCase()}
         </Text>
-        <FlatList
+        <LegendList
           data={data}
           keyExtractor={(item) => `${title}-${item.id}`}
           renderItem={renderUserItem}
@@ -252,7 +252,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
             <View>
                 {/* Search Results */}
                 {searchResults.length > 0 && (
-                <FlatList
+                <LegendList
                     data={searchResults}
                     keyExtractor={(item) => `search-${item.id}`}
                     renderItem={renderUserItem}

@@ -1,7 +1,7 @@
 // app/(app)/menu.tsx
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'expo-router';
-import { Alert, Pressable, View, FlatList } from 'react-native';
+import { Alert, Pressable, View, FlatList, TextStyle } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
@@ -129,7 +129,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     destructiveText: {
       color: theme.destructive,
-      fontWeight: "600",
+      fontWeight: "600" as TextStyle["fontWeight"],
     },
     separator: {
       height: 12,

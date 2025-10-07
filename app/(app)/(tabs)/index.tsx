@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   useColorScheme,
   Platform,
@@ -18,6 +17,7 @@ import GuessGameModal from '@/components/modals/GuessGameModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUser } from '@/context/UserContext';
 import GuessButton from '@/components/GuessButton';
+import { LegendList } from '@legendapp/list'
 
 interface FeedQuoteProps {
   quote: Quote;
@@ -180,7 +180,7 @@ const QuotesFeed: React.FC = () => {
           paddingRight: insets.right,
         }}
       >
-        <FlatList
+        <LegendList
           data={quotes}
           keyExtractor={(item: Quote) => item.id.toString()}
           renderItem={({ item }) => (
