@@ -11,8 +11,6 @@ import React, { useState } from "react";
 import {
   Alert,
   Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -22,6 +20,7 @@ import {
   useColorScheme,
   View
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller"
 
 export default function AuthScreen() {
   const { login } = useAuth();
@@ -131,9 +130,8 @@ export default function AuthScreen() {
     <ThemedView style={styles.container}>
       {/* KeyboardAvoidingView moves content up on keyboard open */}
       <KeyboardAvoidingView
+        behavior={"padding"}
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 100} // workable values from testing on-device - tweak if needed
       >
         {/* TouchableWithoutFeedback dismisses keyboard when tapping outside */}
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

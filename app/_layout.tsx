@@ -9,6 +9,7 @@ import { QuotesProvider } from '@/context/QuotesContext';
 import { useEffect } from 'react';
 import { useRouter, useSegments, Stack } from 'expo-router';
 import { UserProvider } from '@/context/UserContext';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 function RootLayoutNav() {
   const { isLoggedIn, isLoading } = useAuth();
@@ -82,8 +83,10 @@ function Providers({ theme }: { theme: any }) {
       <QuotesProvider>
         <ThemeProvider value={theme}>
           <SafeAreaProvider>
-            <RootLayoutNav />
-            <StatusBar style="auto" />
+            <KeyboardProvider>
+              <RootLayoutNav />
+              <StatusBar style="auto" />
+            </KeyboardProvider>
           </SafeAreaProvider>
         </ThemeProvider>
       </QuotesProvider>
