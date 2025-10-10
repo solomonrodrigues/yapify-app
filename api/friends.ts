@@ -33,7 +33,6 @@ export const getFriendRequests = async () => {
 
 export const sendFriendRequest = async (receiverId: number) => {
     const res = await api.post('/friends/send/', { receiver_id: receiverId });
-    console.log('Friend request sent:', res.data);
     return res.data;
 };
 
@@ -41,3 +40,13 @@ export const respondToFriendRequest = async (friendshipId: number, action: 'acce
     const res = await api.post(`/friends/respond/${friendshipId}/`, { action });
     return res.data;
 };
+
+export const cancelFriendRequest = async (receiverId: number) => {
+    // ToDo: Implement properly
+    return null;
+}
+
+export const unfriend = async (receiverId: number) => {
+    // ToDo: Implement properly
+    return null;
+}
