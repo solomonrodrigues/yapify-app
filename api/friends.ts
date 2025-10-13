@@ -37,12 +37,12 @@ export const sendFriendRequest = async (receiverId: number) => {
 };
 
 export const cancelFriendRequest = async (receiverId: number) => {
-    await api.post(`/friends/${receiverId}/cancel/`);
+    await api.delete(`/friends/${receiverId}/cancel/`);
     return;
 };
 
 export const unfriend = async (receiverId: number) => {
-    await api.post(`/friends/${receiverId}/unfriend/`);
+    await api.delete(`/friends/${receiverId}/unfriend/`);
     return;
 };
 
