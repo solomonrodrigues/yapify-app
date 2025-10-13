@@ -23,6 +23,9 @@ export type StatusEnum = components["schemas"]["StatusEnum"];
 export type TokenRefresh = components["schemas"]["TokenRefresh"];
 export type User = components["schemas"]["User"];
 export type UserRegistration = components["schemas"]["UserRegistration"];
+export type KindEnum = components["schemas"]["KindEnum"];
+export type RecentSearchCreate = components["schemas"]["RecentSearchCreate"];
+export type RecentSearchItem = components["schemas"]["RecentSearchItem"];
 
 // Response obj
 // type SuccessResponse =
