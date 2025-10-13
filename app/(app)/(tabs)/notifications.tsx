@@ -14,44 +14,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { LegendList } from '@legendapp/list';
-
-// Theme types
-interface Theme {
-  background: string;
-  cardBackground: string;
-  primaryText: string;
-  secondaryText: string;
-  accent: string;
-  border: string;
-  readBadge: string;
-}
-
-// Theme colors
-const themes: { light: Theme; dark: Theme } = {
-  light: {
-    background: '#FFFFFF',
-    cardBackground: '#F8F9FA',
-    primaryText: '#1A1A1A',
-    secondaryText: '#6B7280',
-    accent: '#3B82F6',
-    border: '#E5E7EB',
-    readBadge: '#D1D5DB',
-  },
-  dark: {
-    background: '#000000',
-    cardBackground: '#1F2937',
-    primaryText: '#FFFFFF',
-    secondaryText: '#9CA3AF',
-    accent: '#60A5FA',
-    border: '#374151',
-    readBadge: '#4B5563',
-  },
-};
+import { Colors } from '@/constants/Colors';
 
 // Individual Notification Component
 interface NotificationItemProps {
   notification: Notification;
-  theme: Theme;
+  theme: any;
   onPress: (id: number) => void;
 }
 
@@ -70,7 +38,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, theme
       ]}
       onPress={() => onPress(id)}
     >
-      <Text style={[styles.notificationText, { color: theme.primaryText }]}>
+      <Text style={[styles.notificationText, { color: theme.text }]}>
         {message}
       </Text>
       {!is_read && (
@@ -83,7 +51,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, theme
 // Main Notifications View
 const NotificationsView: React.FC = () => {
   const colorScheme = useColorScheme() ?? 'dark';
-  const theme: Theme = themes[colorScheme];
+  const theme = Colors[colorScheme];
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,7 +89,7 @@ const NotificationsView: React.FC = () => {
   if (loading) {
     return (
       <ThemedView style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={theme.accent} />
+        <ActivityIndicator size="large" />
         <ThemedText style={styles.loadingText}>
           Loading notifications...
         </ThemedText>
