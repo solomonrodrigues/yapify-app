@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import { getQuotes, guessQuote, likeQuote, witnessQuote } from '@/lib/api/quotes';
+import { getErrorMessage } from '@/lib/utils/error';
 import { Quote } from '@/types/api';
-import { getQuotes, guessQuote, likeQuote, witnessQuote } from '@/api/quotes';
-import { getErrorMessage } from '@/utils/error';
+import React, { createContext, useCallback, useContext, useState } from 'react';
 
 interface QuotesContextValue {
   quotes: Quote[];

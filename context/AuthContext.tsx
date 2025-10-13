@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { getAccessToken, clearTokens } from "@/utils/storage";
-import { setOnLogoutHandler } from "@/api/client";
-import { apiLogin } from "@/api/auth";
+import { apiLogin } from "@/lib/api/auth";
+import { setOnLogoutHandler } from "@/lib/api/client";
+import { clearTokens, getAccessToken } from "@/lib/utils/storage";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { View } from "react-native";
 
 interface AuthContextType {

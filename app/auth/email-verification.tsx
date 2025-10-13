@@ -1,23 +1,23 @@
-import { verifyEmail, resendVerificationCode } from "@/api/auth";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import React, { useState, useEffect } from "react";
+import { resendVerificationCode, verifyEmail } from "@/lib/api/auth";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
-  Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+    Alert,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from "react-native";
 
 export default function EmailVerificationScreen() {

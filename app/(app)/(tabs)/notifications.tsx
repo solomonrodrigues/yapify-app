@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { Colors } from '@/constants/Colors';
+import { getNotifications, markNotificationRead } from '@/lib/api/notifications';
+import { Notification } from '@/types/api';
+import { LegendList } from '@legendapp/list';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  useColorScheme,
   ActivityIndicator,
   Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
 } from 'react-native';
-import { getNotifications, markNotificationRead } from '@/api/notifications';
-import { Notification } from '@/types/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ThemedText';
-import { LegendList } from '@legendapp/list';
-import { Colors } from '@/constants/Colors';
 
 // Individual Notification Component
 interface NotificationItemProps {

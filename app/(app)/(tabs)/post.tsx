@@ -1,19 +1,19 @@
-import React, { useState, useRef } from 'react';
+import { createQuote } from '@/lib/api/quotes';
+import { CreateQuote, Quote } from '@/types/api';
+import React, { useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  useColorScheme,
-  Alert,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    useColorScheme,
+    View,
 } from 'react-native';
-import { createQuote } from '@/api/quotes';
-import { Quote, CreateQuote } from '@/types/api';
 
 // Theme types
 interface Theme {

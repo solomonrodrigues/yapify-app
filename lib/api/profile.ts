@@ -1,5 +1,5 @@
+import { User } from '../../types/api';
 import api from './client';
-import { User } from '../types/api';
 
 export const getProfile = async (): Promise<User> => {
   const res = await api.get<User>('/profile/');

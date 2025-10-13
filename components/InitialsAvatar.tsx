@@ -1,9 +1,9 @@
 // components/InitialsAvatar.tsx
 import { Colors, ProfileColorHexMap } from "@/constants/Colors";
-import { User, PublicUser, ProfileColorEnum } from "@/types/api";
-import { getInitials } from "@/utils/user";
+import { getInitials } from "@/lib/utils/user";
+import { ProfileColorEnum, PublicUser, User } from "@/types/api";
 import React from "react";
-import { View, Text, StyleSheet, StyleProp, ViewStyle, useColorScheme } from "react-native";
+import { StyleProp, StyleSheet, Text, View, ViewStyle, useColorScheme } from "react-native";
 
 type InitialsAvatarProps = {
   user: User | PublicUser;

@@ -1,26 +1,26 @@
-import { register } from "@/api/auth";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
-import LoginErrorHandler from "@/utils/LoginErrorHandler";
+import { register } from "@/lib/api/auth";
+import LoginErrorHandler from "@/lib/utils/LoginErrorHandler";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  Alert,
-  Keyboard,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  useColorScheme,
-  View
+    Alert,
+    Keyboard,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    useColorScheme,
+    View
 } from "react-native";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller"
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 
 export default function AuthScreen() {
   const { login } = useAuth();

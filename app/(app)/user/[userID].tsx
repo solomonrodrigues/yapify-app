@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, View, ActivityIndicator, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { getUser, sendFriendRequest, cancelFriendRequest, unfriend } from '@/api/friends';
-import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { Colors } from '@/constants/Colors';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { cancelFriendRequest, getUser, sendFriendRequest, unfriend } from '@/lib/api/friends';
 import type { Friendship, PublicUser } from '@/types/api';
 
 type LoadingState = { type: 'loading' };

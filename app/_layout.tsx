@@ -10,6 +10,8 @@ import { useEffect } from 'react';
 import { useRouter, useSegments, Stack } from 'expo-router';
 import { UserProvider } from '@/context/UserContext';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { SQLiteProvider, useSQLiteContext, type SQLiteDatabase } from "expo-sqlite";
+import { migrate } from '@/lib/db/migrate';
 
 function RootLayoutNav() {
   const { isLoggedIn, isLoading } = useAuth();
@@ -84,8 +86,10 @@ function Providers({ theme }: { theme: any }) {
         <ThemeProvider value={theme}>
           <SafeAreaProvider>
             <KeyboardProvider>
-              <RootLayoutNav />
-              <StatusBar style="auto" />
+              <SQLiteProvider databaseName="app.db" onInit={migrate}>
+                <RootLayoutNav />
+                <StatusBar style="auto" />
+              </SQLiteProvider>
             </KeyboardProvider>
           </SafeAreaProvider>
         </ThemeProvider>

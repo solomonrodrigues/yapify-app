@@ -1,5 +1,5 @@
+import { Quote } from '../../types/api';
 import api from './client';
-import { Quote } from '../types/api';
 
 export const getQuotes = async (): Promise<Quote[]> => {
   const res = await api.get<{ results: Quote[] }>('/quotes/');

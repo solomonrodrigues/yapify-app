@@ -1,6 +1,6 @@
 // api/client.ts
-import axios, { AxiosInstance, AxiosError } from 'axios';
-import { getAccessToken, getRefreshToken, setToken, clearTokens } from '@/utils/storage';
+import { clearTokens, getAccessToken, getRefreshToken, setToken } from '@/lib/utils/storage';
+import axios, { AxiosError, AxiosInstance } from 'axios';
 
 const API_BASE_URL = 'https://yapify.net/api';
 

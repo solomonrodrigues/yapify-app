@@ -1,5 +1,5 @@
+import { PublicUser, User } from '../../types/api';
 import api from './client';
-import { PublicUser, User } from '../types/api';
 
 export const searchUsers = async (query: string): Promise<User[]> => {
     const res = await api.get<{ results: User[] }>(`/users/search/?search=${encodeURIComponent(query)}`);

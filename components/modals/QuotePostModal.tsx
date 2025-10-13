@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  useColorScheme,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-  TouchableWithoutFeedback,
-  Keyboard,
-} from "react-native";
-import { searchFriends, getFriends, getRecentFriends } from "@/api/friends";
-import { createQuote } from "@/api/quotes";
 import { InitialsAvatar } from "@/components/InitialsAvatar";
 import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { User, Quote } from "@/types/api";
 import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
-import { hexToRgba } from "@/utils/style";
+import { getFriends, getRecentFriends, searchFriends } from "@/lib/api/friends";
+import { createQuote } from "@/lib/api/quotes";
+import { hexToRgba } from "@/lib/utils/style";
+import { Quote, User } from "@/types/api";
 import { LegendList } from "@legendapp/list";
+import React, { useEffect, useState } from "react";
+import {
+    Alert,
+    Keyboard,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    useColorScheme,
+    View,
+} from "react-native";
 
 interface QuotePostModalProps {
   visible: boolean;

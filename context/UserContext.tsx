@@ -1,8 +1,8 @@
 // context/UserContext.tsx
-import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import { getProfile, updateProfile } from "@/api/profile";
+import { getProfile, updateProfile } from "@/lib/api/profile";
+import { getErrorMessage } from '@/lib/utils/error';
 import { User } from "@/types/api";
-import { getErrorMessage } from '@/utils/error';
+import React, { createContext, ReactNode, useCallback, useContext, useState } from "react";
 
 interface UserContextValue {
   user: User | null;

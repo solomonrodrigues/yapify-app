@@ -1,10 +1,15 @@
-import { searchUsers } from "@/api/friends";
 import { InitialsAvatar } from "@/components/InitialsAvatar";
 import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Colors } from "@/constants/Colors";
+import { useThemedStyles } from "@/hooks/useThemedStyles";
+import { searchUsers } from "@/lib/api/friends";
 import { User } from "@/types/api";
+import { LegendList } from "@legendapp/list";
 import { useRouter } from "expo-router";
-import React, { useState, useRef } from "react";
+import { debounce } from "lodash";
+import React, { useRef, useState } from "react";
 import {
   StyleSheet,
   TextInput,
@@ -12,12 +17,7 @@ import {
   useColorScheme,
   View,
 } from "react-native";
-import { debounce } from "lodash";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useThemedStyles } from "@/hooks/useThemedStyles";
-import { Colors } from "@/constants/Colors";
-import { ThemedView } from "@/components/ThemedView";
-import { LegendList } from "@legendapp/list";
 
 const Search = () => {
   const [query, setQuery] = useState("");
