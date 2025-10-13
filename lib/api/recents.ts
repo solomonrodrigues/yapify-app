@@ -1,4 +1,4 @@
-import { User, KindEnum, RecentSearchCreate, RecentSearchItem } from '@/types/api';
+import { User, KindEnum, RecentSearchCreate, RecentSearchItem, MinimalUser } from '@/types/api';
 import api from '@/lib/api/client';
 
 /**
@@ -40,8 +40,12 @@ export const postRecentUserClick = async (
 };
   
 /** Convenience: list only recent users. */
-export const listRecentUsers = async (limit = 10) =>
-    listRecents({ kind: "user", limit });
+export const listRecentUsers = async (limit = 10): Promise<MinimalUser[]> => {
+    const items = await listRecents({ kind: "user", limit });
+    return items
+      .map((it) => it.data as unknown as MinimalUser)
+      .filter(Boolean);
+};
   
 /** Convenience: list only recent quotes. */
 export const listRecentQuotes = async (limit = 10) =>

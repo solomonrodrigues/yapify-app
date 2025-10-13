@@ -5,11 +5,12 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { searchUsers } from "@/lib/api/friends";
-import { User } from "@/types/api";
+import { listRecentUsers, postRecentUserClick } from "@/lib/api/recents";
+import { MinimalUser, User } from "@/types/api";
 import { LegendList } from "@legendapp/list";
 import { useRouter } from "expo-router";
 import { debounce } from "lodash";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   StyleSheet,
   TextInput,
@@ -22,6 +23,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const Search = () => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<User[]>([]);
+  const [recent, setRecent] = useState<MinimalUser[]>([]);
   const [loading, setLoading] = useState(false);
 
   const colorScheme = useColorScheme();
@@ -53,16 +55,20 @@ const Search = () => {
     debouncedSearch(text);
   };
 
+  const handlePressUser = async (item: User) => {
+    // Fire-and-forget server record of this recent click
+    postRecentUserClick({ id: item.id }, query).catch((e) =>
+      console.warn("postRecentUserClick failed", e)
+    );
+
+    router.push({
+      pathname: "/user/[userID]",
+      params: { userID: item.id },
+    });
+  };
+
   const renderItem = ({ item }: { item: User }) => (
-    <TouchableOpacity
-      style={styles.activityCard}
-      onPress={() =>
-        router.push({
-          pathname: "/user/[userID]",
-          params: { userID: item.id },
-        })
-      }
-    >
+    <TouchableOpacity style={styles.activityCard} onPress={() => handlePressUser(item)}>
       <InitialsAvatar user={item} size={30} />
       <View style={styles.activityText}>
         <ThemedText style={styles.displayName}>{item.display_name}</ThemedText>
@@ -71,44 +77,88 @@ const Search = () => {
     </TouchableOpacity>
   );
 
+  // Load “Recent” when there isn’t an active query
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadRecents = async () => {
+      try {
+        const data = await listRecentUsers(10);
+        if (!cancelled) setRecent(data as MinimalUser[]);
+      } catch (e) {
+        console.warn("Failed to load recent users", e);
+      }
+    };
+
+    if (query.length < 2) {
+      loadRecents();
+    } else if (!cancelled) {
+      setRecent([]); // hide recents when user is actively searching
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [query]);
+
+  const showRecent = useMemo(() => {
+    if (query.length >= 2) return false;
+    if (loading) return false;
+    if (results.length > 0) return false;
+    return recent.length > 0;
+  }, [query, loading, results.length, recent.length]);
+
   return (
     <ThemedView>
-    <SafeAreaView style={styles.container}>
-      {/* Search Bar */}
-      <View style={styles.inputContainer}>
-        <View style={styles.searchBox}>
-          <IconSymbol
-            size={20}
-            name="magnifyingglass"
-            color={styles.icon.color}
-            style={styles.icon}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Search for friends..."
-            placeholderTextColor={colorScheme === "dark" ? "#888" : "#999"}
-            value={query}
-            onChangeText={handleSearch}
-          />
+      <SafeAreaView style={styles.container}>
+        {/* Search Bar */}
+        <View style={styles.inputContainer}>
+          <View style={styles.searchBox}>
+            <IconSymbol
+              size={20}
+              name="magnifyingglass"
+              color={styles.icon.color}
+              style={styles.icon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Search for friends..."
+              placeholderTextColor={colorScheme === "dark" ? "#888" : "#999"}
+              value={query}
+              onChangeText={handleSearch}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+            />
+          </View>
         </View>
-      </View>
 
-      {/* Results */}
-      {loading ? (
-        <ThemedText style={styles.message}>Searching...</ThemedText>
-      ) : (
-        <LegendList
-          data={results}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          ListEmptyComponent={
-            query.length >= 2 ? (
-              <ThemedText style={styles.message}>No users found</ThemedText>
-            ) : null
-          }
-        />
-      )}
-    </SafeAreaView>
+        {/* Results or Recent */}
+        {loading ? (
+          <ThemedText style={styles.message}>Searching...</ThemedText>
+        ) : showRecent ? (
+          <>
+            <ThemedText style={[styles.message, { textAlign: "left", marginLeft: 16 }]}>
+              Recent
+            </ThemedText>
+            <LegendList
+              data={recent as User[]}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderItem}
+            />
+          </>
+        ) : (
+          <LegendList
+            data={results}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+            ListEmptyComponent={
+              query.length >= 2 ? (
+                <ThemedText style={styles.message}>No users found</ThemedText>
+              ) : null
+            }
+          />
+        )}
+      </SafeAreaView>
     </ThemedView>
   );
 };
