@@ -36,17 +36,17 @@ export const sendFriendRequest = async (receiverId: number) => {
     return res.data;
 };
 
+export const cancelFriendRequest = async (receiverId: number) => {
+    await api.post(`/friends/${receiverId}/cancel/`);
+    return;
+};
+
+export const unfriend = async (receiverId: number) => {
+    await api.post(`/friends/${receiverId}/unfriend/`);
+    return;
+};
+
 export const respondToFriendRequest = async (friendshipId: number, action: 'accept' | 'reject') => {
     const res = await api.post(`/friends/respond/${friendshipId}/`, { action });
     return res.data;
 };
-
-export const cancelFriendRequest = async (receiverId: number) => {
-    // ToDo: Implement properly
-    return null;
-}
-
-export const unfriend = async (receiverId: number) => {
-    // ToDo: Implement properly
-    return null;
-}
