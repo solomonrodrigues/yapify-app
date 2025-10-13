@@ -105,6 +105,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/friends/{user_id}/cancel/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Cancel outgoing pending friend request. */
+        delete: operations["friends_cancel_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/friends/{user_id}/unfriend/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Unfriend (remove accepted friendship). */
+        delete: operations["friends_unfriend_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/friends/recent-quoted/": {
         parameters: {
             query?: never;
@@ -314,6 +348,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/recents/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List recent search items
+         * @description Get and create recent search items (users & quotes)
+         */
+        get: operations["recents_list"];
+        put?: never;
+        /**
+         * Touch (upsert) a recent item
+         * @description Get and create recent search items (users & quotes)
+         */
+        post: operations["recents_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/schema/": {
         parameters: {
             query?: never;
@@ -393,6 +451,12 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        /**
+         * @description * `user` - user
+         *     * `quote` - quote
+         * @enum {string}
+         */
+        KindEnum: "user" | "quote";
         /** @description User serializer including minimum necessary fields */
         MinimalUser: {
             readonly id: number;
@@ -609,6 +673,19 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        RecentSearchCreate: {
+            kind: components["schemas"]["KindEnum"];
+            target_id: string;
+            query?: string | null;
+        };
+        RecentSearchItem: {
+            readonly kind: string;
+            readonly target_id: string;
+            /** Format: date-time */
+            touched_at?: string;
+            last_query?: string | null;
+            readonly data: string;
+        };
         /**
          * @description * `pending` - Pending
          *     * `accepted` - Accepted
@@ -793,6 +870,46 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PaginatedPublicUserList"];
                 };
+            };
+        };
+    };
+    friends_cancel_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    friends_unfriend_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -1196,6 +1313,54 @@ export interface operations {
         responses: {
             /** @description No response body */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    recents_list: {
+        parameters: {
+            query?: {
+                /** @description user | quote */
+                kind?: string;
+                /** @description Max items (<=50). Default 10 */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecentSearchItem"][];
+                };
+            };
+        };
+    };
+    recents_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecentSearchCreate"];
+                "application/x-www-form-urlencoded": components["schemas"]["RecentSearchCreate"];
+                "multipart/form-data": components["schemas"]["RecentSearchCreate"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
