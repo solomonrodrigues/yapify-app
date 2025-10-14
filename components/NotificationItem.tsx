@@ -16,10 +16,10 @@ interface NotificationItemProps {
   notification: Notification;
   theme: any;
   onPress: (id: number) => void;
-  onFriendshipChange: (notificationId: number, friendship: Friendship | null) => void; // <- add this
+  onFriendshipChange: (notificationId: number, friendship: Friendship | null) => void;
 }
 
-// Map types to a small leading glyph (like Facebook’s subtle icons)
+// Map types to a small leading glyph
 const typeIconMap: Record<string, string | undefined> = {
     new_quote: 'quote.bubble',
     quote_liked: 'hand.thumbsup',
