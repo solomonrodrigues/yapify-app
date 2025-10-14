@@ -44,6 +44,9 @@ const MAPPING = {
   'calendar': { name: 'calendar' },
   'person.crop.circle.badge.xmark': { name: 'circle-user-circle-xmark' },
   'quote.bubble': { name: 'comment' },
+  'forward.fill': { name: 'forward' },
+  'checkmark.circle.fill': { name: 'circle-check' },
+  'xmark.circle.fill': { name: 'circle-xmark' },
   // Eye icons (for password peek)
   'eye': { name: 'eye' },
   'eye.slash': { name: 'eye-slash' },

@@ -4,6 +4,7 @@ import { Colors } from '@/constants/Colors';
 import { getNotifications, markNotificationRead } from '@/lib/api/notifications';
 import { Notification } from '@/types/api';
 import { LegendList } from '@legendapp/list';
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -126,7 +127,17 @@ const NotificationsView: React.FC = () => {
           <NotificationItem
             notification={item}
             theme={theme}
-            onPress={handleMarkRead}
+            onPress={() => {
+              if (!item.is_read) {
+                handleMarkRead(item.id);
+              }
+              if (item.notification_type === 'new_quote' || item.notification_type === 'quote_liked' || item.notification_type === 'quote_witnessed') {
+                router.push({
+                  pathname: "/(app)/[quoteID]",
+                  params: { quoteID: item.quote! },
+                });
+              }
+            }}
           />
         )}
         refreshing={refreshing}

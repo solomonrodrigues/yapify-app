@@ -6,9 +6,13 @@ export const getQuotes = async (): Promise<Quote[]> => {
   return res.data.results || [];
 };
 
-
 export const createQuote = async (quoteData: Partial<Quote>): Promise<Quote> => {
   const res = await api.post<Quote>('/quotes/', quoteData);
+  return res.data;
+};
+
+export const getQuote = async (quoteId: number): Promise<Quote> => {
+  const res = await api.get<Quote>(`/quotes/${quoteId}/`);
   return res.data;
 };
 
