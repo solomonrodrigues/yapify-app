@@ -25,8 +25,8 @@ export const deleteQuote = async (quoteId: number): Promise<void> => {
   await api.delete(`/quotes/${quoteId}/`);
 };
 
-export const witnessQuote = async (quoteId: number, isWitness: boolean, comment: string) => {
-  const res = await api.post(`/quotes/${quoteId}/witness/`, { is_witness: isWitness, comment });
+export const witnessQuote = async (quoteId: number) => {
+  const res = await api.post(`/quotes/${quoteId}/witness/`);
   return res.data;
 };
 

@@ -49,6 +49,7 @@ export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [hasLoadedOnce]);
 
   const likeQuoteById = async (id: number) => {
+    // optimistically update UI
     setQuotes(prev =>
       prev.map(q => {
         if (q.id !== id) return q;
@@ -80,11 +81,34 @@ export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const witnessQuoteById = async (id: number) => {
+    // optimistically update UI
+    setQuotes(prev =>
+      prev.map(q => {
+        if (q.id !== id) return q;
+
+        const wasWitnessed = q.is_witnessed;
+        const newWitnessed = !wasWitnessed;
+
+        return {
+          ...q,
+          is_witnessed: newWitnessed,
+          witness_count: q.witness_count + (newWitnessed ? 1 : -1),
+        };
+      })
+    );
+
     try {
-      await witnessQuote(id, true, '');
-      loadQuotes(true);
+      await witnessQuote(id);
     } catch (e) {
       console.error(e);
+      // rollback on failure
+      setQuotes(prev =>
+        prev.map(q =>
+          q.id === id
+            ? { ...q, is_witnessed: !q.is_witnessed, witness_count: q.witness_count + (q.is_witnessed ? -1 : 1) }
+            : q
+        )
+      );
     }
   };
 

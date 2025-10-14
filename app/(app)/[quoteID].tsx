@@ -60,6 +60,7 @@ const QuoteDetail: React.FC = () => {
   const handleLike = async () => {
     if (!quote) return;
     try {
+      // ToDo: Implement optimistic UI update + rollback on fail here
       await likeQuote(quote.id);
       setQuote({
         ...quote,
@@ -74,11 +75,12 @@ const QuoteDetail: React.FC = () => {
   const handleWitness = async () => {
     if (!quote) return;
     try {
-      const dat = await witnessQuote(quote.id, true, '');
-      console.log(dat);
+      // ToDo: Implement optimistic UI update + rollback on fail here
+      await witnessQuote(quote.id);
       setQuote({
         ...quote,
-        witness_count: quote.witness_count + 1,
+        is_witnessed: !quote.is_witnessed,
+        witness_count: quote.is_witnessed ? quote.witness_count - 1 : quote.witness_count + 1,
       });
     } catch (err) {
       console.error('Error witnessing quote:', err);
