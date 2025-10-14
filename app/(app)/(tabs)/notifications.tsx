@@ -83,6 +83,18 @@ const NotificationsView: React.FC = () => {
     }
   };
 
+  const handleNotificationPress = async (item: Notification) => {
+    if (!item.is_read) {
+      handleMarkRead(item.id);
+    }
+    if (item.notification_type === 'new_quote' || item.notification_type === 'quote_liked' || item.notification_type === 'quote_witnessed') {
+      router.push({
+        pathname: "/(app)/[quoteID]",
+        params: { quoteID: item.quote! },
+      });
+    }
+  }
+
   useEffect(() => {
     fetchNotifications();
   }, []);
@@ -127,17 +139,7 @@ const NotificationsView: React.FC = () => {
           <NotificationItem
             notification={item}
             theme={theme}
-            onPress={() => {
-              if (!item.is_read) {
-                handleMarkRead(item.id);
-              }
-              if (item.notification_type === 'new_quote' || item.notification_type === 'quote_liked' || item.notification_type === 'quote_witnessed') {
-                router.push({
-                  pathname: "/(app)/[quoteID]",
-                  params: { quoteID: item.quote! },
-                });
-              }
-            }}
+            onPress={() => handleNotificationPress(item)}
           />
         )}
         refreshing={refreshing}
