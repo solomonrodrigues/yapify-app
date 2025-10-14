@@ -340,7 +340,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Witness a quote */
+        /** @description Witness/unwitness a quote */
         post: operations["quotes_witness_create"];
         delete?: never;
         options?: never;
@@ -564,6 +564,7 @@ export interface components {
             /** Format: date-time */
             readonly updated_at?: string;
             readonly witness_count?: number;
+            readonly is_witnessed?: boolean;
             readonly witnesses?: components["schemas"]["QuoteWitness"][];
             readonly like_count?: number;
             readonly is_liked?: boolean;
@@ -637,6 +638,7 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
             readonly witness_count: number;
+            readonly is_witnessed: boolean;
             readonly witnesses: components["schemas"]["QuoteWitness"][];
             readonly like_count: number;
             readonly is_liked: boolean;
@@ -666,10 +668,6 @@ export interface components {
         QuoteWitness: {
             readonly id: number;
             readonly witness: components["schemas"]["MinimalUser"];
-            /** @description True if confirming they witnessed it, False if denying */
-            is_witness?: boolean;
-            /** @description Optional comment about witnessing the quote */
-            comment?: string;
             /** Format: date-time */
             readonly created_at: string;
         };
