@@ -1,8 +1,9 @@
+import { NotificationItem } from '@/components/NotificationItem';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { getNotifications, markNotificationRead } from '@/lib/api/notifications';
-import { Notification } from '@/types/api';
+import { Friendship, Notification } from '@/types/api';
 import { LegendList } from '@legendapp/list';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -17,57 +18,38 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Individual Notification Component
-interface NotificationItemProps {
-  notification: Notification;
-  theme: any;
-  onPress: (id: number) => void;
-}
-
-const NotificationItem: React.FC<NotificationItemProps> = ({ notification, theme, onPress }) => {
-  const { id, message, is_read } = notification;
-
-  return (
-    <TouchableOpacity
-      style={[
-        styles.notificationCard,
-        {
-          backgroundColor: theme.cardBackground,
-          borderColor: theme.border,
-          opacity: is_read ? 0.6 : 1,
-        },
-      ]}
-      onPress={() => onPress(id)}
-    >
-      <Text style={[styles.notificationText, { color: theme.text }]}>
-        {message}
-      </Text>
-      {!is_read && (
-        <View style={[styles.unreadBadge, { backgroundColor: theme.accent }]} />
-      )}
-    </TouchableOpacity>
-  );
-};
-
 // Main Notifications View
 const NotificationsView: React.FC = () => {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [prevUrl, setPrevUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (url?: string, mode: 'reset' | 'append' = 'reset') => {
     try {
-      const res = await getNotifications();
-      setNotifications(res.results);
+      const res = await getNotifications(url); // accept optional full URL or page param in your client
+      setNextUrl(res.next ?? null);
+      setPrevUrl(res.previous ?? null);
+      setNotifications((prev) => (mode === 'append' ? [...prev, ...res.results] : res.results));
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'Failed to load notifications');
     } finally {
       setLoading(false);
       setRefreshing(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMore = () => {
+    if (!loadingMore && nextUrl) {
+      setLoadingMore(true);
+      fetchNotifications(nextUrl, 'append');
     }
   };
 
@@ -93,7 +75,17 @@ const NotificationsView: React.FC = () => {
         params: { quoteID: item.quote! },
       });
     }
-  }
+  };
+
+  const handleInlineFriendshipChange = (notificationId: number, friendship: Friendship | null) => {
+    setNotifications(prev =>
+      prev.map(n =>
+        n.id === notificationId
+          ? { ...n, friendship, is_read: true } // mark read if you like
+          : n
+      )
+    );
+  };
 
   useEffect(() => {
     fetchNotifications();
@@ -131,26 +123,36 @@ const NotificationsView: React.FC = () => {
 
   return (
     <ThemedView>
-    <SafeAreaView style={styles.container}>
-      <LegendList
-        data={notifications}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <NotificationItem
-            notification={item}
-            theme={theme}
-            onPress={() => handleNotificationPress(item)}
-          />
-        )}
-        refreshing={refreshing}
-        onRefresh={() => {
-          setRefreshing(true);
-          fetchNotifications();
-        }}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContainer}
-      />
-    </SafeAreaView>
+      <SafeAreaView style={styles.container}>
+        <LegendList
+          data={notifications}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <NotificationItem
+              notification={item}
+              theme={theme}
+              onPress={() => handleNotificationPress(item)}
+              onFriendshipChange={handleInlineFriendshipChange}
+            />
+          )}
+          refreshing={refreshing}
+          onRefresh={() => {
+            setRefreshing(true);
+            fetchNotifications();
+          }}
+          onEndReachedThreshold={0.4}
+          onEndReached={loadMore}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContainer}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={{ paddingVertical: 12 }}>
+                <ActivityIndicator size="small" />
+              </View>
+            ) : null
+          }
+        />
+      </SafeAreaView>
     </ThemedView>
   );
 };
@@ -161,6 +163,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: 16,
+    paddingBottom: 50,
   },
   centerContainer: {
     flex: 1,

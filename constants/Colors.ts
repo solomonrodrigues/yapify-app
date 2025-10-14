@@ -14,6 +14,7 @@ export const Colors = {
   light: {
     text: '#11181C',             // main text
     secondaryText: '#888',       // subtitles, lighter text
+    tertiaryText: '#666',
     background: '#fff',          // page background
     cardBackground: '#f8f9fa',   // activity cards or sections
     cardBorder: '#fff',
@@ -55,6 +56,7 @@ export const Colors = {
   dark: {
     text: '#ECEDEE',
     secondaryText: '#aaa',        // lighter text in dark mode
+    tertiaryText: '#666',
     background: '#0d1114',
     cardBackground: '#1e1f1f',    // activity cards or sections
     cardBorder: '#fff',

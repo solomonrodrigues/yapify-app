@@ -46,7 +46,7 @@ export const unfriend = async (receiverId: number) => {
     return;
 };
 
-export const respondToFriendRequest = async (friendshipId: number, action: 'accept' | 'reject') => {
-    const res = await api.post(`/friends/respond/${friendshipId}/`, { action });
+export const respondToFriendRequest = async (userId: number, action: 'accept' | 'reject') => {
+    const res = await api.post(`/friends/${userId}/respond/`, { action });
     return res.data;
 };

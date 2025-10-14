@@ -4,12 +4,13 @@ import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, TouchableOpa
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { InitialsAvatar } from '@/components/InitialsAvatar';
+import { FriendButton } from '@/components/FriendButton';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import { cancelFriendRequest, getUser, sendFriendRequest, unfriend } from '@/lib/api/friends';
+import { getUser } from '@/lib/api/friends';
 import type { Friendship, PublicUser } from '@/types/api';
 
 type LoadingState = { type: 'loading' };
@@ -23,7 +24,6 @@ export default function UserScreen() {
 
   const [userState, setUserState] = useState<UserState>({ type: 'loading' });
   const [friendship, setFriendship] = useState<Friendship | null>(null);
-  const [actionLoading, setActionLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const styles = useThemedStyles(getStyles);
@@ -54,29 +54,8 @@ export default function UserScreen() {
     setRefreshing(false);
   };
 
-  const handleFriendAction = async (user: PublicUser, action: 'add' | 'cancel' | 'unfriend') => {
-    setActionLoading(true);
-    try {
-      let res;
-      switch (action) {
-        case 'add':
-          res = await sendFriendRequest(user.id);
-          setFriendship(res.friendship);
-          break;
-        case 'cancel':
-          await cancelFriendRequest(user.id);
-          setFriendship(null);
-          break;
-        case 'unfriend':
-          await unfriend(user.id);
-          setFriendship(null);
-          break;
-      }
-    } catch (err) {
-      console.error(`Failed to ${action} friend:`, err);
-    } finally {
-      setActionLoading(false);
-    }
+  const handleFriendshipChange = (newFriendship: Friendship | null) => {
+    setFriendship(newFriendship);
   };
 
   // Loading gate
@@ -125,10 +104,11 @@ export default function UserScreen() {
             
             {/* Friend Button */}
             <FriendButton
+              userId={user.id}
               friendship={friendship}
-              onAction={(action) => handleFriendAction(user, action)}
-              loading={actionLoading}
-              styles={styles}
+              onFriendshipChange={handleFriendshipChange}
+              variant="default"
+              showIcon={true}
             />
           </View>
 
@@ -182,106 +162,6 @@ export default function UserScreen() {
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
-  );
-}
-
-type FriendAction = 'add' | 'cancel' | 'unfriend';
-
-function FriendButton({
-  friendship,
-  onAction,
-  loading,
-  styles,
-}: {
-  friendship: Friendship | null;
-  onAction: (action: FriendAction) => void;
-  loading: boolean;
-  styles: any;
-}) {
-  const getButtonConfig = (): {
-    text: string;
-    style: any;
-    textStyle: any;
-    action?: FriendAction;
-    icon?: string;
-  } => {
-    if (!friendship) {
-      return {
-        text: 'Add Friend',
-        style: styles.friendButtonPrimary,
-        textStyle: styles.friendButtonTextPrimary,
-        action: 'add',
-        icon: 'person.badge.plus',
-      };
-    }
-
-    switch (friendship.status) {
-      case 'pending':
-        // Check if current user sent the request or received it
-        // For now assuming we sent it, so show cancel option
-        return {
-          text: 'Requested',
-          style: styles.friendButtonSecondary,
-          textStyle: styles.friendButtonTextSecondary,
-          action: 'cancel',
-          icon: 'clock',
-        };
-      case 'accepted':
-        return {
-          text: 'Friends',
-          style: styles.friendButtonSuccess,
-          textStyle: styles.friendButtonTextSuccess,
-          action: 'unfriend',
-          icon: 'checkmark.circle.fill',
-        };
-      case 'rejected':
-        return {
-          text: 'Request Declined',
-          style: styles.friendButtonDisabled,
-          textStyle: styles.friendButtonTextDisabled,
-        };
-      case 'blocked':
-        return {
-          text: 'Blocked',
-          style: styles.friendButtonDisabled,
-          textStyle: styles.friendButtonTextDisabled,
-        };
-      default:
-        return {
-          text: 'Add Friend',
-          style: styles.friendButtonPrimary,
-          textStyle: styles.friendButtonTextPrimary,
-          action: 'add',
-          icon: 'person.badge.plus',
-        };
-    }
-  };
-
-  const config = getButtonConfig();
-
-  return (
-    <TouchableOpacity
-      style={[styles.friendButton, config.style]}
-      onPress={() => config.action && onAction(config.action)}
-      disabled={!config.action || loading}
-      activeOpacity={0.7}
-    >
-      {loading ? (
-        <ActivityIndicator size="small" color={config.action === 'add' ? '#fff' : 'gray'} />
-      ) : (
-        <View style={styles.friendButtonContent}>
-          {config.icon && (
-            <IconSymbol 
-              name={config.icon as any} 
-              size={16} 
-              color={config.textStyle.color} 
-              style={styles.friendButtonIcon}
-            />
-          )}
-          <ThemedText style={config.textStyle}>{config.text}</ThemedText>
-        </View>
-      )}
-    </TouchableOpacity>
   );
 }
 
@@ -397,61 +277,5 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       color: theme.secondaryText,
       fontSize: 14,
     },
-    friendButton: {
-      paddingHorizontal: 32,
-      paddingVertical: 6,
-      borderRadius: 8,
-      minWidth: 160,
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: 38,
-    },
-    friendButtonContent: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-    },
-    friendButtonIcon: {
-      marginRight: 2,
-    },
-    friendButtonPrimary: {
-      backgroundColor: '#0095f6',
-    },
-    friendButtonSecondary: {
-      backgroundColor: theme.cardBackground,
-      borderWidth: 1,
-      borderColor: theme.divider,
-    },
-    friendButtonSuccess: {
-      backgroundColor: theme.cardBackground,
-      borderWidth: 1,
-      borderColor: '#4ade80',
-    },
-    friendButtonDisabled: {
-      backgroundColor: theme.cardBackground,
-      borderWidth: 1,
-      borderColor: theme.divider,
-      opacity: 0.5,
-    },
-    friendButtonTextPrimary: {
-      color: '#ffffff',
-      fontWeight: '600',
-      fontSize: 15,
-    },
-    friendButtonTextSecondary: {
-      color: theme.text,
-      fontWeight: '600',
-      fontSize: 15,
-    },
-    friendButtonTextSuccess: {
-      color: '#4ade80',
-      fontWeight: '600',
-      fontSize: 15,
-    },
-    friendButtonTextDisabled: {
-      color: theme.secondaryText,
-      fontWeight: '600',
-      fontSize: 15,
-    },
-  }
-);
+  });
+  

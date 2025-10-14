@@ -1,12 +1,12 @@
 // components/InitialsAvatar.tsx
 import { Colors, ProfileColorHexMap } from "@/constants/Colors";
 import { getInitials } from "@/lib/utils/user";
-import { ProfileColorEnum, PublicUser, User } from "@/types/api";
+import { MinimalUser, ProfileColorEnum, PublicUser, User } from "@/types/api";
 import React from "react";
 import { StyleProp, StyleSheet, Text, View, ViewStyle, useColorScheme } from "react-native";
 
 type InitialsAvatarProps = {
-  user: User | PublicUser;
+  user: User | PublicUser | MinimalUser;
   size?: number;
   style?: StyleProp<ViewStyle>;
   defaultBorder?: boolean;
