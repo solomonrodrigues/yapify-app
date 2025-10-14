@@ -337,6 +337,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     scrollContent: {
       padding: 16,
       paddingBottom: 32,
+      flex: 1,
     },
     authorSection: {
       flexDirection: 'row',
