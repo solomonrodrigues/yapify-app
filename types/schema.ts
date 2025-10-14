@@ -122,6 +122,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/friends/{user_id}/respond/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Accept or reject friend request */
+        post: operations["friends_respond_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/friends/{user_id}/unfriend/": {
         parameters: {
             query?: never;
@@ -167,23 +184,6 @@ export interface paths {
         get: operations["friends_requests_list"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/friends/respond/{friendship_id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Accept or reject friend request */
-        post: operations["friends_respond_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -480,7 +480,7 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
             quote?: number | null;
-            friendship?: number | null;
+            friendship: components["schemas"]["Friendship"] | null;
         };
         /**
          * @description * `friend_request` - Friend Request
@@ -891,6 +891,26 @@ export interface operations {
             };
         };
     };
+    friends_respond_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     friends_unfriend_destroy: {
         parameters: {
             query?: never;
@@ -952,26 +972,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PaginatedFriendshipList"];
                 };
-            };
-        };
-    };
-    friends_respond_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                friendship_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };
