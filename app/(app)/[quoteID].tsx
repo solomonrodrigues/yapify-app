@@ -20,6 +20,7 @@ import { getQuote, likeQuote, witnessQuote, guessQuote } from '@/lib/api/quotes'
 import { useNavigation } from '@react-navigation/native';
 import { useLocalSearchParams } from 'expo-router';
 import ActionChip from '@/components/ActionChip';
+import { getPastelFromId } from '@/lib/utils/style';
 
 const QuoteDetail: React.FC = () => {
   const styles = useThemedStyles(getStyles);
@@ -160,9 +161,7 @@ const QuoteDetail: React.FC = () => {
   }
 
   // Random but deterministic pastel for the background (based on ID)
-  const pastelKeys = Object.keys(theme.pastels) as (keyof typeof theme.pastels)[];
-  const index = Number(quote.id) % pastelKeys.length;
-  const randomPastel = theme.pastels[pastelKeys[index]];
+  const randomPastel = getPastelFromId(quote.id, theme);
   const guessable = (!guessMade && quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
 
   return (
@@ -278,6 +277,7 @@ const QuoteDetail: React.FC = () => {
           onClose={() => setShowGuessModal(false)}
           onGuess={handleGuess}
           theme={theme}
+          accent={randomPastel}
         />
       )}
     </ThemedView>

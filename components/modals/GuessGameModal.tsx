@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ interface GuessGameModalProps {
   onClose: () => void;
   onGuess: (guessedUserId?: number, skipped?: boolean) => void;
   theme: any;
+  accent: string;
 }
 
 const GuessGameModal: React.FC<GuessGameModalProps> = ({
@@ -28,20 +29,43 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
   onClose,
   onGuess,
   theme,
+  accent,
 }) => {
   const styles = useThemedStyles(getModalStyles);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
+  // ---- Single accent palette (low-chroma neutrals around one hue)
+  const palette = useMemo(() => {
+    const withAlpha = (hex: string, alpha: number) => {
+      // expects #RRGGBB
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+    return {
+      accent,
+      accentSoft: withAlpha(accent, 0.12),
+      accentSofter: withAlpha(accent, 0.06),
+      accentPress: withAlpha(accent, 0.18),
+      border: theme.hairline ?? withAlpha('#000000', 0.08),
+      text: theme.text,
+      textMuted: theme.secondaryText,
+      card: theme.cardBackground,
+      bg: theme.modalBackground,
+    };
+  }, [accent, theme]);
+
   const handleGuess = (userId?: number, skipped?: boolean) => {
     onGuess(userId, skipped);
     setHasSubmitted(true);
-    // Close modal after a short delay to show result
+    // Close after a short delay to show result
     setTimeout(() => {
       onClose();
       setHasSubmitted(false);
       setSelectedOption(null);
-    }, 2000);
+    }, 1400);
   };
 
   return (
@@ -51,68 +75,106 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={[styles.modalContainer, { backgroundColor: theme.modalBackground }]}>
+      <View style={[styles.modalContainer, { backgroundColor: palette.bg }]}>
         {/* Header */}
         <View style={styles.modalHeader}>
-          <Text style={[styles.modalTitle, { color: theme.text }]}>
-            Guess Who Said It?
-          </Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <IconSymbol name="xmark" size={20} color={theme.text} />
+          <View style={styles.brandRow}>
+            <View style={[styles.brandPill, { backgroundColor: palette.accentSoft, borderColor: palette.border }]}>
+              <IconSymbol name="person.fill.questionmark" size={14} color={palette.accent} />
+              <Text style={[styles.brandText, { color: palette.accent }]}>YapGuess</Text>
+            </View>
+            <Text style={[styles.modalTitle, { color: palette.text }]}>Who said it?</Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={onClose}
+            style={[styles.iconBtn, { backgroundColor: palette.accentSofter, borderColor: palette.border }]}
+            activeOpacity={0.8}
+          >
+            <IconSymbol name="xmark" size={18} color={palette.text} />
           </TouchableOpacity>
         </View>
 
-        {/* Quote Display */}
-        <View style={[styles.quoteDisplayContainer, { backgroundColor: theme.cardBackground }]}>
-          <Text style={[styles.quoteDisplayText, { color: theme.text }]}>
-            &ldquo;{quote.text}&rdquo;
+        {/* Quote Card */}
+        <View style={[styles.quoteCard, { backgroundColor: palette.card, borderColor: palette.border }]}>
+          <IconSymbol name="quote.opening" size={16} color={palette.textMuted} />
+          <Text style={[styles.quoteText, { color: palette.text }]}>
+            “{quote.text}”
           </Text>
+          <IconSymbol name="quote.closing" size={16} color={palette.textMuted} />
         </View>
 
-        {/* Guess Options */}
+        {/* Body */}
         {!hasSubmitted && quote.guess_options?.length ? (
           <View style={styles.optionsContainer}>
-            <Text style={[styles.instructionText, { color: theme.secondaryText }]}>
-              Who do you think said this?
+            <Text style={[styles.instructionText, { color: palette.textMuted }]}>
+              Tap to make your guess
             </Text>
+
             <View style={styles.optionsGrid}>
-              {quote.guess_options.map((option, index) => (
-                <TouchableOpacity
-                  key={option.id}
-                  style={[
-                    styles.optionButton,
-                    { backgroundColor: theme.pastels[Object.keys(theme.pastels)[index % 5] as keyof typeof theme.pastels] },
-                    selectedOption === option.id && styles.selectedOption,
-                  ]}
-                  onPress={() => {
-                    setSelectedOption(option.id);
-                    handleGuess(option.id);
-                  }}
-                >
-                  <Text style={styles.optionText}>{option.display_name}</Text>
-                </TouchableOpacity>
-              ))}
+              {quote.guess_options.map((option) => {
+                const isSelected = selectedOption === option.id;
+                return (
+                  <TouchableOpacity
+                    key={option.id}
+                    activeOpacity={0.9}
+                    style={[
+                      styles.optionButton,
+                      {
+                        borderColor: palette.accent,
+                        backgroundColor: isSelected ? palette.accent : 'transparent',
+                      },
+                    ]}
+                    onPress={() => {
+                      setSelectedOption(option.id);
+                      handleGuess(option.id);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.optionText,
+                        { color: isSelected ? '#FFFFFF' : palette.text },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {option.display_name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-            
+
             <TouchableOpacity
-              style={[styles.skipButton, { backgroundColor: theme.secondaryText }]}
+              style={[
+                styles.skipButton,
+                {
+                  borderColor: palette.border,
+                  backgroundColor: palette.accentSofter,
+                },
+              ]}
+              activeOpacity={0.85}
               onPress={() => handleGuess(undefined, true)}
             >
-              <Text style={styles.skipText}>Skip This One</Text>
+              <IconSymbol name="forward.fill" size={14} color={palette.text} />
+              <Text style={[styles.skipText, { color: palette.text }]}>Skip</Text>
             </TouchableOpacity>
           </View>
         ) : (hasSubmitted && quote.guess) ? (
           <View style={styles.resultContainer}>
-            <Text style={[
-              styles.resultText,
-              { color: quote.guess?.correct ? theme.witnessButton : theme.destructive }
-            ]}>
-              {quote.guess?.skipped
-                ? '⏭️ Skipped!'
-                : quote.guess?.correct
-                ? '🎉 Correct!'
-                : `❌ Wrong! It was ${quote.quoted_user?.display_name ?? quote.quoted_name}`}
-            </Text>
+            <View style={[styles.resultBadge, { backgroundColor: palette.accentSoft, borderColor: palette.border }]}>
+              <IconSymbol
+                name={quote.guess?.skipped ? 'forward.fill' : quote.guess?.correct ? 'checkmark.seal.fill' : 'xmark.octagon'}
+                size={18}
+                color={palette.accent}
+              />
+              <Text style={[styles.resultText, { color: palette.text }]}>
+                {quote.guess?.skipped
+                  ? 'Skipped'
+                  : quote.guess?.correct
+                  ? 'Correct'
+                  : `It was ${quote.quoted_user?.display_name ?? quote.quoted_name}`}
+              </Text>
+            </View>
           </View>
         ) : null}
       </View>
@@ -124,86 +186,105 @@ const getModalStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   StyleSheet.create({
     modalContainer: {
       flex: 1,
-      paddingTop: 60,
+      paddingTop: 52,
     },
     modalHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: 20,
-      paddingBottom: 20,
+      paddingBottom: 12,
+    },
+    brandRow: {
+      flexDirection: 'column',
+      gap: 8,
+      flexShrink: 1,
+    },
+    brandPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 999,
+      borderWidth: StyleSheet.hairlineWidth,
+      alignSelf: 'flex-start',
+    },
+    brandText: {
+      fontSize: 12,
+      fontWeight: '700',
+      letterSpacing: 0.3,
     },
     modalTitle: {
-      fontSize: 24,
-      fontWeight: '600',
+      fontSize: 22,
+      fontWeight: '700',
+      letterSpacing: -0.2,
     },
-    closeButton: {
-      padding: 8,
+    iconBtn: {
+      padding: 10,
+      borderRadius: 12,
+      borderWidth: StyleSheet.hairlineWidth,
     },
-    quoteDisplayContainer: {
-      margin: 20,
-      padding: 24,
-      borderRadius: 16,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 5,
+    quoteCard: {
+      marginHorizontal: 20,
+      marginTop: 14,
+      marginBottom: 18,
+      paddingVertical: 22,
+      paddingHorizontal: 18,
+      borderRadius: 18,
+      borderWidth: StyleSheet.hairlineWidth,
+      alignItems: 'center',
+      gap: 10,
     },
-    quoteDisplayText: {
-      fontSize: 20,
-      lineHeight: 28,
+    quoteText: {
+      fontSize: 18,
+      lineHeight: 26,
       fontStyle: 'italic',
       textAlign: 'center',
     },
     optionsContainer: {
       flex: 1,
-      paddingHorizontal: 20,
+      paddingHorizontal: 16,
     },
     instructionText: {
-      fontSize: 16,
+      fontSize: 14,
       textAlign: 'center',
-      marginBottom: 24,
+      marginBottom: 16,
     },
     optionsGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'center',
-      marginBottom: 30,
+      marginBottom: 16,
+      gap: 12,
     },
     optionButton: {
-      paddingVertical: 16,
-      paddingHorizontal: 24,
-      borderRadius: 25,
-      margin: 8,
-      minWidth: screenWidth * 0.4,
+      paddingVertical: 14,
+      paddingHorizontal: 18,
+      borderRadius: 16,
+      marginHorizontal: 6,
+      minWidth: screenWidth * 0.42,
       alignItems: 'center',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-    },
-    selectedOption: {
-      transform: [{ scale: 0.95 }],
-      opacity: 0.8,
+      borderWidth: 1,
     },
     optionText: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: '#111',
+      fontSize: 15,
+      fontWeight: '700',
     },
     skipButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
       paddingVertical: 12,
-      paddingHorizontal: 24,
-      borderRadius: 20,
+      paddingHorizontal: 18,
+      borderRadius: 14,
+      borderWidth: StyleSheet.hairlineWidth,
       alignSelf: 'center',
-      marginTop: 20,
+      marginTop: 10,
     },
     skipText: {
       fontSize: 14,
-      fontWeight: '500',
-      color: '#fff',
+      fontWeight: '600',
     },
     resultContainer: {
       flex: 1,
@@ -211,10 +292,18 @@ const getModalStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       alignItems: 'center',
       paddingHorizontal: 20,
     },
+    resultBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 16,
+      borderWidth: StyleSheet.hairlineWidth,
+    },
     resultText: {
-      fontSize: 24,
-      fontWeight: '600',
-      textAlign: 'center',
+      fontSize: 16,
+      fontWeight: '700',
     },
   });
 

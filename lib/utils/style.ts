@@ -4,3 +4,10 @@ export function hexToRgba(hex: string, alpha = 1) {
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
+
+export function getPastelFromId(id: number, theme: any) {
+  const pastelKeys = Object.keys(theme.pastels) as (keyof typeof theme.pastels)[];
+  const index = id % pastelKeys.length;
+  const randomPastel = theme.pastels[pastelKeys[index]];
+  return randomPastel;
+}

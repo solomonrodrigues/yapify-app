@@ -51,6 +51,7 @@ const MAPPING = {
   'eye': { name: 'eye' },
   'eye.slash': { name: 'eye-slash' },
   // Options for quote guess button
+  'questionmark.circle.fill':       { name: 'cirlce-question' },
   'square.fill.questionmark':       { name: 'square-question' },
   'person.fill.questionmark':       { name: 'user-question' },
   'person.crop.circle.badge.questionmark': { name: 'user-circle-question' },
@@ -67,7 +68,12 @@ const MAPPING = {
   'person.wave.2.fill':             { name: 'user-voice' }, // closest match; FA doesn't have an exact equivalent
   'text.insert':                    { name: 'file-lines' },
   'sparkle.magnifyingglass':        { name: 'wand-magic-sparkles' },
-  'person.crop.circle':             { name: 'user-circle' }
+  'person.crop.circle':             { name: 'user-circle' },
+  // Required icons for GuessGameModal
+  'quote.opening':           { name: 'quote-left' },       // decorative quote start
+  'quote.closing':           { name: 'quote-right' },      // decorative quote end
+  'checkmark.seal.fill':     { name: 'circle-check' },     // correct result
+  'xmark.octagon':           { name: 'circle-xmark' },     // wrong result
 } as const satisfies Record<string, IconMappingEntry>;
 
 // Component props for FontAwesome 7

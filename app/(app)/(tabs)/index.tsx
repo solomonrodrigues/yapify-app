@@ -19,6 +19,7 @@ import { useUser } from '@/context/UserContext';
 import { LegendList } from '@legendapp/list';
 import { useRouter } from 'expo-router';
 import PillActionButton from '@/components/PillActionButton';
+import { getPastelFromId } from '@/lib/utils/style';
 
 
 interface FeedQuoteProps {
@@ -44,9 +45,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   const router = useRouter();
 
   // Random but deterministic pastel for the background (based on ID)
-  const pastelKeys = Object.keys(theme.pastels) as (keyof typeof theme.pastels)[];
-  const index = Number(quote.id) % pastelKeys.length;
-  const randomPastel = theme.pastels[pastelKeys[index]];
+  const randomPastel = getPastelFromId(quote.id, theme);
   const guessable = (!guessMade && quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
 
   const handleGuess = (userId?: number, skipped?: boolean) => {
@@ -193,6 +192,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
         onClose={() => setShowGuessModal(false)}
         onGuess={handleGuess}
         theme={theme}
+        accent={randomPastel}
       />
     </View>
   );
