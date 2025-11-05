@@ -11,6 +11,8 @@ import { Quote } from '@/types/api';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
+import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring, ZoomIn, ZoomOut } from 'react-native-reanimated';
+import BurstParticles from '../animated/BurstParticles';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -57,15 +59,26 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
     };
   }, [accent, theme]);
 
+  const successScale = useSharedValue(1);
+
+  React.useEffect(() => {
+    // trigger only when we show a correct result
+    if (hasSubmitted && quote?.guess?.correct) {
+      successScale.value = 0.94;
+      successScale.value = withSequence(
+        withSpring(1.08, { damping: 14, stiffness: 300 }),
+        withSpring(1, { damping: 16, stiffness: 240 })
+      );
+    }
+  }, [hasSubmitted, quote?.guess?.correct, successScale]);
+
+  const badgeSpringStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: successScale.value }],
+  }));
+
   const handleGuess = (userId?: number, skipped?: boolean) => {
     onGuess(userId, skipped);
     setHasSubmitted(true);
-    // Close after a short delay to show result
-    setTimeout(() => {
-      onClose();
-      setHasSubmitted(false);
-      setSelectedOption(null);
-    }, 1400);
   };
 
   return (
@@ -159,24 +172,44 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
               <Text style={[styles.skipText, { color: palette.text }]}>Skip</Text>
             </TouchableOpacity>
           </View>
-        ) : (hasSubmitted && quote.guess) ? (
-          <View style={styles.resultContainer}>
-            <View style={[styles.resultBadge, { backgroundColor: palette.accentSoft, borderColor: palette.border }]}>
-              <IconSymbol
-                name={quote.guess?.skipped ? 'forward.fill' : quote.guess?.correct ? 'checkmark.seal.fill' : 'xmark.octagon'}
-                size={18}
-                color={palette.accent}
-              />
-              <Text style={[styles.resultText, { color: palette.text }]}>
-                {quote.guess?.skipped
-                  ? 'Skipped'
-                  : quote.guess?.correct
-                  ? 'Correct'
-                  : `It was ${quote.quoted_user?.display_name ?? quote.quoted_name}`}
-              </Text>
-            </View>
-          </View>
-        ) : null}
+          ) : hasSubmitted && quote.guess ? (
+            <Animated.View
+              entering={ZoomIn.springify().damping(16)}
+              exiting={ZoomOut}
+              style={styles.resultContainer}
+            >
+              <Animated.View
+                style={[
+                  styles.resultBadge,
+                  { backgroundColor: palette.accentSoft, borderColor: palette.border },
+                  // spring pop only when correct
+                  (quote.guess?.correct ? badgeSpringStyle : null),
+                ]}
+              >
+                <IconSymbol
+                  name={
+                    quote.guess?.skipped
+                      ? 'forward.fill'
+                      : quote.guess?.correct
+                      ? 'checkmark.seal.fill'
+                      : 'xmark.octagon'
+                  }
+                  size={18}
+                  color={palette.accent}
+                />
+                <Text style={[styles.resultText, { color: palette.text }]}>
+                  {quote.guess?.skipped
+                    ? 'Skipped'
+                    : quote.guess?.correct
+                    ? 'Correct'
+                    : `It was ${quote.quoted_user?.display_name ?? quote.quoted_name}`}
+                </Text>
+              </Animated.View>
+
+              {/* show burst ONLY on success */}
+              <BurstParticles color={palette.accent} active={!!quote.guess?.correct} />
+            </Animated.View>
+          ) : null}
       </View>
     </Modal>
   );
