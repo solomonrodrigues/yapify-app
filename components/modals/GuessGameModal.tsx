@@ -101,7 +101,7 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
               <Text style={styles.skipText}>Skip This One</Text>
             </TouchableOpacity>
           </View>
-        ) : hasSubmitted ? (
+        ) : (hasSubmitted && quote.guess) ? (
           <View style={styles.resultContainer}>
             <Text style={[
               styles.resultText,

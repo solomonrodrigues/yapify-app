@@ -59,7 +59,7 @@ export const Colors = {
     tertiaryText: '#666',
     background: '#0d1114',
     cardBackground: '#1e1f1f',    // activity cards or sections
-    cardBorder: '#fff',
+    cardBorder: '#26292a',
     inputBorder: '#ccc',
     avatarBorder: '#2d2d2dff',
     divider: '#1d1d1dff',

@@ -35,12 +35,11 @@ const MAPPING = {
   'chevron.right': { name: 'chevron.right' },
   'person': { name: 'person' },
   'checkmark': { name: 'checkmark' },
-  'quote.bubble.fill': { name: 'comment-dots' },
+  'quote.bubble.fill': { name: 'comment-dots' },  // Or quote-right
   'envelope.badge': { name: 'envelope' },
   'line.horizontal.3': { name: 'bars' },
   'heart': { name: 'heart' },
   'heart.fill': { name: 'heart' },
-  'questionmark.circle.fill': { name: 'circle-question' },
   'lock.open': { name: 'lock-open' },
   'calendar': { name: 'calendar' },
   'person.crop.circle.badge.xmark': { name: 'circle-user-circle-xmark' },
@@ -51,6 +50,24 @@ const MAPPING = {
   // Eye icons (for password peek)
   'eye': { name: 'eye' },
   'eye.slash': { name: 'eye-slash' },
+  // Options for quote guess button
+  'square.fill.questionmark':       { name: 'square-question' },
+  'person.fill.questionmark':       { name: 'user-question' },
+  'person.crop.circle.badge.questionmark': { name: 'user-circle-question' },
+  'person.fill.viewfinder':         { name: 'user-secret' },
+  'brain.head.profile':             { name: 'brain' },
+  'text.quote':                     { name: 'quote-left' },
+  'bubble.left.and.bubble.right.fill': { name: 'comments' },
+  'eye.fill':                       { name: 'eye' },
+  'sparkles':                       { name: 'sparkles' },
+  'magnifyingglass.circle.fill':    { name: 'magnifying-glass' },
+  'target':                         { name: 'bullseye' },
+  'trophy.fill':                    { name: 'trophy' },
+  'gamecontroller.fill':            { name: 'gamepad' },
+  'person.wave.2.fill':             { name: 'user-voice' }, // closest match; FA doesn't have an exact equivalent
+  'text.insert':                    { name: 'file-lines' },
+  'sparkle.magnifyingglass':        { name: 'wand-magic-sparkles' },
+  'person.crop.circle':             { name: 'user-circle' }
 } as const satisfies Record<string, IconMappingEntry>;
 
 // Component props for FontAwesome 7
