@@ -151,9 +151,10 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       paddingVertical: 10,
     },
     divider: {
-      height: StyleSheet.hairlineWidth,
-      backgroundColor: theme.border,
+      height: 1,
+      backgroundColor: theme.divider,
       marginTop: 10,
+      marginHorizontal: -16,
     },
     emptyText: {
       fontSize: 18,

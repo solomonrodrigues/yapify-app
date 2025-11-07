@@ -20,7 +20,7 @@ export const Colors = {
     cardBorder: '#fff',
     inputBorder: '#ccc',
     avatarBorder: 'transparent',
-    divider: '#f8f8f8ff',
+    divider: '#e5e5e5',
     tint: tintColorLight,        // active tint
     icon: '#687076',             // default icon color
     tabIconDefault: '#687076',
@@ -40,18 +40,18 @@ export const Colors = {
 
     // Pastel accents
     pastels: {
-      pink: '#ffb6c1',
-      blue: '#a3d8ff',
-      green: '#b6ffcf',
-      yellow: '#fff1a8',
-      purple: '#d1b6ff',
+      pink: '#f35fc4', // brilliant rose
+      blue: '#5395ec', // cornflower blue
+      green: '#63b045', // apple
+      yellow: '#fba617', // sun
+      purple: '#a135d2',  // purple heart
     },
 
     // Feed-specific accents
-    accent: '#3B82F6',        // pastel blue highlight
-    likeButton: '#EF4444',    // soft red
-    witnessButton: '#10B981', // soft green
-    border: '#f5f5f5ff',
+    accent: '#2da7ff',        // lighter pastel blue
+    likeButton: '#FF0066',    // neon magenta-red
+    witnessButton: '#00FF9F', // synthwave mint
+    border: '#e5e5e5',
   },
   dark: {
     text: '#ECEDEE',
@@ -62,7 +62,7 @@ export const Colors = {
     cardBorder: '#26292a',
     inputBorder: '#ccc',
     avatarBorder: '#2d2d2dff',
-    divider: '#1d1d1dff',
+    divider: '#1e1e1e',
     tint: tintColorDark,
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
@@ -82,22 +82,38 @@ export const Colors = {
 
     // Pastel accents
     pastels: {
-      pink: '#ffb6c1',
-      blue: '#a3d8ff',
-      green: '#b6ffcf',
-      yellow: '#fff1a8',
-      purple: '#d1b6ff',
+      pink: '#f35fc4', // brilliant rose
+      blue: '#5395ec', // cornflower blue
+      green: '#63b045', // apple
+      yellow: '#fba617', // sun
+      purple: '#a135d2',  // purple heart
     },
 
     // Feed-specific accents
     accent: '#2da7ff',        // lighter pastel blue
-    border: '#272727ff',
     likeButton: '#FF0066',    // neon magenta-red
     witnessButton: '#00FF9F', // synthwave mint
+    border: '#272727ff',
   },
 };
 
 export const ProfileColorHexMap: Record<ProfileColorEnum, string> = {
+  RED:    "#D32F2F", // vivid red (AA with white text)
+  BLUE:   "#1976D2", // vivid blue
+  GREEN:  "#2E7D32", // vivid green
+  YELLOW: "#996515", // deep yellow/goldenrod (keeps contrast)
+  ORANGE: "#BF360C", // bold orange-red
+  PURPLE: "#6A1B9A", // strong purple
+  PINK:   "#D81B60", // hot pink/rose
+  BROWN:  "#6D4C41", // rich brown
+  BLACK:  "#424242", // dark grey (comfortable with white text)
+  WHITE:  "#6E6E6E", // mid grey so white text is legible
+  GREY:   "#757575", // medium-dark grey
+  CYAN:   "#00838F", // deep cyan/teal
+  MAGENTA:"#AD1457", // deep magenta
+};
+
+export const ProfileColorHexMapPastel: Record<ProfileColorEnum, string> = {
   RED: "#E88C8C",      // pastel red, darker for contrast
   BLUE: "#6FA8DC",     // pastel blue
   GREEN: "#77DD77",    // pastel green
