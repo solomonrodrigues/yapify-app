@@ -39,6 +39,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   // Random but deterministic pastel for the background (based on ID)
   const randomPastel = getPastelFromId(quote.id, theme);
   const guessable = (!guessMade && quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
+  const showGuessButton = (quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
 
   const handleGuess = (userId?: number, skipped?: boolean) => {
     onGuess(quote.id, userId, skipped);
@@ -46,9 +47,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   };
 
   const openGuessModal = () => {
-    if (!guessMade && quote.guess_options?.length) {
-      setShowGuessModal(true);
-    }
+    setShowGuessModal(true);
   };
 
   const navigateToProfile = (userId: number) => {
@@ -143,24 +142,6 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
           // highlighted={quote.is_liked}
           testID="like-button"
         />
-        
-        {guessable && (
-          <PillActionButton
-            icon={
-              <IconSymbol
-                name="person.fill.viewfinder"
-                color={randomPastel}
-                size={18}
-                style={{ marginRight: 6 }}
-              />
-            }
-            label="YapGuess"
-            color={randomPastel}
-            onPress={openGuessModal}
-            highlighted={false}
-            testID="guess-button"
-          />
-        )}
 
         {!guessable && (
           <PillActionButton
@@ -177,6 +158,24 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
             onPress={() => onWitness(quote.id)}
             // highlighted={quote.is_witnessed}
             testID="witness-button"
+          />
+        )}
+
+        {showGuessButton && (
+          <PillActionButton
+            icon={
+              <IconSymbol
+                name="person.fill.viewfinder"
+                color={randomPastel}
+                size={18}
+                style={{ marginRight: 6 }}
+              />
+            }
+            label="YapGuess"
+            color={randomPastel}
+            onPress={openGuessModal}
+            highlighted={guessable}
+            testID="guess-button"
           />
         )}
       </View>
