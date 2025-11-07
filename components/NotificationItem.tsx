@@ -38,7 +38,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({ notification
       <TouchableOpacity
         style={[
           styles.notificationRow,
-          { backgroundColor: theme.cardBackground, borderColor: theme.border, opacity: is_read ? 0.7 : 1 },
+          { backgroundColor: theme.cardBackground, opacity: is_read ? 0.7 : 1 },
         ]}
         onPress={() => onPress(id)}
         activeOpacity={0.85}
@@ -84,7 +84,6 @@ const styles = StyleSheet.create({
       borderRadius: 12,
       padding: 12,
       marginBottom: 12,
-      borderWidth: 1,
       flexDirection: 'row',
       alignItems: 'center',
     },
