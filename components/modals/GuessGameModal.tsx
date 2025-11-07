@@ -110,11 +110,11 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
 
         {/* Quote Card */}
         <View style={[styles.quoteCard, { backgroundColor: palette.card, borderColor: palette.border }]}>
-          <IconSymbol name="quote.opening" size={16} color={palette.textMuted} />
+          <IconSymbol name="quote.opening" size={16} color={palette.text} />
           <Text style={[styles.quoteText, { color: palette.text }]}>
             “{quote.text}”
           </Text>
-          <IconSymbol name="quote.closing" size={16} color={palette.textMuted} />
+          <IconSymbol name="quote.closing" size={16} color={palette.text} />
         </View>
 
         {/* Body */}

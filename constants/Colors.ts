@@ -5,7 +5,7 @@
 
 import { ProfileColorEnum } from "@/types/api";
 
-const tintColorLight = '#0a7ea4';
+const tintColorLight = '#11181C';
 const tintColorDark = '#fff';
 const primaryColor = '#4F46E5';
 const error = '#ec9185ff';
