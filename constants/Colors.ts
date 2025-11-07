@@ -57,8 +57,8 @@ export const Colors = {
     text: '#ECEDEE',
     secondaryText: '#aaa',        // lighter text in dark mode
     tertiaryText: '#666',
-    background: '#0d1114',
-    cardBackground: '#1e1f1f',    // activity cards or sections
+    background: '#0e1113',
+    cardBackground: '#181c1f',    // activity cards or sections
     cardBorder: '#26292a',
     inputBorder: '#ccc',
     avatarBorder: '#2d2d2dff',
@@ -78,7 +78,7 @@ export const Colors = {
     inputBackground: '#1e1e1e',
     inputShadowColor: '#000',
 
-    modalBackground: '#0d1114',
+    modalBackground: '#0e1113',
 
     // Pastel accents
     pastels: {
@@ -94,6 +94,8 @@ export const Colors = {
     likeButton: '#F87171',    // soft coral red
     witnessButton: '#34D399', // soft teal green
     border: '#272727ff',
+    likeButton: '#FF0066',    // neon magenta-red
+    witnessButton: '#00FF9F', // synthwave mint
   },
 };
 
