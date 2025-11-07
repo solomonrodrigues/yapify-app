@@ -90,7 +90,7 @@ export const Colors = {
     },
 
     // Feed-specific accents
-    accent: '#60A5FA',        // lighter pastel blue
+    accent: '#2da7ff',        // lighter pastel blue
     border: '#272727ff',
     likeButton: '#FF0066',    // neon magenta-red
     witnessButton: '#00FF9F', // synthwave mint

@@ -146,14 +146,9 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
         {!guessable && (
           <PillActionButton
             icon={
-              <IconSymbol
-                name="eye"
-                color={quote.is_witnessed ? theme.witnessButton : theme.secondaryText}
-                size={18}
-                style={{ marginRight: 6 }}
-              />
+              <Text style={{ marginRight: 6 }} >👀</Text>
             }
-            label={quote.witness_count}
+            label={`${quote.witness_count} ${quote.witness_count === 1 ? 'witness' : 'witnesses'}`}
             color={quote.is_witnessed ? theme.witnessButton : theme.secondaryText}
             onPress={() => onWitness(quote.id)}
             // highlighted={quote.is_witnessed}
@@ -166,13 +161,13 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
             icon={
               <IconSymbol
                 name="person.fill.viewfinder"
-                color={randomPastel}
+                color={theme.accent}
                 size={18}
                 style={{ marginRight: 6 }}
               />
             }
             label="YapGuess"
-            color={randomPastel}
+            color={theme.accent}
             onPress={openGuessModal}
             highlighted={guessable}
             testID="guess-button"
