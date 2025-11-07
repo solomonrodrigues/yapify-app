@@ -11,7 +11,14 @@ import { Quote } from '@/types/api';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring, ZoomIn, ZoomOut } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  ZoomIn,
+  ZoomOut,
+} from 'react-native-reanimated';
 import BurstParticles from '../animated/BurstParticles';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -40,7 +47,6 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
   // ---- Single accent palette (low-chroma neutrals around one hue)
   const palette = useMemo(() => {
     const withAlpha = (hex: string, alpha: number) => {
-      // expects #RRGGBB
       const r = parseInt(hex.slice(1, 3), 16);
       const g = parseInt(hex.slice(3, 5), 16);
       const b = parseInt(hex.slice(5, 7), 16);
@@ -81,6 +87,10 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
     setHasSubmitted(true);
   };
 
+  // Helper to know the correct option id (if available)
+  const correctId = quote?.quoted_user?.id ?? null;
+  const isPostGuess = hasSubmitted && !!quote?.guess;
+
   return (
     <Modal
       visible={visible}
@@ -118,98 +128,202 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
         </View>
 
         {/* Body */}
-        {!hasSubmitted && quote.guess_options?.length ? (
-          <View style={styles.optionsContainer}>
-            <Text style={[styles.instructionText, { color: palette.textMuted }]}>
-              Tap to make your guess
-            </Text>
+        <View style={styles.optionsContainer}>
+          {!isPostGuess ? (
+            <>
+              <Text style={[styles.instructionText, { color: palette.textMuted }]}>
+                Tap to make your guess
+              </Text>
 
-            <View style={styles.optionsGrid}>
-              {quote.guess_options.map((option) => {
-                const isSelected = selectedOption === option.id;
-                return (
-                  <TouchableOpacity
-                    key={option.id}
-                    activeOpacity={0.9}
-                    style={[
-                      styles.optionButton,
-                      {
-                        borderColor: palette.accent,
-                        backgroundColor: isSelected ? palette.accent : 'transparent',
-                      },
-                    ]}
-                    onPress={() => {
-                      setSelectedOption(option.id);
-                      handleGuess(option.id);
-                    }}
-                  >
-                    <Text
+              <View style={styles.optionsGrid}>
+                {quote.guess_options?.map((option) => {
+                  const isSelected = selectedOption === option.id;
+                  return (
+                    <TouchableOpacity
+                      key={option.id}
+                      activeOpacity={0.9}
                       style={[
-                        styles.optionText,
-                        { color: isSelected ? '#FFFFFF' : palette.text },
+                        styles.optionButton,
+                        {
+                          borderColor: palette.accent,
+                          backgroundColor: isSelected ? palette.accent : 'transparent',
+                        },
                       ]}
-                      numberOfLines={1}
+                      onPress={() => {
+                        setSelectedOption(option.id);
+                        handleGuess(option.id);
+                      }}
                     >
-                      {option.display_name}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+                      <View style={styles.optionContent}>
+                        <Text
+                          style={[
+                            styles.optionText,
+                            { color: isSelected ? '#FFFFFF' : palette.text },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {option.display_name}
+                        </Text>
+                        {!!option.username && (
+                          <Text
+                            style={[
+                              styles.optionSubText,
+                              { color: isSelected ? 'rgba(255,255,255,0.85)' : palette.textMuted },
+                            ]}
+                            numberOfLines={1}
+                          >
+                            @{option.username}
+                          </Text>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
 
-            <TouchableOpacity
-              style={[
-                styles.skipButton,
-                {
-                  borderColor: palette.border,
-                  backgroundColor: palette.accentSofter,
-                },
-              ]}
-              activeOpacity={0.85}
-              onPress={() => handleGuess(undefined, true)}
-            >
-              <IconSymbol name="forward.fill" size={14} color={palette.text} />
-              <Text style={[styles.skipText, { color: palette.text }]}>Skip</Text>
-            </TouchableOpacity>
-          </View>
-          ) : hasSubmitted && quote.guess ? (
-            <Animated.View
-              entering={ZoomIn.springify().damping(16)}
-              exiting={ZoomOut}
-              style={styles.resultContainer}
-            >
-              <Animated.View
+              <TouchableOpacity
                 style={[
-                  styles.resultBadge,
-                  { backgroundColor: palette.accentSoft, borderColor: palette.border },
-                  // spring pop only when correct
-                  (quote.guess?.correct ? badgeSpringStyle : null),
+                  styles.skipButton,
+                  {
+                    borderColor: palette.border,
+                    backgroundColor: palette.accentSofter,
+                  },
                 ]}
+                activeOpacity={0.85}
+                onPress={() => handleGuess(undefined, true)}
               >
-                <IconSymbol
-                  name={
-                    quote.guess?.skipped
-                      ? 'forward.fill'
+                <IconSymbol name="forward.fill" size={14} color={palette.text} />
+                <Text style={[styles.skipText, { color: palette.text }]}>Skip</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              {/* Result banner */}
+              <Animated.View
+                entering={ZoomIn.springify().damping(16)}
+                exiting={ZoomOut}
+                style={styles.resultContainer}
+              >
+                <Animated.View
+                  style={[
+                    styles.resultBadge,
+                    { backgroundColor: palette.accentSoft, borderColor: palette.border },
+                    quote.guess?.correct ? badgeSpringStyle : null,
+                  ]}
+                >
+                  <IconSymbol
+                    name={
+                      quote.guess?.skipped
+                        ? 'forward.fill'
+                        : quote.guess?.correct
+                        ? 'checkmark.seal.fill'
+                        : 'xmark.octagon'
+                    }
+                    size={18}
+                    color={palette.accent}
+                  />
+                  <Text style={[styles.resultText, { color: palette.text }]}>
+                    {quote.guess?.skipped
+                      ? 'Skipped'
                       : quote.guess?.correct
-                      ? 'checkmark.seal.fill'
-                      : 'xmark.octagon'
-                  }
-                  size={18}
-                  color={palette.accent}
-                />
-                <Text style={[styles.resultText, { color: palette.text }]}>
-                  {quote.guess?.skipped
-                    ? 'Skipped'
-                    : quote.guess?.correct
-                    ? 'Correct'
-                    : `It was ${quote.quoted_user?.display_name ?? quote.quoted_name}`}
-                </Text>
+                      ? 'Correct'
+                      : `Oops. It was ${quote.quoted_user?.display_name ?? quote.quoted_name}`}
+                  </Text>
+                </Animated.View>
+
+                <BurstParticles color={palette.accent} active={!!quote.guess?.correct} />
               </Animated.View>
 
-              {/* show burst ONLY on success */}
-              <BurstParticles color={palette.accent} active={!!quote.guess?.correct} />
-            </Animated.View>
-          ) : null}
+              {/* Post-guess: show grid with locked states */}
+              <View style={styles.optionsGrid}>
+                {quote.guess_options?.map((option) => {
+                  const isSelected = selectedOption === option.id;
+                  const isCorrect = correctId != null ? option.id === correctId : false;
+                  const showCheck = isCorrect || (isSelected && quote.guess?.correct);
+                  const showCross = isSelected && !quote.guess?.correct && !isCorrect;
+
+                  // Visual state
+                  const bg = isCorrect
+                    ? palette.accentSoft
+                    : showCross
+                    ? palette.accentSofter
+                    : 'transparent';
+                  const br = isCorrect
+                    ? palette.accent
+                    : showCross
+                    ? palette.border
+                    : palette.border;
+
+                  return (
+                    <View
+                      key={option.id}
+                      style={[
+                        styles.optionButton,
+                        {
+                          backgroundColor: bg,
+                          borderColor: br,
+                          opacity: 1,
+                        },
+                      ]}
+                      pointerEvents="none"
+                    >
+                      <View style={styles.optionContentRow}>
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={[
+                              styles.optionText,
+                              { color: palette.text },
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {option.display_name}
+                          </Text>
+                          {!!option.username && (
+                            <Text
+                              style={[
+                                styles.optionSubText,
+                                { color: palette.textMuted },
+                              ]}
+                              numberOfLines={1}
+                            >
+                              @{option.username}
+                            </Text>
+                          )}
+                        </View>
+
+                        {showCheck && (
+                          <View style={[styles.statePill, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+                            <IconSymbol name="checkmark" size={14} color={palette.accent} />
+                          </View>
+                        )}
+                        {showCross && (
+                          <View style={[styles.statePill, { backgroundColor: palette.accentSofter, borderColor: palette.border }]}>
+                            <IconSymbol name="xmark" size={14} color={palette.text} />
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+
+              {/* Footer action */}
+              <View style={styles.footerRow}>
+                <TouchableOpacity
+                  onPress={onClose}
+                  activeOpacity={0.9}
+                  style={[
+                    styles.doneButton,
+                    { backgroundColor: palette.accent, borderColor: palette.accent },
+                  ]}
+                >
+                  <IconSymbol name="checkmark" size={16} color="#FFFFFF" />
+                  <Text style={[styles.doneText, { color: '#FFFFFF' }]}>Done</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </View>
       </View>
     </Modal>
   );
@@ -297,12 +411,33 @@ const getModalStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       borderRadius: 16,
       marginHorizontal: 6,
       minWidth: screenWidth * 0.42,
-      alignItems: 'center',
+      alignItems: 'stretch',
       borderWidth: 1,
+    },
+    optionContent: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    optionContentRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
     },
     optionText: {
       fontSize: 15,
       fontWeight: '700',
+    },
+    optionSubText: {
+      fontSize: 12.5,
+      fontWeight: '500',
+      marginTop: 2,
+    },
+    statePill: {
+      paddingHorizontal: 8,
+      paddingVertical: 6,
+      borderRadius: 999,
+      borderWidth: StyleSheet.hairlineWidth,
+      alignSelf: 'center',
     },
     skipButton: {
       flexDirection: 'row',
@@ -320,10 +455,10 @@ const getModalStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontWeight: '600',
     },
     resultContainer: {
-      flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: 20,
+      marginBottom: 18,
     },
     resultBadge: {
       flexDirection: 'row',
@@ -336,6 +471,24 @@ const getModalStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     resultText: {
       fontSize: 16,
+      fontWeight: '700',
+    },
+    footerRow: {
+      alignItems: 'center',
+      marginTop: 4,
+      marginBottom: 8,
+    },
+    doneButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 22,
+      borderRadius: 14,
+      borderWidth: StyleSheet.hairlineWidth,
+    },
+    doneText: {
+      fontSize: 15,
       fontWeight: '700',
     },
   });
