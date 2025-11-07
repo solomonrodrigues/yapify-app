@@ -187,7 +187,7 @@ const QuoteDetail: React.FC = () => {
             </Text>
           </View>
           <View style={styles.authorInfo}>
-            <Text style={styles.authorName}>{quote.author.display_name}</Text>
+            <Text style={styles.authorName}>{guessable ? '???' : quote.author.display_name}</Text>
             <Text style={styles.quotedText}>
               quoted {guessable ? '???' : quote.quoted_user?.display_name ?? quote.quoted_name}
             </Text>

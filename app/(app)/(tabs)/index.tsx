@@ -70,10 +70,16 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
     <View style={[styles.quoteContainer, { backgroundColor: theme.background }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigateToProfile(quote.author.id)}>
-          <Text style={styles.authorName}>{quote.author.display_name}</Text>
-        </TouchableOpacity>
+        {guessable ? (
+          <Text style={[styles.quotedText, styles.mysteryText]}>???</Text>
+        ) : (
+          <TouchableOpacity onPress={() => navigateToProfile(quote.author.id)}>
+            <Text style={styles.authorName}>{guessable ? '???' : quote.author.display_name}</Text>
+          </TouchableOpacity>
+        )}
+
         <Text style={styles.quotedText}> quoted </Text>
+
         {guessable ? (
           <Text style={[styles.quotedText, styles.mysteryText]}>???</Text>
         ) : quote.quoted_user ? (
