@@ -89,7 +89,7 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
 
   // Helper to know the correct option id (if available)
   const correctId = quote?.quoted_user?.id ?? null;
-  const isPostGuess = hasSubmitted && !!quote?.guess;
+  const isPostGuess = hasSubmitted || !!quote?.guess;
 
   return (
     <Modal
