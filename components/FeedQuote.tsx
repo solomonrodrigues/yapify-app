@@ -139,6 +139,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
           label={quote.like_count}
           color={quote.is_liked ? theme.likeButton : theme.secondaryText}
           borderColor={theme.border}
+          highlightBgColor={theme.likeButton}
           onPress={() => onLike(quote.id)}
           // highlighted={quote.is_liked}
           testID="like-button"
@@ -152,6 +153,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
             label={`${quote.witness_count} ${quote.witness_count === 1 ? 'witness' : 'witnesses'}`}
             color={quote.is_witnessed ? theme.witnessButton : theme.secondaryText}
             borderColor={theme.border}
+            highlightBgColor={theme.witnessButton}
             onPress={() => onWitness(quote.id)}
             // highlighted={quote.is_witnessed}
             testID="witness-button"
@@ -170,6 +172,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
             }
             label="YapGuess"
             color={theme.accent}
+            highlightBgColor={theme.accent}
             onPress={openGuessModal}
             highlighted={guessable}
             testID="guess-button"

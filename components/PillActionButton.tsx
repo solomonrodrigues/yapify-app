@@ -14,6 +14,7 @@ interface PillActionButtonProps {
   label: string | number;
   color: string;
   borderColor?: string;
+  highlightBgColor?: string;
   onPress: () => void;
   highlighted?: boolean;
   testID?: string;
@@ -24,6 +25,7 @@ const PillActionButton: React.FC<PillActionButtonProps> = ({
   label,
   color,
   borderColor,
+  highlightBgColor = color,
   onPress,
   highlighted = false,
   testID,
@@ -65,7 +67,7 @@ const PillActionButton: React.FC<PillActionButtonProps> = ({
         style={({ pressed }) => [
           styles.actionPill,
           {
-            backgroundColor: highlighted || pressed ? `${color}10` : 'transparent',
+            backgroundColor: highlighted || pressed ? `${highlightBgColor}10` : 'transparent',
             borderColor: borderColor || color,
           },
         ]}
