@@ -128,22 +128,6 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontWeight: '300',
       letterSpacing: 0.3,
     },
-    guessResultContainer: {
-      marginBottom: 16,
-    },
-    guessResultBadge: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      alignSelf: 'flex-start',
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      borderRadius: 14,
-      borderWidth: 1,
-    },
-    guessResultText: {
-      fontSize: 13,
-      fontWeight: '600',
-    },
     actionsBar: {
       flexDirection: 'row',
       alignItems: 'center',

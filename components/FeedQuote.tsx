@@ -87,44 +87,6 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
         <Text style={styles.quoteContent}>&ldquo;{quote.text}&rdquo;</Text>
       </View>
 
-      {/* Guess Result Badge */}
-      {quote.has_guessed && (
-        <View style={styles.guessResultContainer}>
-          <View style={[
-            styles.guessResultBadge,
-            { 
-              backgroundColor: quote.guess?.correct 
-                ? theme.witnessButton + '15' 
-                : quote.guess?.skipped 
-                ? theme.secondaryText + '15'
-                : theme.destructive + '15',
-              borderColor: quote.guess?.correct 
-                ? theme.witnessButton 
-                : quote.guess?.skipped
-                ? theme.secondaryText
-                : theme.destructive
-            }
-          ]}>
-            <IconSymbol
-              name={quote.guess?.skipped ? 'forward.fill' : quote.guess?.correct ? 'checkmark.circle.fill' : 'xmark.circle.fill'}
-              color={quote.guess?.correct ? theme.witnessButton : quote.guess?.skipped ? theme.secondaryText : theme.destructive}
-              size={14}
-              style={{ marginRight: 6 }}
-            />
-            <Text style={[
-              styles.guessResultText,
-              { color: quote.guess?.correct ? theme.witnessButton : quote.guess?.skipped ? theme.secondaryText : theme.destructive }
-            ]}>
-              {quote.guess?.skipped
-                ? 'Skipped'
-                : quote.guess?.correct
-                ? 'Correct!'
-                : `Wrong · ${quote.quoted_user?.display_name ?? quote.quoted_name}`}
-            </Text>
-          </View>
-        </View>
-      )}
-
       {/* Actions Bar */}
       <View style={styles.actionsBar}>
         <PillActionButton
@@ -172,6 +134,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
             }
             label="YapGuess"
             color={theme.accent}
+            borderColor={guessable ? theme.accent : theme.border}
             highlightBgColor={theme.accent}
             onPress={openGuessModal}
             highlighted={guessable}
