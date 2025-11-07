@@ -91,8 +91,6 @@ export const Colors = {
 
     // Feed-specific accents
     accent: '#60A5FA',        // lighter pastel blue
-    likeButton: '#F87171',    // soft coral red
-    witnessButton: '#34D399', // soft teal green
     border: '#272727ff',
     likeButton: '#FF0066',    // neon magenta-red
     witnessButton: '#00FF9F', // synthwave mint
