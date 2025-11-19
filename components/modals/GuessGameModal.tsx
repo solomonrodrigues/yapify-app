@@ -17,7 +17,6 @@ import Animated, {
   withSequence,
   withSpring,
   ZoomIn,
-  ZoomOut,
 } from 'react-native-reanimated';
 import BurstParticles from '../animated/BurstParticles';
 
@@ -201,7 +200,6 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
               {/* Result banner */}
               <Animated.View
                 entering={ZoomIn.springify().damping(16)}
-                exiting={ZoomOut}
                 style={styles.resultContainer}
               >
                 <Animated.View
