@@ -1,9 +1,29 @@
-import { Quote } from '../../types/api';
+import { Quote, PaginatedQuoteList } from '../../types/api';
 import api from './client';
 
-export const getQuotes = async (): Promise<Quote[]> => {
-  const res = await api.get<{ results: Quote[] }>('/quotes/');
-  return res.data.results || [];
+export type FeedScope =
+  | { type: 'user'; id: number };
+
+/**
+ * Fetch feed items. When a full pagination URL is provided, it is used as-is.
+ * Otherwise, construct the endpoint based on the optional scope.
+ */
+export const getQuotes = async (
+  url?: string | null,
+  scope?: FeedScope | null
+): Promise<PaginatedQuoteList> => {
+  let endpoint: string;
+
+  if (url) {
+    endpoint = url;
+  } else if (scope) {
+    endpoint = `/quotes/user/${scope.id}/`;
+  } else {
+    endpoint = '/quotes/';
+  }
+
+  const res = await api.get<PaginatedQuoteList>(endpoint);
+  return res.data;
 };
 
 export const createQuote = async (quoteData: Partial<Quote>): Promise<Quote> => {
