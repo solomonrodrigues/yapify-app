@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   useColorScheme,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Quote } from '@/types/api';
 import { useQuotes } from '@/context/QuotesContext';
@@ -22,9 +23,26 @@ const QuotesFeed: React.FC = () => {
   const styles = useThemedStyles(getStyles);
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
-  const { quotes, refreshing, refreshQuotes, likeQuoteById, witnessQuoteById, guessQuoteById } = useQuotes();
+  const { quotes, refreshing, isLoadingMore, hasMore, refreshQuotes, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById } = useQuotes();
   const insets = useSafeAreaInsets();
   const paddingTop = Platform.OS === 'ios' ? 0 : 16;
+
+  const renderFooter = () => {
+    if (!isLoadingMore) return null;
+    
+    return (
+      <View style={styles.loadingFooter}>
+        <ActivityIndicator size="small" />
+        <Text style={styles.loadingText}>Loading more...</Text>
+      </View>
+    );
+  };
+
+  const handleEndReached = () => {
+    if (hasMore && !isLoadingMore) {
+      loadMore();
+    }
+  };
 
   if (!refreshing && quotes.length === 0) {
     return (
@@ -64,6 +82,9 @@ const QuotesFeed: React.FC = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.feedContainer}
           style={{ paddingTop: paddingTop }}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
         />
       </View>
     </ThemedView>
@@ -157,6 +178,15 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontSize: 16,
       fontWeight: '600',
       color: theme.accent,
+    },
+    loadingFooter: {
+      padding: 20,
+      alignItems: 'center',
+    },
+    loadingText: {
+      marginTop: 8,
+      fontSize: 14,
+      color: theme.secondaryText,
     },
   }
 );
