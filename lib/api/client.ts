@@ -1,6 +1,6 @@
 // api/client.ts
 import { clearTokens, getAccessToken, getRefreshToken, setToken } from '@/lib/utils/storage';
-import axios, { AxiosError, AxiosInstance } from 'axios';
+import axios, { AxiosError, AxiosInstance, isAxiosError } from 'axios';
 
 const API_BASE_URL = 'https://yapify.net/api';
 
@@ -67,11 +67,23 @@ api.interceptors.response.use(
         return api(originalRequest);
         
       } catch (refreshError) {
-        // Refresh failed - user needs to log in again
-        await clearTokens();
-        if (onLogoutHandler) {
-          onLogoutHandler();
+        // Only logout if the refresh *response* tells us the token is bad
+        if (isAxiosError(refreshError)) {
+          const status = refreshError.response?.status;
+          if (status === 400 || status === 401) {
+            await clearTokens();
+            onLogoutHandler?.();
+          } else {
+            // network error / 5xx etc. -> don't nuke the session
+            console.warn("Token refresh failed but not logging out", {
+              status,
+              data: refreshError.response?.data,
+            });
+          }
+        } else {
+          console.warn("Non-Axios error during token refresh", refreshError);
         }
+
         return Promise.reject(refreshError);
       }
     }
