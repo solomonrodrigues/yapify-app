@@ -1,5 +1,6 @@
 // api/client.ts
-import { clearTokens, getAccessToken, getRefreshToken, setToken } from '@/lib/utils/storage';
+import { clearTokens, getAccessToken, getRefreshToken, setTokens } from '@/lib/utils/storage';
+import { TokenRefresh } from '@/types/api';
 import axios, { AxiosError, AxiosInstance, isAxiosError } from 'axios';
 
 const API_BASE_URL = 'https://yapify.net/api';
@@ -24,10 +25,11 @@ const authClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-export const refreshAccessToken = async (
+// ---- Refresh call (no interceptors)
+export const refreshAuthTokens = async (
   refresh: string
-): Promise<{ access: string }> => {
-  const res = await authClient.post<{ access: string }>('/auth/refresh/', { refresh });
+): Promise<TokenRefresh> => {
+  const res = await authClient.post<TokenRefresh>('/auth/refresh/', { refresh });
   return res.data;
 };
 
@@ -55,13 +57,13 @@ api.interceptors.response.use(
         }
 
         // Try to refresh the token
-        const newTokens = await refreshAccessToken(refreshToken);
-        await setToken(newTokens.access, refreshToken);
+        const { access, refresh } = await refreshAuthTokens(refreshToken);
+        await setTokens(access, refresh);  // Also rotate refresh token
 
         // Mark this request as retried and try again
         originalRequest._retry = true;
         if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${newTokens.access}`;
+          originalRequest.headers.Authorization = `Bearer ${access}`;
         }
         
         return api(originalRequest);

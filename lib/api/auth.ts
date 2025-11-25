@@ -1,5 +1,5 @@
 import api from '@/lib/api/client';
-import { setToken } from '@/lib/utils/storage';
+import { setTokens } from '@/lib/utils/storage';
 import { RegisterResponse, TokenRefresh, UserRegistration } from '@/types/api';
 
 export const register = async (data: UserRegistration): Promise<RegisterResponse> => {
@@ -9,7 +9,7 @@ export const register = async (data: UserRegistration): Promise<RegisterResponse
 
 export const apiLogin = async (email: string, password: string): Promise<TokenRefresh> => {
   const res = await api.post<TokenRefresh>('/auth/login/', { email, password });
-  await setToken(res.data.access, res.data.refresh);
+  await setTokens(res.data.access, res.data.refresh);
   return res.data;
 };
 
