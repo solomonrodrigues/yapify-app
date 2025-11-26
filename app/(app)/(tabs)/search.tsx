@@ -553,14 +553,14 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     filterChipActive: {
       backgroundColor: "rgba(79,70,229,0.12)",
-      borderColor: "rgba(79,70,229,0.8)",
+      borderColor: theme.pastels.purple,
     },
     filterChipText: {
       fontSize: 13,
       fontWeight: "500",
     },
     filterChipTextActive: {
-      color: "#4F46E5",
+      color: theme.pastels.purple,
     },
     scroll: {
       flex: 1,
