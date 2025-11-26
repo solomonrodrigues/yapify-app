@@ -1,26 +1,88 @@
+import ActionChip from '@/components/ActionChip';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { router } from 'expo-router';
 import React from 'react';
 import {
   StyleSheet,
   Text,
+  useColorScheme,
   View
 } from 'react-native';
 import Onboarding from 'react-native-onboarding-swiper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function OnboardingScreen() {
-  return (
-    <ThemedView>    
+  const styles = useThemedStyles(getStyles);
+  const colorScheme = useColorScheme() ?? 'dark';
+  const theme = Colors[colorScheme];
+  const insets = useSafeAreaInsets();
+
+  const FinishButton = ({ ...props }) => (
+  <View style={{ marginRight: 10 }}>
+    <ActionChip
+      label={'Finish'}
+      color={theme.text}
+      icon={'checkmark'}
+      onPress={() => router.back()}
+      />
+      </View>
+    );
+
+    
+    return (
+      <ThemedView style={{paddingBottom: insets.bottom}}>    
       <Onboarding
+        skipToPage={3}
+        containerStyles={styles.container}
+        DoneButtonComponent={FinishButton}
         pages={[
-          {
-            backgroundColor: '#fff',
-            image: <View>
-                    <Text>Hello</Text>
-                  </View>,
-            title: 'Onboarding',
-            subtitle: 'Done with React Native Onboarding Swiper',
-          },
+        {
+          backgroundColor: theme.cardBackground,
+          image: (
+            <View>
+              <Text>👁️</Text>
+            </View>
+          ),
+          title: 'Welcome to Yapify',
+          subtitle: 'Where the things your friends say can never be unsaid.',
+          titleStyles: styles.titleStyles,
+          
+        },
+        {
+          backgroundColor: theme.cardBackground,
+          image: (
+            <View>
+              <Text>🪦</Text>
+            </View>
+          ),
+          title: 'Immortalise Their Crimes',
+          subtitle: 'Screenshot energy, but worse. Every cursed quote lives here forever.',
+          titleStyles: styles.titleStyles,
+        },
+        {
+          backgroundColor: theme.cardBackground,
+          image: (
+            <View>
+              <Text>🍖</Text>
+            </View>
+          ),
+          title: 'Cause Chaos',
+          subtitle: 'Inside jokes, out-of-pocket statements, and verbal war crimes — all welcome.',
+          titleStyles: styles.titleStyles,
+        },
+        {
+          backgroundColor: theme.cardBackground,
+          image: (
+            <View>
+              <Text>🔪</Text>
+            </View>
+          ),
+          title: 'Unleash the Yaps',
+          subtitle: 'Begin collecting the quotes your friends will deny saying.',
+          titleStyles: styles.titleStyles,
+        },
         ]}
       />
   </ThemedView>
@@ -43,55 +105,8 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       padding: 20,
       backgroundColor: theme.background,
     },
-   
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-      marginBottom: 16,
-    },
-    contentContainer: {
-      marginBottom: 20,
-      paddingVertical: 8,
-    },
-    actionsBar: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      paddingVertical: 10,
-    },
-    divider: {
-      height: 1,
-      backgroundColor: theme.divider,
-      marginTop: 10,
-      marginHorizontal: -16,
-    },
-    emptyText: {
-      fontSize: 18,
-      marginBottom: 20,
-      textAlign: 'center',
-      color: theme.secondaryText,
-    },
-    retryButton: {
-      borderWidth: 1,
-      borderRadius: 8,
-      paddingVertical: 12,
-      paddingHorizontal: 24,
-      borderColor: theme.accent,
-    },
-    retryText: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: theme.accent,
-    },
-    loadingFooter: {
-      padding: 20,
-      alignItems: 'center',
-    },
-    loadingText: {
-      marginTop: 8,
-      fontSize: 14,
-      color: theme.secondaryText,
-    },
+    titleStyles: {
+      color: theme.text,
+    }
   }
 );

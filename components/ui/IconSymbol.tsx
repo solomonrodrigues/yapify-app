@@ -34,7 +34,7 @@ const MAPPING = {
   'chevron.left': { name: 'chevron-left' },
   'chevron.right': { name: 'chevron.right' },
   'person': { name: 'person' },
-  'checkmark': { name: 'checkmark' },
+  'checkmark': { name: 'check' },
   'quote.bubble.fill': { name: 'comment-dots' },  // Or quote-right
   'envelope.badge': { name: 'envelope' },
   'line.horizontal.3': { name: 'bars' },
