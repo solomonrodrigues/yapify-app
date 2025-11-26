@@ -1,10 +1,10 @@
 // app/(app)/menu.tsx
-import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'expo-router';
-import { Alert, Pressable, View, FlatList, TextStyle } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
+import { useAuth } from '@/context/AuthContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { useRouter } from 'expo-router';
+import { Alert, FlatList, Pressable, TextStyle, View } from 'react-native';
 
 type MenuItem = {
   title: string;
@@ -46,6 +46,10 @@ export default function MenuScreen() {
     {
       title: "Help & Support",
       onPress: () => router.push("/profile"), // placeholder route
+    },
+    {
+      title: "Onboarding",
+      onPress: () => router.push("/onboarding"), // placeholder route
     },
     {
       title: "Log out",
