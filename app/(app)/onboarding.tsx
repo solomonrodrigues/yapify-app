@@ -6,10 +6,9 @@ import {
   Text,
   View
 } from 'react-native';
-
 import Onboarding from 'react-native-onboarding-swiper';
 
-export function onboarding(){
+export default function OnboardingScreen() {
   return (
     <ThemedView>    
       <Onboarding
@@ -27,7 +26,6 @@ export function onboarding(){
   </ThemedView>
   );
 }
-
 
 export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   StyleSheet.create({
@@ -97,4 +95,3 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
   }
 );
-
