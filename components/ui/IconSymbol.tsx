@@ -74,6 +74,11 @@ const MAPPING = {
   'quote.closing':           { name: 'quote-right' },      // decorative quote end
   'checkmark.seal.fill':     { name: 'circle-check' },     // correct result
   'xmark.octagon':           { name: 'circle-xmark' },     // wrong result
+  // Required icons for Search / Explore screen
+  'line.3.horizontal.decrease.circle': { name: 'sliders' },           // filter/sort
+  'flame.fill':                        { name: 'fire' },              // streaks / hot
+  'clock.arrow.circlepath':            { name: 'clock-rotate-left' }, // "on this day" / history
+  'bolt.fill':                         { name: 'bolt' },              // energy / streaks
 } as const satisfies Record<string, IconMappingEntry>;
 
 // Component props for FontAwesome 7
