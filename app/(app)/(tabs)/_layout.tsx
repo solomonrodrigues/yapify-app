@@ -1,3 +1,4 @@
+// app/(app)/(tabs)/_layout.tsx
 import { router, Tabs } from 'expo-router';
 import React, { useState } from 'react';
 import { Platform, Pressable, useColorScheme } from 'react-native';
