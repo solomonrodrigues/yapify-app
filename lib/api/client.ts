@@ -35,45 +35,86 @@ export const refreshAuthTokens = async (
 
 // Add auth token to requests
 api.interceptors.request.use(async (config) => {
-  const token = await getAccess();
+  const token = getAccess();
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
+//  Refresh Lock + Queue System
+let isRefreshing = false;
+let refreshPromise: Promise<TokenRefresh> | null = null;
+let requestQueue: ((token: string) => void)[] = [];
+
+// Add request to waiting queue
+function queueRequest(callback: (token: string) => void) {
+  requestQueue.push(callback);
+}
+
+// Resolve all queued requests with the new token
+function resolveQueue(newToken: string) {
+  requestQueue.forEach((cb) => cb(newToken));
+  requestQueue = [];
+}
+
+function rejectQueue(error: any) {
+  requestQueue.forEach(cb => cb(error));
+  requestQueue = [];
+}
+
 // Handle token refresh on 401 errors
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as any; // Cast to any to add custom property
-    
-    // If 401 and we haven't already tried to refresh
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+
+    // Only handle 401 & ensure no double refresh attempt
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      const refreshToken = await getRefresh();
+      if (!refreshToken) {
+        console.warn("401 but no refresh token");
+        await clearTokens();
+        onLogoutHandler?.();
+        return Promise.reject(error);
+      }
+
+      // Already refreshing → queue the request
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          queueRequest((newAccessToken) => {
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            resolve(api(originalRequest));
+          });
+        });
+      }
+
+      // Begin refresh operation
+      isRefreshing = true;
+      refreshPromise = refreshAuthTokens(refreshToken);
+
       try {
-        const refreshToken = await getRefresh();
-        if (!refreshToken) {
-          throw new Error('No refresh token');
-        }
+        const { access, refresh } = await refreshPromise;
 
-        // Try to refresh the token
-        const { access, refresh } = await refreshAuthTokens(refreshToken);
-        await setTokens(access, refresh);  // Also rotate refresh token
+        // Save new tokens (memory + SecureStore)
+        await setTokens(access, refresh);
 
-        // Mark this request as retried and try again
-        originalRequest._retry = true;
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${access}`;
-        }
-        
+        // Resume queued requests
+        resolveQueue(access);
+
+        // Retry this original request
+        originalRequest.headers.Authorization = `Bearer ${access}`;
         return api(originalRequest);
         
       } catch (refreshError) {
-        // Only logout if the refresh *response* tells us the token is bad
+        // Invalid or expired refresh token
         if (isAxiosError(refreshError)) {
           const status = refreshError.response?.status;
           if (status === 400 || status === 401) {
             await clearTokens();
+            rejectQueue(refreshError);
             onLogoutHandler?.();
           } else {
             // network error / 5xx etc. -> don't nuke the session
@@ -87,6 +128,12 @@ api.interceptors.response.use(
         }
 
         return Promise.reject(refreshError);
+      }
+
+      finally {
+        // Cleanup
+        isRefreshing = false;
+        refreshPromise = null;
       }
     }
 
