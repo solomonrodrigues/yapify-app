@@ -62,7 +62,7 @@ export default class LoginErrorHandler {
         { 
           text: "Verify Now", 
           onPress: async () => {
-            this.router.push(`/auth/email-verification?email=${encodeURIComponent(this.email)}`)
+            this.router.push(`/(auth)/email-verification?email=${encodeURIComponent(this.email)}`)
           }
         }
       ]
@@ -85,7 +85,7 @@ export default class LoginErrorHandler {
         { text: "Wait", style: "cancel" },
         { 
           text: "Reset Password", 
-          onPress: () => this.router.push("/auth/forgot-password") 
+          onPress: () => this.router.push("/(auth)/forgot-password") 
         }
       ]
     );
@@ -99,7 +99,7 @@ export default class LoginErrorHandler {
         { text: "Try Again", style: "cancel" },
         { 
           text: "Forgot Password?", 
-          onPress: () => this.router.push("/auth/reset-password") 
+          onPress: () => this.router.push("/(auth)/reset-password") 
         }
       ]
     );
