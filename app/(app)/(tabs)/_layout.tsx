@@ -74,6 +74,9 @@ function TabContent() {
           options={{
             title: 'Notifications',
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="bell.fill" color={color} />,
+            headerShown: true,
+            headerTitle: '',
+            // ToDo: Add 'mark all read' control to headerRight
           }}
         />
         <Tabs.Screen

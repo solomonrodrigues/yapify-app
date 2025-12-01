@@ -123,7 +123,7 @@ const NotificationsView: React.FC = () => {
 
   return (
     <ThemedView>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView edges={['bottom']} style={styles.container}>
         <LegendList
           data={notifications}
           keyExtractor={(item) => item.id.toString()}
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContainer: {
-    padding: 16,
+    paddingTop: 16,
     paddingBottom: 50,
   },
   centerContainer: {
