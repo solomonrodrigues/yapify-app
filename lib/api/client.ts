@@ -1,5 +1,5 @@
 // api/client.ts
-import { clearTokens, getAccessToken, getRefreshToken, setTokens } from '@/lib/utils/storage';
+import { clearTokens, getAccess, getRefresh, setTokens } from '@/lib/utils/storage';
 import { TokenRefresh } from '@/types/api';
 import axios, { AxiosError, AxiosInstance, isAxiosError } from 'axios';
 
@@ -35,7 +35,7 @@ export const refreshAuthTokens = async (
 
 // Add auth token to requests
 api.interceptors.request.use(async (config) => {
-  const token = await getAccessToken();
+  const token = await getAccess();
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -51,7 +51,7 @@ api.interceptors.response.use(
     // If 401 and we haven't already tried to refresh
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       try {
-        const refreshToken = await getRefreshToken();
+        const refreshToken = await getRefresh();
         if (!refreshToken) {
           throw new Error('No refresh token');
         }

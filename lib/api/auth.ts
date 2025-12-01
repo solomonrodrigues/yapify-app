@@ -1,3 +1,4 @@
+// lib/api/auth.ts
 import api from '@/lib/api/client';
 import { setTokens } from '@/lib/utils/storage';
 import { RegisterResponse, TokenRefresh, UserRegistration } from '@/types/api';

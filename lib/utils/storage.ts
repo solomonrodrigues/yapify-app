@@ -1,18 +1,36 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// lib/utils/storage.ts
+import * as SecureStore from 'expo-secure-store';
 
+// Refresh token
+export const setRefresh = async (refresh: string) => {
+  await SecureStore.setItemAsync('refreshToken', refresh);
+};
+
+export const getRefresh = async (): Promise<string | null> => {
+  try {
+    return await SecureStore.getItemAsync('refreshToken');
+  } catch (e) {
+    console.warn("Failed reading refresh token:", e);
+    return null;
+  }
+};
+
+// Access token
+let accessToken: string | null = null;
+
+export const setAccess = (token: string | null) => {
+  accessToken = token;
+};
+
+export const getAccess = () => accessToken;
+
+// Helpers
 export const setTokens = async (access: string, refresh: string) => {
-  await AsyncStorage.setItem('accessToken', access);
-  await AsyncStorage.setItem('refreshToken', refresh);
-};
-
-export const getAccessToken = async (): Promise<string | null> => {
-  return await AsyncStorage.getItem('accessToken');
-};
-
-export const getRefreshToken = async (): Promise<string | null> => {
-  return await AsyncStorage.getItem('refreshToken');
+  await setAccess(access);
+  await setRefresh(refresh);
 };
 
 export const clearTokens = async () => {
-  await AsyncStorage.multiRemove(['accessToken', 'refreshToken']);
+  accessToken = null;
+  await SecureStore.deleteItemAsync('refreshToken');
 };

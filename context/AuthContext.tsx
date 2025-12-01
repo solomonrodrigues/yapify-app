@@ -1,6 +1,6 @@
 import { apiLogin } from "@/lib/api/auth";
 import { setOnLogoutHandler } from "@/lib/api/client";
-import { clearTokens, getAccessToken } from "@/lib/utils/storage";
+import { clearTokens, getAccess } from "@/lib/utils/storage";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { View } from "react-native";
 
@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authKey, setAuthKey] = useState(0);
 
   async function checkAuth() {
-    const token = await getAccessToken();
+    const token = await getAccess();
     setIsLoggedIn(!!token);
     setIsLoading(false);
   }
