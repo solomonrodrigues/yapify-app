@@ -5,7 +5,7 @@ import { Colors } from '@/constants/Colors';
 import { respondToFriendRequest, cancelFriendRequest, sendFriendRequest, unfriend } from '@/lib/api/friends';
 import type { Friendship } from '@/types/api';
 import React, { useState } from 'react';
-import { ActivityIndicator, StyleSheet, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 type FriendAction = 'add' | 'cancel' | 'unfriend' | 'accept' | 'reject';
 
@@ -140,7 +140,7 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
   };
 
   // Check if this is an incoming friend request
-  const isIncomingRequest = currentFriendship?.status === 'pending' && 
+  const isIncomingRequest = currentFriendship?.status === 'pending' &&
     currentFriendship.receiver.id !== userId;
 
   // For inline variant with incoming request, show accept/reject buttons
@@ -158,6 +158,27 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
   const config = getButtonConfig();
   const buttonSize = variant === 'compact' ? 'small' : variant === 'inline' ? 'inline' : 'default';
 
+  const handlePress = () => {
+    if (!config.action || loading) return;
+
+    if (config.action === 'unfriend') {
+      Alert.alert(
+        'Remove friend?',
+        'Are you sure you want to remove this friend?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Unfriend',
+            style: 'destructive',
+            onPress: () => handleAction('unfriend'),
+          },
+        ],
+      );
+    } else {
+      handleAction(config.action);
+    }
+  };
+
   return (
     <TouchableOpacity
       style={[
@@ -166,7 +187,7 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
         buttonSize === 'inline' && styles.buttonInline,
         config.style,
       ]}
-      onPress={() => config.action && handleAction(config.action)}
+      onPress={handlePress}
       disabled={!config.action || loading}
       activeOpacity={0.7}
     >
