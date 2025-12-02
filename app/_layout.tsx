@@ -10,6 +10,7 @@ import { QuotesProvider } from '@/context/QuotesContext';
 import { Stack } from 'expo-router';
 import { UserProvider } from '@/context/UserContext';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme() ?? 'dark';
@@ -40,7 +41,7 @@ export default function RootLayout() {
                   <Stack.Screen name="(auth)" />
                   <Stack.Screen name="+not-found" />
                 </Stack>
-
+                <Toast />
                 <StatusBar style="auto" />
               </KeyboardProvider>
             </SafeAreaProvider>

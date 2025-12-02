@@ -57,29 +57,69 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
     });
   };
 
+  const openActionsModal = () => {
+    router.push({
+      // Adjust this path to match where you put the modal file
+      pathname: '/(app)/(modals)/quote-actions',
+      params: {
+        quoteId: String(quote.id),
+        text: quote.text,
+        authorId: String(quote.author.id),
+        authorUsername: quote.author.username,
+        quotedUserId: quote.quoted_user ? String(quote.quoted_user.id) : '',
+        quotedUsername: quote.quoted_user?.username ?? quote.quoted_name ?? '',
+        guessable: guessable ? '1' : '0',
+      },
+    });
+  };
+
   return (
     <View style={[styles.quoteContainer, { backgroundColor: theme.background }]}>
       {/* Header */}
-      <View style={styles.header}>
-        {guessable ? (
-          <Text style={[styles.quotedText, styles.mysteryText]}>???</Text>
-        ) : (
-          <TouchableOpacity onPress={() => navigateToProfile(quote.author.id)}>
-            <Text style={styles.authorName}>{guessable ? '???' : quote.author.display_name}</Text>
-          </TouchableOpacity>
-        )}
+      <View
+        style={[
+          styles.header,
+          {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          },
+        ]}
+      >
+        {/* Left side: “X quoted Y” */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1 }}>
+          {guessable ? (
+            <Text style={[styles.quotedText, styles.mysteryText]}>???</Text>
+          ) : (
+            <TouchableOpacity onPress={() => navigateToProfile(quote.author.id)}>
+              <Text style={styles.authorName}>{guessable ? '???' : quote.author.display_name}</Text>
+            </TouchableOpacity>
+          )}
 
-        <Text style={styles.quotedText}> quoted </Text>
+          <Text style={styles.quotedText}> quoted </Text>
 
-        {guessable ? (
-          <Text style={[styles.quotedText, styles.mysteryText]}>???</Text>
-        ) : quote.quoted_user ? (
-          <TouchableOpacity onPress={() => navigateToProfile(quote.quoted_user.id)}>
-            <Text style={styles.quotedNameLink}>{quote.quoted_user.display_name}</Text>
-          </TouchableOpacity>
-        ) : (
-          <Text style={styles.quotedNameLink}>{quote.quoted_name}</Text>
-        )}
+          {guessable ? (
+            <Text style={[styles.quotedText, styles.mysteryText]}>???</Text>
+          ) : quote.quoted_user ? (
+            <TouchableOpacity onPress={() => navigateToProfile(quote.quoted_user.id)}>
+              <Text style={styles.quotedNameLink}>{quote.quoted_user.display_name}</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.quotedNameLink}>{quote.quoted_name}</Text>
+          )}
+        </View>
+
+        {/* Right side: three-dots menu */}
+        <TouchableOpacity
+          onPress={openActionsModal}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <IconSymbol
+            name="ellipsis"
+            size={18}
+            color={theme.secondaryText}
+          />
+        </TouchableOpacity>
       </View>
 
       {/* Quote Content - Hero Element */}

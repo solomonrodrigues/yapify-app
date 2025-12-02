@@ -69,6 +69,9 @@ const MAPPING = {
   'text.insert':                    { name: 'file-lines' },
   'sparkle.magnifyingglass':        { name: 'wand-magic-sparkles' },
   'person.crop.circle':             { name: 'user-circle' },
+  'ellipsis':                       { name: 'ellipsis' },
+  'bookmark':                       { name: 'bookmark' },
+  'doc.on.doc':                     { name: 'copy' },
   // Required icons for GuessGameModal
   'quote.opening':           { name: 'quote-left' },       // decorative quote start
   'quote.closing':           { name: 'quote-right' },      // decorative quote end

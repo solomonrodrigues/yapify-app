@@ -240,6 +240,9 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
                 onChangeText={handleSearch}
                 autoCapitalize="words"
                 autoFocus
+                textContentType="none"
+                autoComplete="off"
+                importantForAutofill="no"
             />
             </View>
         </View>
