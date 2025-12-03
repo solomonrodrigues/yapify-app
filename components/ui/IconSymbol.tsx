@@ -32,7 +32,7 @@ const MAPPING = {
   'xmark': { name: 'xmark' },
   'plus': { name: 'plus' },
   'chevron.left': { name: 'chevron-left' },
-  'chevron.right': { name: 'chevron.right' },
+  'chevron.right': { name: 'chevron-right' },
   'person': { name: 'person' },
   'checkmark': { name: 'check' },
   'quote.bubble.fill': { name: 'comment-dots' },  // Or quote-right
