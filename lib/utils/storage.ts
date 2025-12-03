@@ -26,7 +26,7 @@ export const getAccess = () => accessToken;
 
 // Helpers
 export const setTokens = async (access: string, refresh: string) => {
-  await setAccess(access);
+  setAccess(access);
   await setRefresh(refresh);
 };
 

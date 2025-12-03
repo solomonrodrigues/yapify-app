@@ -1,6 +1,6 @@
 import { apiLogin } from "@/lib/api/auth";
-import { setOnLogoutHandler } from "@/lib/api/client";
-import { clearTokens, getAccess } from "@/lib/utils/storage";
+import { refreshAuthTokens, setOnLogoutHandler } from "@/lib/api/client";
+import { clearTokens, getRefresh, setTokens } from "@/lib/utils/storage";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { View } from "react-native";
 
@@ -20,9 +20,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authKey, setAuthKey] = useState(0);
 
   async function checkAuth() {
-    const token = await getAccess();
-    setIsLoggedIn(!!token);
-    setIsLoading(false);
+    setIsLoading(true);
+    try {
+      // 1. Look for a refresh token (access is memory-only, so ignore it on cold start)
+      const refreshToken = await getRefresh();
+
+      if (!refreshToken) {
+        // No refresh token means definitely logged out
+        setIsLoggedIn(false);
+        return;
+      }
+
+      // 2. Try to refresh tokens
+      const { access, refresh } = await refreshAuthTokens(refreshToken);
+      await setTokens(access, refresh);
+
+      // 3. If we got here, we’re authenticated
+      setIsLoggedIn(true);
+    } catch (e) {
+      // Refresh failed (expired, revoked, etc.)
+      console.warn(e);
+      await clearTokens();
+      setIsLoggedIn(false);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function login(email: string, password: string) {
