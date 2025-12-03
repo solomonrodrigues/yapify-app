@@ -204,6 +204,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
         visible={visible}
         animationType="slide"
         presentationStyle="pageSheet"
+        onRequestClose={onClose}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <KeyboardAvoidingView
