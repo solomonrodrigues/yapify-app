@@ -23,6 +23,8 @@ function TabContent() {
     // Refresh your quotes list, show success message, etc.
   };
 
+  const tabBarIconSize = Platform.OS === 'ios' ? 28 : 20
+
   return (
     <>
       <Tabs
@@ -43,21 +45,21 @@ function TabContent() {
           name="index"
           options={{
             title: 'Home',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+            tabBarIcon: ({ color }) => <IconSymbol size={tabBarIconSize} name="house.fill" color={color} />,
           }}
         />
         <Tabs.Screen
           name="search"
           options={{
             title: 'Search',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="magnifyingglass" color={color} />,
+            tabBarIcon: ({ color }) => <IconSymbol size={tabBarIconSize} name="magnifyingglass" color={color} />,
           }}
         />
         <Tabs.Screen
           name="post"
           options={{
             title: 'Post',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="plus.square.fill" color={color} />,
+            tabBarIcon: ({ color }) => <IconSymbol size={tabBarIconSize} name="plus.square.fill" color={color} />,
             tabBarButton: (props) => (
               <HapticTab
                 {...props}
@@ -73,7 +75,7 @@ function TabContent() {
           name="notifications"
           options={{
             title: 'Notifications',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="bell.fill" color={color} />,
+            tabBarIcon: ({ color }) => <IconSymbol size={tabBarIconSize} name="bell.fill" color={color} />,
             headerShown: true,
             headerTitle: '',
             // ToDo: Add 'mark all read' control to headerRight
@@ -86,7 +88,7 @@ function TabContent() {
             tabBarIcon: ({ focused }) => (
               <InitialsAvatar
                 user={user!}
-                size={28}
+                size={tabBarIconSize}
                 style={{
                   marginBottom: 2,
                   borderWidth: focused ? 1 : 0.5,
