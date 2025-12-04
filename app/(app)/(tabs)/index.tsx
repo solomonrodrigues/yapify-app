@@ -60,7 +60,6 @@ const QuotesFeed: React.FC = () => {
       <View
         style={{
           flex: 1,
-          paddingTop: insets.top,
           paddingBottom: insets.bottom,
         }}
       >

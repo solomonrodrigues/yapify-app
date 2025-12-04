@@ -171,26 +171,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  notificationCard: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  notificationText: {
-    fontSize: 16,
-    flex: 1,
-    flexWrap: 'wrap',
-  },
-  unreadBadge: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginLeft: 8,
-  },
   loadingText: {
     marginTop: 16,
     fontSize: 16,

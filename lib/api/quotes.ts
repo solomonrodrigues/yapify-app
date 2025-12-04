@@ -26,6 +26,21 @@ export const getQuotes = async (
   return res.data;
 };
 
+export const searchQuotes = async (
+  query: string,
+  year?: number,
+  month?: number
+): Promise<Quote[]> => {
+  if (!query.trim()) return [];
+
+  const params: Record<string, any> = { search: query };
+  if (year) params.year = year;
+  if (month) params.month = month;
+
+  const res = await api.get<{ results: Quote[] }>("/quotes/search/", { params });
+  return res.data.results || [];
+};
+
 export const createQuote = async (quoteData: Partial<Quote>): Promise<Quote> => {
   const res = await api.post<Quote>('/quotes/', quoteData);
   return res.data;

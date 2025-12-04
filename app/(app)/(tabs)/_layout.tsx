@@ -24,6 +24,7 @@ function TabContent() {
   };
 
   const tabBarIconSize = Platform.OS === 'ios' ? 28 : 20
+  const headerIconSize = Platform.OS === 'ios' ? 24 : 16
 
   return (
     <>
@@ -46,13 +47,18 @@ function TabContent() {
           options={{
             title: 'Home',
             tabBarIcon: ({ color }) => <IconSymbol size={tabBarIconSize} name="house.fill" color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="search"
-          options={{
-            title: 'Search',
-            tabBarIcon: ({ color }) => <IconSymbol size={tabBarIconSize} name="magnifyingglass" color={color} />,
+            headerShown: true,
+            headerTitle: '',
+            headerRight: () => (
+              <Pressable onPress={() => router.push('/search')}>
+                <IconSymbol
+                  name="magnifyingglass"
+                  size={headerIconSize}
+                  color={theme.text}
+                  style={{ marginRight: 12 }}
+                />
+              </Pressable>
+            ),
           }}
         />
         <Tabs.Screen
@@ -102,7 +108,7 @@ function TabContent() {
               <Pressable onPress={() => router.push('/menu')}>
                 <IconSymbol
                   name="line.horizontal.3"
-                  size={24}
+                  size={headerIconSize}
                   color={theme.text}
                   style={{ marginRight: 12 }}
                 />
