@@ -30,8 +30,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Takes a refresh type JSON web token and returns an access type JSON web
-         *     token if the refresh token is valid. */
+        /**
+         * @description Takes a refresh type JSON web token and returns an access type JSON web
+         *     token if the refresh token is valid.
+         */
         post: operations["auth_refresh_create"];
         delete?: never;
         options?: never;
@@ -379,11 +381,33 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description OpenApi3 schema for this API. Format can be selected via content negotiation.
+        /**
+         * @description OpenApi3 schema for this API. Format can be selected via content negotiation.
          *
          *     - YAML: application/vnd.oai.openapi
-         *     - JSON: application/vnd.oai.openapi+json */
+         *     - JSON: application/vnd.oai.openapi+json
+         */
         get: operations["schema_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/search/quotes/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Search quotes by text, quoted user username, display name, or quoted_name.
+         *     Supports optional filtering by year and month.
+         */
+        get: operations["search_quotes_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -457,15 +481,30 @@ export interface components {
          * @enum {string}
          */
         KindEnum: "user" | "quote";
+        /** @description Quote serializer including minimum necessary fields */
+        MinimalQuote: {
+            readonly id: number;
+            text: string;
+            /** @description User who posted the quote */
+            author: number;
+            /** @description User who said the quote */
+            quoted_user?: number | null;
+            /** @description Name of the person quoted (if not a registered user) */
+            quoted_name?: string | null;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
         /** @description User serializer including minimum necessary fields */
         MinimalUser: {
             readonly id: number;
             readonly username: string;
             readonly display_name: string;
-            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
+            /**
+             * @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
              *
              *     * `mutuals` - Mutual Friends Only
-             *     * `extended` - Friends of Friends */
+             *     * `extended` - Friends of Friends
+             */
             readonly quote_visibility: components["schemas"]["QuoteVisibilityEnum"];
             readonly profile_color: components["schemas"]["ProfileColorEnum"];
         };
@@ -505,6 +544,21 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["Friendship"][];
+        };
+        PaginatedMinimalQuoteList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["MinimalQuote"][];
         };
         PaginatedNotificationList: {
             /** @example 123 */
@@ -585,10 +639,12 @@ export interface components {
             readonly date_joined?: string;
             readonly friends_count?: string;
             readonly quotes_count?: string;
-            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
+            /**
+             * @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
              *
              *     * `mutuals` - Mutual Friends Only
-             *     * `extended` - Friends of Friends */
+             *     * `extended` - Friends of Friends
+             */
             quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
             profile_color?: components["schemas"]["ProfileColorEnum"];
         };
@@ -708,10 +764,12 @@ export interface components {
             readonly date_joined: string;
             readonly friends_count: string;
             readonly quotes_count: string;
-            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
+            /**
+             * @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
              *
              *     * `mutuals` - Mutual Friends Only
-             *     * `extended` - Friends of Friends */
+             *     * `extended` - Friends of Friends
+             */
             quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
             profile_color?: components["schemas"]["ProfileColorEnum"];
         };
@@ -1395,6 +1453,36 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+        };
+    };
+    search_quotes_list: {
+        parameters: {
+            query?: {
+                /** @description Optional filter by creation month (1–12). */
+                month?: number;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description A search term. */
+                search?: string;
+                /** @description Optional filter by creation year. */
+                year?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedMinimalQuoteList"];
                 };
             };
         };
