@@ -21,6 +21,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { timeAgo } from "@/lib/utils/timeAgo";
+import { FilterPicker } from "@/components/FilterPicker";
+import { MONTH_KEYS, MONTH_MAP, MONTH_MAP_REVERSE } from "@/constants/Months";
 
 type SearchScope = "users" | "quotes";
 
@@ -39,8 +41,13 @@ const SearchScreen = () => {
   const [yearFilter, setYearFilter] = useState<number | null>(new Date().getFullYear());
   const [monthFilter, setMonthFilter] = useState<number | null>(null);
 
+  // Modal states
+  const [showYearPicker, setShowYearPicker] = useState(false);
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+
+
   const debouncedSearch = useRef(
-    debounce(async (text: string, scope: SearchScope) => {
+    debounce(async (text: string, scope: SearchScope, year?: number | null, month?: number | null) => {
       if (text.length < 2) {
         setUserResults([]);
         setQuoteResults([]);
@@ -52,8 +59,8 @@ const SearchScreen = () => {
         if (scope === "users") {
           const users = await searchUsers(text);
           setUserResults(users);
-        } else if (scope === "quotes") {
-          const quotes = await searchQuotes(text, yearFilter ?? undefined, monthFilter ?? undefined);
+        } else {
+          const quotes = await searchQuotes(text, year ?? undefined, month ?? undefined);
           setQuoteResults(quotes);
         }
       } catch (err) {
@@ -71,7 +78,7 @@ const SearchScreen = () => {
   }, [debouncedSearch]);
 
   useEffect(() => {
-    debouncedSearch(query, scope);
+    debouncedSearch(query, scope, yearFilter, monthFilter);
   }, [query, scope, yearFilter, monthFilter, debouncedSearch]);
 
   const handlePressUser = (user: User) => {
@@ -88,7 +95,7 @@ const SearchScreen = () => {
     const parts = text.split(new RegExp(`(${term})`, "gi"));
     return parts.map((part, idx) =>
       part.toLowerCase() === term.toLowerCase() ? (
-        <ThemedText key={idx} style={{ backgroundColor: "#FFD54F" }}>
+        <ThemedText key={idx} style={{ backgroundColor: theme.pastels.blue }}>
           {part}
         </ThemedText>
       ) : (
@@ -162,11 +169,22 @@ const SearchScreen = () => {
 
           {scope === "quotes" && (
             <>
-              <TouchableOpacity style={styles.filterChip} onPress={() => setYearFilter(new Date().getFullYear())}>
-                <ThemedText style={styles.filterText}>{new Date().getFullYear()}</ThemedText>
+              <TouchableOpacity
+                style={[styles.filterChip, yearFilter ? styles.filterChipActive : null]}
+                onPress={() => setShowYearPicker(true)}
+              >
+                <ThemedText style={[styles.filterText, yearFilter ? styles.filterTextActive : null]}>
+                  {yearFilter ?? "Year"}
+                </ThemedText>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.filterChip} onPress={() => setMonthFilter(1)}>
-                <ThemedText style={styles.filterText}>Jan</ThemedText>
+
+              <TouchableOpacity
+                style={[styles.filterChip, monthFilter ? styles.filterChipActive : null]}
+                onPress={() => setShowMonthPicker(true)}
+              >
+                <ThemedText style={[styles.filterText, monthFilter ? styles.filterTextActive : null]}>
+                  {monthFilter ? MONTH_MAP_REVERSE[monthFilter] : "Month"}
+                </ThemedText>
               </TouchableOpacity>
             </>
           )}
@@ -188,6 +206,37 @@ const SearchScreen = () => {
           />
         )}
       </View>
+
+      <FilterPicker
+        visible={showYearPicker}
+        onClose={() => setShowYearPicker(false)}
+        options={Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i)}
+        selected={yearFilter}
+        onSelect={(val) => setYearFilter(val as number | null)}
+        theme={theme}
+      />
+
+      <FilterPicker
+        visible={showMonthPicker}
+        onClose={() => setShowMonthPicker(false)}
+        options={MONTH_KEYS}
+        selected={
+          monthFilter != null 
+            ? MONTH_MAP_REVERSE[monthFilter]
+            : null
+        }
+        onSelect={(val) => {        
+          if (typeof val === "string") {
+            // Convert short month string -> number (1–12)
+            const monthIndex = MONTH_MAP[val];
+            setMonthFilter(monthIndex); // store 1–12
+          } else {
+            setMonthFilter(null);
+          }
+        }}
+        theme={theme}
+      />
+
     </ThemedView>
   );
 };
@@ -237,5 +286,5 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     quoteHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
     quoteText: { fontSize: 15, lineHeight: 22 },
-    quoteDate: { fontSize: 12, color: theme.secondaryText, marginTop: 6 },
+    quoteDate: { fontSize: 12, color: theme.secondaryText, marginTop: 6 },    
   });
