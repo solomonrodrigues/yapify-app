@@ -9,9 +9,10 @@ import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getUser, getUserFriends } from '@/lib/api/friends';
 import type { User as CurrentUser, Friendship, PublicUser, Quote } from '@/types/api';
 import { LegendList } from '@legendapp/list';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
+    Animated,
     Modal,
     StyleSheet,
     Text,
@@ -54,6 +55,10 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   const [loadingFriends, setLoadingFriends] = useState(false);
   const [hasMoreFriends, setHasMoreFriends] = useState(true);
   const [refreshingFriends, setRefreshingFriends] = useState(false);
+
+  // Animation refs for pulse effect
+  const postedPulseAnim = useRef(new Animated.Value(1)).current;
+  const receivedPulseAnim = useRef(new Animated.Value(1)).current;
 
   // Load user profile
   useEffect(() => {
@@ -170,6 +175,30 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     setFriendship(newFriendship);
   };
 
+  const triggerPulse = (animValue: Animated.Value) => {
+    Animated.sequence([
+      Animated.timing(animValue, {
+        toValue: 1.15,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(animValue, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    if (tab === 'posted') {
+      triggerPulse(postedPulseAnim);
+    } else {
+      triggerPulse(receivedPulseAnim);
+    }
+  };
+
   const renderFooter = (isLoading: boolean) => {
     if (!isLoading) return null;
     return (
@@ -243,14 +272,22 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
-          <View style={styles.statCard}>
+          <TouchableOpacity 
+            style={styles.statCard}
+            activeOpacity={0.7}
+            onPress={() => handleTabChange('posted')}
+          >
             <ThemedText type="title">{quotesPostedCount}</ThemedText>
             <ThemedText style={styles.statLabel}>Posted</ThemedText>
-          </View>
-          <View style={styles.statCard}>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.statCard}
+            activeOpacity={0.7}
+            onPress={() => handleTabChange('received')}
+          >
             <ThemedText type="title">{quotesReceivedCount}</ThemedText>
             <ThemedText style={styles.statLabel}>Received</ThemedText>
-          </View>
+          </TouchableOpacity>
           <TouchableOpacity 
             style={styles.statCard} 
             activeOpacity={0.7}
@@ -265,19 +302,23 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
         <View style={styles.tabsContainer}>
           <TouchableOpacity
             style={[styles.tab, activeTab === 'posted' && styles.tabActive]}
-            onPress={() => setActiveTab('posted')}
+            onPress={() => handleTabChange('posted')}
           >
-            <ThemedText style={[styles.tabText, activeTab === 'posted' && styles.tabTextActive]}>
-              Posted
-            </ThemedText>
+            <Animated.View style={{ transform: [{ scale: postedPulseAnim }] }}>
+              <ThemedText style={[styles.tabText, activeTab === 'posted' && styles.tabTextActive]}>
+                Posted
+              </ThemedText>
+            </Animated.View>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.tab, activeTab === 'received' && styles.tabActive]}
-            onPress={() => setActiveTab('received')}
+            onPress={() => handleTabChange('received')}
           >
-            <ThemedText style={[styles.tabText, activeTab === 'received' && styles.tabTextActive]}>
-              Received
-            </ThemedText>
+            <Animated.View style={{ transform: [{ scale: receivedPulseAnim }] }}>
+              <ThemedText style={[styles.tabText, activeTab === 'received' && styles.tabTextActive]}>
+                Received
+              </ThemedText>
+            </Animated.View>
           </TouchableOpacity>
         </View>
 
@@ -473,7 +514,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       borderBottomColor: 'transparent',
     },
     tabActive: {
-      borderBottomColor: theme.accent,
+      borderBottomColor: theme.pastels.purple,
     },
     tabText: {
       fontSize: 15,
