@@ -1,4 +1,4 @@
-import { PublicUser, User } from '../../types/api';
+import { PaginatedPublicUserList, PublicUser, User } from '../../types/api';
 import api from './client';
 
 export const searchUsers = async (query: string): Promise<User[]> => {
@@ -24,6 +24,37 @@ export const getRecentFriends = async (): Promise<User[]> => {
 export const searchFriends = async (query: string): Promise<User[]> => {
     const res = await api.get<{ results: User[] }>(`/friends/?search=${encodeURIComponent(query)}`);
     return res.data.results || [];
+};
+
+/**
+ * Fetch a user's friends.
+ *
+ * - If `options.url` is provided, it is used as-is.
+ * - Otherwise, the endpoint is constructed from `userId` and optional `search`.
+ */
+export const getUserFriends = async (
+    userId: number,
+    options?: {
+      url?: string | null;
+      search?: string;
+    }
+): Promise<PaginatedPublicUserList> => {
+    let endpoint: string;
+  
+    if (options?.url) {
+      endpoint = options.url;
+    } else {
+      // Build the base endpoint for this user's friends
+      const params = new URLSearchParams();
+      if (options?.search) {
+        params.set('search', options.search);
+      }
+      const queryString = params.toString();
+      endpoint = `/users/${userId}/friends/${queryString ? `?${queryString}` : ''}`;
+    }
+  
+    const res = await api.get<PaginatedPublicUserList>(endpoint);
+    return res.data;
 };
 
 export const getFriendRequests = async () => {
