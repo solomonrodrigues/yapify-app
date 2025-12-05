@@ -23,3 +23,7 @@ export const getNotifications = async (url?: string | null): Promise<PaginatedNo
 export const markNotificationRead = async (notificationId: number): Promise<void> => {
   await api.post(`/notifications/${notificationId}/read/`);
 };
+
+export const markAllNotificationsRead = async (): Promise<void> => {
+  await api.post('/notifications/read/');
+};
