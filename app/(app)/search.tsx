@@ -38,7 +38,7 @@ const SearchScreen = () => {
   const [userResults, setUserResults] = useState<User[]>([]);
   const [quoteResults, setQuoteResults] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(false);
-  const [yearFilter, setYearFilter] = useState<number | null>(new Date().getFullYear());
+  const [yearFilter, setYearFilter] = useState<number | null>(null);
   const [monthFilter, setMonthFilter] = useState<number | null>(null);
 
   // Modal states

@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  StyleSheet,
 } from 'react-native';
 import { Quote } from '@/types/api';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -11,12 +12,12 @@ import { useUser } from '@/context/UserContext';
 import { useRouter } from 'expo-router';
 import PillActionButton from '@/components/PillActionButton';
 import { getPastelFromId } from '@/lib/utils/style';
-import { getStyles } from '@/app/(app)/(tabs)';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { Colors } from '@/constants/Colors';
 
 
 interface FeedQuoteProps {
   quote: Quote;
-  styles: ReturnType<typeof getStyles>;
   theme: any;
   onLike: (quoteId: number) => void;
   onWitness: (quoteId: number) => void;
@@ -25,12 +26,12 @@ interface FeedQuoteProps {
 
 const FeedQuote: React.FC<FeedQuoteProps> = ({
   quote,
-  styles,
   theme,
   onLike,
   onWitness,
   onGuess,
 }) => {
+  const styles = useThemedStyles(getStyles);
   const [guessMade, setGuessMade] = useState(!!quote.has_guessed);
   const [showGuessModal, setShowGuessModal] = useState(false);
   const { user } = useUser();
@@ -199,3 +200,62 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
 };
 
 export default FeedQuote;
+
+export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
+  StyleSheet.create({
+    quoteContainer: {
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 12,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      marginBottom: 16,
+    },
+    authorName: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.text,
+    },
+    quotedText: {
+      fontSize: 14,
+      color: theme.secondaryText,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    quotedNameLink: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.text,
+    },
+    mysteryText: {
+      fontWeight: '600',
+      fontStyle: 'italic',
+    },
+    contentContainer: {
+      marginBottom: 20,
+      paddingVertical: 8,
+    },
+    quoteContent: {
+      fontSize: 26,
+      lineHeight: 34,
+      color: theme.text,
+      fontWeight: '300',
+      letterSpacing: 0.3,
+    },
+    actionsBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      paddingVertical: 10,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: theme.divider,
+      marginTop: 10,
+      marginHorizontal: -16,
+    },
+  }
+);

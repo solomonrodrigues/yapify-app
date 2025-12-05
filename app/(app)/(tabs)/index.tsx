@@ -69,7 +69,6 @@ const QuotesFeed: React.FC = () => {
           renderItem={({ item }) => (
             <FeedQuote
               quote={item}
-              styles={styles}
               theme={theme}
               onLike={likeQuoteById}
               onWitness={witnessQuoteById}
@@ -92,10 +91,6 @@ const QuotesFeed: React.FC = () => {
 
 export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.background,
-    },
     feedContainer: {
       paddingBottom: 48,
     },
@@ -106,59 +101,9 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       padding: 20,
       backgroundColor: theme.background,
     },
-    quoteContainer: {
-      paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 12,
-    },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-      marginBottom: 16,
-    },
-    authorName: {
-      fontSize: 14,
-      fontWeight: '700',
-      color: theme.text,
-    },
-    quotedText: {
-      fontSize: 14,
-      color: theme.secondaryText,
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    quotedNameLink: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: theme.text,
-    },
-    mysteryText: {
-      fontWeight: '600',
-      fontStyle: 'italic',
-    },
     contentContainer: {
       marginBottom: 20,
       paddingVertical: 8,
-    },
-    quoteContent: {
-      fontSize: 26,
-      lineHeight: 34,
-      color: theme.text,
-      fontWeight: '300',
-      letterSpacing: 0.3,
-    },
-    actionsBar: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      paddingVertical: 10,
-    },
-    divider: {
-      height: 1,
-      backgroundColor: theme.divider,
-      marginTop: 10,
-      marginHorizontal: -16,
     },
     emptyText: {
       fontSize: 18,
