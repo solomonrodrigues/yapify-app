@@ -1,7 +1,7 @@
 // app/(app)/(tabs)/_layout.tsx
 import { router, Tabs } from 'expo-router';
 import React, { useState } from 'react';
-import { Platform, Pressable, useColorScheme } from 'react-native';
+import { Alert, Platform, Pressable, useColorScheme } from 'react-native';
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
@@ -11,6 +11,8 @@ import { Quote } from '@/types/api';
 import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { useUser } from '@/context/UserContext';
 import { DataPreloader } from '@/components/DataPreloader';
+import Toast from 'react-native-toast-message';
+import { markAllNotificationsRead } from '@/lib/api/notifications';
 
 function TabContent() {
   const colorScheme = useColorScheme() ?? 'dark';
@@ -25,6 +27,39 @@ function TabContent() {
 
   const tabBarIconSize = Platform.OS === 'ios' ? 28 : 20
   const headerIconSize = Platform.OS === 'ios' ? 24 : 16
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllNotificationsRead();
+      Toast.show({
+        type: 'info',
+        text1: 'You\'re all caught up.'
+      });
+      // ToDo: update notifications is_read if possible.
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to mark all notifications as read');
+    }
+  };
+
+
+  const openNotificationsMenu = () => {
+    Alert.alert(
+      "",
+      undefined,
+      [
+        {
+          text: "Mark all as read",
+          onPress: () => handleMarkAllRead(),
+          style: "default",
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]
+    );
+  };
 
   return (
     <>
@@ -84,7 +119,16 @@ function TabContent() {
             tabBarIcon: ({ color }) => <IconSymbol size={tabBarIconSize} name="bell.fill" color={color} />,
             headerShown: true,
             headerTitle: '',
-            // ToDo: Add 'mark all read' control to headerRight
+            headerRight: () => (
+              <Pressable onPress={() => openNotificationsMenu()}>
+                <IconSymbol
+                  name="ellipsis"
+                  size={headerIconSize}
+                  color={theme.text}
+                  style={{ marginRight: 12 }}
+                />
+              </Pressable>
+            ),
           }}
         />
         <Tabs.Screen
