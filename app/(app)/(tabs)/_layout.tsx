@@ -26,7 +26,8 @@ function TabContent() {
   };
 
   const tabBarIconSize = Platform.OS === 'ios' ? 28 : 20
-  const headerIconSize = Platform.OS === 'ios' ? 24 : 16
+  const headerIconSize = Platform.OS === 'ios' ? 28 : 20
+  const headerIconMarginRight = 16;
 
   const handleMarkAllRead = async () => {
     try {
@@ -90,7 +91,7 @@ function TabContent() {
                   name="magnifyingglass"
                   size={headerIconSize}
                   color={theme.text}
-                  style={{ marginRight: 12 }}
+                  style={{ marginRight: headerIconMarginRight }}
                 />
               </Pressable>
             ),
@@ -120,14 +121,24 @@ function TabContent() {
             headerShown: true,
             headerTitle: '',
             headerRight: () => (
-              <Pressable onPress={() => openNotificationsMenu()}>
-                <IconSymbol
-                  name="ellipsis"
-                  size={headerIconSize}
-                  color={theme.text}
-                  style={{ marginRight: 12 }}
-                />
-              </Pressable>
+              <>
+                <Pressable onPress={() => openNotificationsMenu()}>
+                  <IconSymbol
+                    name="ellipsis"
+                    size={headerIconSize}
+                    color={theme.text}
+                    style={{ marginRight: headerIconMarginRight }}
+                  />
+                </Pressable>
+                <Pressable onPress={() => router.push('/search')}>
+                  <IconSymbol
+                    name="magnifyingglass"
+                    size={headerIconSize}
+                    color={theme.text}
+                    style={{ marginRight: headerIconMarginRight }}
+                  />
+                </Pressable>
+              </>
             ),
           }}
         />
@@ -154,7 +165,7 @@ function TabContent() {
                   name="line.horizontal.3"
                   size={headerIconSize}
                   color={theme.text}
-                  style={{ marginRight: 12 }}
+                  style={{ marginRight: headerIconMarginRight }}
                 />
               </Pressable>
             ),
