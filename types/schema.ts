@@ -30,8 +30,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Takes a refresh type JSON web token and returns an access type JSON web
-         *     token if the refresh token is valid. */
+        /**
+         * @description Takes a refresh type JSON web token and returns an access type JSON web
+         *     token if the refresh token is valid.
+         */
         post: operations["auth_refresh_create"];
         delete?: never;
         options?: never;
@@ -250,6 +252,23 @@ export interface paths {
         get?: never;
         put?: never;
         /** @description Mark notification as read */
+        post: operations["notifications_read_create_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications/read/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Mark all notifications as read. */
         post: operations["notifications_read_create"];
         delete?: never;
         options?: never;
@@ -348,6 +367,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/quotes/search/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Search quotes by text, quoted user username, display name, or quoted_name.
+         *     Supports optional filtering by year and month.
+         */
+        get: operations["quotes_search_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/recents/": {
         parameters: {
             query?: never;
@@ -379,29 +418,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description OpenApi3 schema for this API. Format can be selected via content negotiation.
+        /**
+         * @description OpenApi3 schema for this API. Format can be selected via content negotiation.
          *
          *     - YAML: application/vnd.oai.openapi
-         *     - JSON: application/vnd.oai.openapi+json */
+         *     - JSON: application/vnd.oai.openapi+json
+         */
         get: operations["schema_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/search/quotes/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Search quotes by text, quoted user username, display name, or quoted_name.
-         *     Supports optional filtering by year and month. */
-        get: operations["search_quotes_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -419,6 +442,23 @@ export interface paths {
         };
         /** @description Retrieve public details about any user */
         get: operations["users_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users/{user_id}/friends/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get a paginated list of another user's friends. */
+        get: operations["users_friends_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -480,10 +520,12 @@ export interface components {
             readonly id: number;
             readonly username: string;
             readonly display_name: string;
-            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
+            /**
+             * @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
              *
              *     * `mutuals` - Mutual Friends Only
-             *     * `extended` - Friends of Friends */
+             *     * `extended` - Friends of Friends
+             */
             readonly quote_visibility: components["schemas"]["QuoteVisibilityEnum"];
             readonly profile_color: components["schemas"]["ProfileColorEnum"];
         };
@@ -603,10 +645,12 @@ export interface components {
             readonly date_joined?: string;
             readonly friends_count?: string;
             readonly quotes_count?: string;
-            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
+            /**
+             * @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
              *
              *     * `mutuals` - Mutual Friends Only
-             *     * `extended` - Friends of Friends */
+             *     * `extended` - Friends of Friends
+             */
             quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
             profile_color?: components["schemas"]["ProfileColorEnum"];
         };
@@ -726,10 +770,12 @@ export interface components {
             readonly date_joined: string;
             readonly friends_count: string;
             readonly quotes_count: string;
-            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
+            /**
+             * @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
              *
              *     * `mutuals` - Mutual Friends Only
-             *     * `extended` - Friends of Friends */
+             *     * `extended` - Friends of Friends
+             */
             quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
             profile_color?: components["schemas"]["ProfileColorEnum"];
         };
@@ -1065,13 +1111,31 @@ export interface operations {
             };
         };
     };
-    notifications_read_create: {
+    notifications_read_create_2: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 notification_id: number;
             };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    notifications_read_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -1336,6 +1400,36 @@ export interface operations {
             };
         };
     };
+    quotes_search_list: {
+        parameters: {
+            query?: {
+                /** @description Optional filter by creation month (1–12). */
+                month?: number;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description A search term. */
+                search?: string;
+                /** @description Optional filter by creation year. */
+                year?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedQuoteList"];
+                };
+            };
+        };
+    };
     recents_list: {
         parameters: {
             query?: {
@@ -1417,36 +1511,6 @@ export interface operations {
             };
         };
     };
-    search_quotes_list: {
-        parameters: {
-            query?: {
-                /** @description Optional filter by creation month (1–12). */
-                month?: number;
-                /** @description A page number within the paginated result set. */
-                page?: number;
-                /** @description Number of results to return per page. */
-                page_size?: number;
-                /** @description A search term. */
-                search?: string;
-                /** @description Optional filter by creation year. */
-                year?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedQuoteList"];
-                };
-            };
-        };
-    };
     users_retrieve: {
         parameters: {
             query?: never;
@@ -1464,6 +1528,34 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicUser"];
+                };
+            };
+        };
+    };
+    users_friends_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description A search term. */
+                search?: string;
+            };
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedPublicUserList"];
                 };
             };
         };
