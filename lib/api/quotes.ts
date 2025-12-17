@@ -85,3 +85,53 @@ export const guessQuote = async (
   );
   return res.data;
 };
+
+export const saveQuote = async (quoteId: number) => {
+  const res = await api.post(`/quotes/${quoteId}/save/`);
+  return res.data;
+};
+
+export const unsaveQuote = async (quoteId: number) => {
+  const res = await api.delete(`/quotes/${quoteId}/save/`);
+  return res.data;
+};
+
+export const getSavedQuotes = async (
+  url?: string | null,
+): Promise<PaginatedQuoteList> => {
+  let endpoint: string;
+
+  if (url) {
+    endpoint = url;
+  } else {
+    endpoint = '/quotes/saved/';
+  }
+
+  const res = await api.get<PaginatedQuoteList>(endpoint);
+  return res.data;
+};
+
+export const hideQuote = async (quoteId: number) => {
+  const res = await api.post(`/quotes/${quoteId}/hide/`);
+  return res.data;
+};
+
+export const unhideQuote = async (quoteId: number) => {
+  const res = await api.delete(`/quotes/${quoteId}/hide/`);
+  return res.data;
+};
+
+export const getHiddenQuotes = async (
+  url?: string | null,
+): Promise<PaginatedQuoteList> => {
+  let endpoint: string;
+
+  if (url) {
+    endpoint = url;
+  } else {
+    endpoint = '/quotes/hidden/';
+  }
+
+  const res = await api.get<PaginatedQuoteList>(endpoint);
+  return res.data;
+};
