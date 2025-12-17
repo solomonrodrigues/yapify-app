@@ -30,10 +30,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * @description Takes a refresh type JSON web token and returns an access type JSON web
-         *     token if the refresh token is valid.
-         */
+        /** @description Takes a refresh type JSON web token and returns an access type JSON web
+         *     token if the refresh token is valid. */
         post: operations["auth_refresh_create"];
         delete?: never;
         options?: never;
@@ -333,6 +331,30 @@ export interface paths {
         patch: operations["quotes_partial_update"];
         trace?: never;
     };
+    "/api/quotes/{quote_id}/hide/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Hide / unhide a quote.
+         *
+         *     POST   -> ensure quote is hidden for the current user.
+         *     DELETE -> ensure quote is not hidden for the current user. */
+        post: operations["quotes_hide_create"];
+        /** @description Hide / unhide a quote.
+         *
+         *     POST   -> ensure quote is hidden for the current user.
+         *     DELETE -> ensure quote is not hidden for the current user. */
+        delete: operations["quotes_hide_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/quotes/{quote_id}/like/": {
         parameters: {
             query?: never;
@@ -345,6 +367,30 @@ export interface paths {
         /** @description Like/unlike a quote */
         post: operations["quotes_like_create"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/quotes/{quote_id}/save/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Save / unsave a quote.
+         *
+         *     POST   -> ensure quote is saved for the current user.
+         *     DELETE -> ensure quote is not saved for the current user. */
+        post: operations["quotes_save_create"];
+        /** @description Save / unsave a quote.
+         *
+         *     POST   -> ensure quote is saved for the current user.
+         *     DELETE -> ensure quote is not saved for the current user. */
+        delete: operations["quotes_save_destroy"];
         options?: never;
         head?: never;
         patch?: never;
@@ -367,6 +413,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/quotes/hidden/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description List the current user's hidden quotes */
+        get: operations["quotes_hidden_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/quotes/saved/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description List the current user's saved quotes */
+        get: operations["quotes_saved_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/quotes/search/": {
         parameters: {
             query?: never;
@@ -374,10 +454,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * @description Search quotes by text, quoted user username, display name, or quoted_name.
-         *     Supports optional filtering by year and month.
-         */
+        /** @description Search quotes by text, quoted user username, display name, or quoted_name.
+         *     Supports optional filtering by year and month. */
         get: operations["quotes_search_list"];
         put?: never;
         post?: never;
@@ -418,12 +496,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * @description OpenApi3 schema for this API. Format can be selected via content negotiation.
+        /** @description OpenApi3 schema for this API. Format can be selected via content negotiation.
          *
          *     - YAML: application/vnd.oai.openapi
-         *     - JSON: application/vnd.oai.openapi+json
-         */
+         *     - JSON: application/vnd.oai.openapi+json */
         get: operations["schema_retrieve"];
         put?: never;
         post?: never;
@@ -520,12 +596,10 @@ export interface components {
             readonly id: number;
             readonly username: string;
             readonly display_name: string;
-            /**
-             * @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
+            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
              *
              *     * `mutuals` - Mutual Friends Only
-             *     * `extended` - Friends of Friends
-             */
+             *     * `extended` - Friends of Friends */
             readonly quote_visibility: components["schemas"]["QuoteVisibilityEnum"];
             readonly profile_color: components["schemas"]["ProfileColorEnum"];
         };
@@ -615,6 +689,7 @@ export interface components {
         PatchedQuote: {
             readonly id?: number;
             text?: string;
+            context?: string | null;
             readonly author?: components["schemas"]["MinimalUser"];
             readonly quoted_user?: components["schemas"]["MinimalUser"];
             quoted_user_id?: number | null;
@@ -645,12 +720,10 @@ export interface components {
             readonly date_joined?: string;
             readonly friends_count?: string;
             readonly quotes_count?: string;
-            /**
-             * @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
+            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
              *
              *     * `mutuals` - Mutual Friends Only
-             *     * `extended` - Friends of Friends
-             */
+             *     * `extended` - Friends of Friends */
             quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
             profile_color?: components["schemas"]["ProfileColorEnum"];
         };
@@ -691,6 +764,7 @@ export interface components {
         Quote: {
             readonly id: number;
             text: string;
+            context?: string | null;
             readonly author: components["schemas"]["MinimalUser"];
             readonly quoted_user: components["schemas"]["MinimalUser"];
             quoted_user_id?: number | null;
@@ -770,12 +844,10 @@ export interface components {
             readonly date_joined: string;
             readonly friends_count: string;
             readonly quotes_count: string;
-            /**
-             * @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
+            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
              *
              *     * `mutuals` - Mutual Friends Only
-             *     * `extended` - Friends of Friends
-             */
+             *     * `extended` - Friends of Friends */
             quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
             profile_color?: components["schemas"]["ProfileColorEnum"];
         };
@@ -1360,6 +1432,46 @@ export interface operations {
             };
         };
     };
+    quotes_hide_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quote_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    quotes_hide_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quote_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     quotes_like_create: {
         parameters: {
             query?: never;
@@ -1373,6 +1485,46 @@ export interface operations {
         responses: {
             /** @description No response body */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    quotes_save_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quote_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    quotes_save_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quote_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1397,6 +1549,50 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    quotes_hidden_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedQuoteList"];
+                };
+            };
+        };
+    };
+    quotes_saved_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedQuoteList"];
+                };
             };
         };
     };
@@ -1482,7 +1678,7 @@ export interface operations {
         parameters: {
             query?: {
                 format?: "json" | "yaml";
-                lang?: "af" | "ar" | "ar-dz" | "ast" | "az" | "be" | "bg" | "bn" | "br" | "bs" | "ca" | "ckb" | "cs" | "cy" | "da" | "de" | "dsb" | "el" | "en" | "en-au" | "en-gb" | "eo" | "es" | "es-ar" | "es-co" | "es-mx" | "es-ni" | "es-ve" | "et" | "eu" | "fa" | "fi" | "fr" | "fy" | "ga" | "gd" | "gl" | "he" | "hi" | "hr" | "hsb" | "hu" | "hy" | "ia" | "id" | "ig" | "io" | "is" | "it" | "ja" | "ka" | "kab" | "kk" | "km" | "kn" | "ko" | "ky" | "lb" | "lt" | "lv" | "mk" | "ml" | "mn" | "mr" | "ms" | "my" | "nb" | "ne" | "nl" | "nn" | "os" | "pa" | "pl" | "pt" | "pt-br" | "ro" | "ru" | "sk" | "sl" | "sq" | "sr" | "sr-latn" | "sv" | "sw" | "ta" | "te" | "tg" | "th" | "tk" | "tr" | "tt" | "udm" | "ug" | "uk" | "ur" | "uz" | "vi" | "zh-hans" | "zh-hant";
+                lang?: "af" | "ar" | "ar-dz" | "ast" | "az" | "be" | "bg" | "bn" | "br" | "bs" | "ca" | "ckb" | "cs" | "cy" | "da" | "de" | "dsb" | "el" | "en" | "en-au" | "en-gb" | "eo" | "es" | "es-ar" | "es-co" | "es-mx" | "es-ni" | "es-ve" | "et" | "eu" | "fa" | "fi" | "fr" | "fy" | "ga" | "gd" | "gl" | "he" | "hi" | "hr" | "hsb" | "ht" | "hu" | "hy" | "ia" | "id" | "ig" | "io" | "is" | "it" | "ja" | "ka" | "kab" | "kk" | "km" | "kn" | "ko" | "ky" | "lb" | "lt" | "lv" | "mk" | "ml" | "mn" | "mr" | "ms" | "my" | "nb" | "ne" | "nl" | "nn" | "os" | "pa" | "pl" | "pt" | "pt-br" | "ro" | "ru" | "sk" | "sl" | "sq" | "sr" | "sr-latn" | "sv" | "sw" | "ta" | "te" | "tg" | "th" | "tk" | "tr" | "tt" | "udm" | "ug" | "uk" | "ur" | "uz" | "vi" | "zh-hans" | "zh-hant";
             };
             header?: never;
             path?: never;
