@@ -10,6 +10,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import Toast from 'react-native-toast-message';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { hideQuote, saveQuote } from '@/lib/api/quotes';
 
 type Params = {
   quoteId?: string;
@@ -65,14 +66,25 @@ const QuoteActionsModal = () => {
   };
 
   const handleSave = () => {
-    // TODO: wire up a "save" action
-    console.log('Save quote', quoteId);
+    if (quoteId) {
+      saveQuote(parseInt(quoteId))
+      Toast.show({
+        type: 'info',
+        text1: 'Saved. For future contemplation.'
+      });
+    }
     close();
   };
 
   const handleHide = () => {
-    // TODO: wire up a "hide" action
-    console.log('Hide quote', quoteId);
+    if (quoteId) {
+      hideQuote(parseInt(quoteId))
+      Toast.show({
+        type: 'info',
+        text1: 'Hidden. Nothing to see here.'
+      });
+    }
+    // ToDo: Update quote UI to hide immediately the user requests it to be hidden. Display a way to immediately unhide aswell.
     close();
   };
 
