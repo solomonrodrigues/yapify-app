@@ -41,6 +41,7 @@ const MAPPING = {
   'heart': { name: 'heart' },
   'heart.fill': { name: 'heart' },
   'lock.open': { name: 'lock-open' },
+  'lock': { name: 'lock' },
   'calendar': { name: 'calendar' },
   'person.crop.circle.badge.xmark': { name: 'circle-user-circle-xmark' },
   'quote.bubble': { name: 'comment' },

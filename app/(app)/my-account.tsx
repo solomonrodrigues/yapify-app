@@ -1,13 +1,15 @@
 // app/(app)/menu.tsx
 import { ThemedText } from '@/components/ThemedText';
+import { IconSymbol, IconSymbolName } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useRouter } from 'expo-router';
-import { Alert, FlatList, Pressable, TextStyle, View } from 'react-native';
+import { Alert, FlatList, Pressable, TextStyle, useColorScheme, View } from 'react-native';
 
 type MenuItem = {
   title: string;
+  icon: IconSymbolName;
   onPress: () => void;
   destructive?: boolean;
 };
@@ -16,6 +18,8 @@ export default function MyAccountScreen() {
   const router = useRouter();
   const { logout } = useAuth();
   const styles = useThemedStyles(getStyles);
+  const colorScheme = useColorScheme() ?? 'dark';
+  const theme = Colors[colorScheme];
 
   async function handleLogout() {
     Alert.alert("Confirm Logout", "Are you sure you want to log out?", [
@@ -33,26 +37,32 @@ export default function MyAccountScreen() {
   const menuItems: MenuItem[] = [
     {
       title: "Settings",
+      icon: "gear",
       onPress: () => router.push("/profile"), // ToDo: Implement account settings
     },
     {
       title: "Saved",
+      icon: "bookmark",
       onPress: () => router.push("/saved-quotes"),
     },
     {
       title: "Privacy & Security",
-      onPress: () => router.push("/profile"), // placeholder route
+      icon: "lock",
+      onPress: () => router.push("/profile"), // ToDo: Implement privacy & security
     },
     {
       title: "Help & Support",
-      onPress: () => router.push("/profile"), // placeholder route
+      icon: "questionmark.circle.fill",
+      onPress: () => router.push("/profile"), // ToDo: Implement help & support
     },
     {
       title: "Onboarding",
-      onPress: () => router.push("/onboarding"), // placeholder route
+      icon: "person.crop.circle",
+      onPress: () => router.push("/onboarding"),
     },
     {
       title: "Log out",
+      icon: "xmark.circle.fill",
       onPress: handleLogout,
       destructive: true,
     },
@@ -72,11 +82,20 @@ export default function MyAccountScreen() {
               item.destructive && styles.destructiveItem,
             ]}
           >
-            <ThemedText
-              style={[styles.menuText, item.destructive && styles.destructiveText]}
-            >
-              {item.title}
-            </ThemedText>
+            <View style={styles.row}>
+              <IconSymbol
+                name={item.icon}
+                color={item.destructive ? theme.destructive : theme.text}
+                size={20}
+                style={{ marginRight: 12 }}
+              />
+
+              <ThemedText
+                style={[styles.menuText, item.destructive && styles.destructiveText]}
+              >
+                {item.title}
+              </ThemedText>
+            </View>
           </Pressable>
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -138,4 +157,8 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     separator: {
       height: 12,
     },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+    },    
   });
