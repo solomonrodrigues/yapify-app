@@ -12,7 +12,7 @@ type MenuItem = {
   destructive?: boolean;
 };
 
-export default function MenuScreen() {
+export default function MyAccountScreen() {
   const router = useRouter();
   const { logout } = useAuth();
   const styles = useThemedStyles(getStyles);
@@ -32,12 +32,12 @@ export default function MenuScreen() {
 
   const menuItems: MenuItem[] = [
     {
-      title: "Account Settings",
-      onPress: () => router.push("/profile"), // placeholder route
+      title: "Settings",
+      onPress: () => router.push("/profile"), // ToDo: Implement account settings
     },
     {
-      title: "Notifications",
-      onPress: () => router.push("/profile"), // placeholder route
+      title: "Saved",
+      onPress: () => router.push("/saved-quotes"),
     },
     {
       title: "Privacy & Security",

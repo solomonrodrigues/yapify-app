@@ -160,7 +160,7 @@ function TabContent() {
             headerShown: true,
             headerTitle: '',
             headerRight: () => (
-              <Pressable onPress={() => router.push('/menu')}>
+              <Pressable onPress={() => router.push('/my-account')}>
                 <IconSymbol
                   name="line.horizontal.3"
                   size={headerIconSize}

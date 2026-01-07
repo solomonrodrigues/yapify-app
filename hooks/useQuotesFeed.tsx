@@ -10,8 +10,14 @@ import { PaginatedQuoteList, Quote } from "@/types/api";
 import {
   useCallback,
   useState,
+  useMemo,
 } from "react";
 import type { FeedScope } from "@/lib/api/quotes";
+
+type QuotesFetcher = (
+  url?: string | null,
+  scope?: FeedScope | null
+) => Promise<PaginatedQuoteList>;
 
 export interface QuotesFeedValue {
   quotes: Quote[];
@@ -39,13 +45,14 @@ export interface QuotesFeedValue {
 
 interface UseQuotesFeedOptions {
   scope?: FeedScope | null;
+  fetcher?: QuotesFetcher;
 }
 
 /**
  * Core reusable feed logic. Works for main feed (no scope) and scoped feeds (user, org, etc).
  */
 export function useQuotesFeed(
-  { scope = null }: UseQuotesFeedOptions = {}
+  { scope = null, fetcher }: UseQuotesFeedOptions = {}
 ): QuotesFeedValue {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [initialLoading, setInitialLoading] = useState(false);
@@ -58,6 +65,11 @@ export function useQuotesFeed(
   const [hasMore, setHasMore] = useState(true);
   const [nextPage, setNextPage] = useState<string | null>(null);
 
+  const fetchQuotes = useMemo<QuotesFetcher>(
+    () => fetcher ?? getQuotes,
+    [fetcher]
+  );
+
   const loadQuotes = useCallback(
     async (isRefresh = false) => {
       if (isRefresh) {
@@ -68,7 +80,7 @@ export function useQuotesFeed(
 
       try {
         // IMPORTANT: pass scope here
-        const data: PaginatedQuoteList = await getQuotes(null, scope ?? null);
+        const data: PaginatedQuoteList = await fetchQuotes(null, scope ?? null);
 
         setQuotes(data.results || []);
         setNextPage(data.next ?? null);
@@ -86,7 +98,7 @@ export function useQuotesFeed(
         }
       }
     },
-    [scope, hasLoadedOnce]
+    [scope, hasLoadedOnce, fetchQuotes]
   );
 
   const loadMore = useCallback(async () => {
@@ -94,7 +106,7 @@ export function useQuotesFeed(
 
     setIsLoadingMore(true);
     try {
-      const response: PaginatedQuoteList = await getQuotes(
+      const response: PaginatedQuoteList = await fetchQuotes(
         nextPage,
         scope ?? null
       );
@@ -108,7 +120,7 @@ export function useQuotesFeed(
     } finally {
       setIsLoadingMore(false);
     }
-  }, [hasMore, initialLoading, isLoadingMore, nextPage, refreshing, scope]);
+  }, [hasMore, initialLoading, isLoadingMore, nextPage, refreshing, scope, fetchQuotes]);
 
   const likeQuoteById = useCallback(async (id: number) => {
     // optimistic update
