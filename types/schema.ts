@@ -703,6 +703,8 @@ export interface components {
             readonly witnesses?: components["schemas"]["QuoteWitness"][];
             readonly like_count?: number;
             readonly is_liked?: boolean;
+            readonly is_saved?: boolean;
+            readonly is_hidden?: boolean;
             readonly has_guessed?: boolean;
             readonly guess?: components["schemas"]["QuoteGuess"] | null;
             readonly remaining_skips?: number;
@@ -778,6 +780,8 @@ export interface components {
             readonly witnesses: components["schemas"]["QuoteWitness"][];
             readonly like_count: number;
             readonly is_liked: boolean;
+            readonly is_saved: boolean;
+            readonly is_hidden: boolean;
             readonly has_guessed: boolean;
             readonly guess: components["schemas"]["QuoteGuess"] | null;
             readonly remaining_skips: number;
@@ -1557,6 +1561,8 @@ export interface operations {
             query?: {
                 /** @description A page number within the paginated result set. */
                 page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
             };
             header?: never;
             path?: never;
@@ -1579,6 +1585,8 @@ export interface operations {
             query?: {
                 /** @description A page number within the paginated result set. */
                 page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
             };
             header?: never;
             path?: never;
