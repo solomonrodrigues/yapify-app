@@ -72,6 +72,7 @@ const MAPPING = {
   'person.crop.circle':             { name: 'user-circle' },
   'ellipsis':                       { name: 'ellipsis' },
   'bookmark':                       { name: 'bookmark' },
+  'bookmark.fill':                  { name: 'bookmark' }, // FontAwesome uses same icon, styling can differentiate
   'doc.on.doc':                     { name: 'copy' },
   // Required icons for GuessGameModal
   'quote.opening':           { name: 'quote-left' },       // decorative quote start

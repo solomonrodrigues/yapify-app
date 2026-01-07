@@ -1,19 +1,19 @@
+import GuessGameModal from '@/components/modals/GuessGameModal';
+import PillActionButton from '@/components/PillActionButton';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Colors } from '@/constants/Colors';
+import { useUser } from '@/context/UserContext';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { getPastelFromId } from '@/lib/utils/style';
+import { Quote } from '@/types/api';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
+  View,
 } from 'react-native';
-import { Quote } from '@/types/api';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import GuessGameModal from '@/components/modals/GuessGameModal';
-import { useUser } from '@/context/UserContext';
-import { useRouter } from 'expo-router';
-import PillActionButton from '@/components/PillActionButton';
-import { getPastelFromId } from '@/lib/utils/style';
-import { useThemedStyles } from '@/hooks/useThemedStyles';
-import { Colors } from '@/constants/Colors';
 
 
 interface FeedQuoteProps {
@@ -22,6 +22,8 @@ interface FeedQuoteProps {
   onLike: (quoteId: number) => void;
   onWitness: (quoteId: number) => void;
   onGuess: (quoteId: number, guessedUserId?: number, skipped?: boolean) => void;
+  onSave?: (quoteId: number) => void;
+  onUnsave?: (quoteId: number) => void;
 }
 
 const FeedQuote: React.FC<FeedQuoteProps> = ({
@@ -30,6 +32,8 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   onLike,
   onWitness,
   onGuess,
+  onSave,
+  onUnsave,
 }) => {
   const styles = useThemedStyles(getStyles);
   const [guessMade, setGuessMade] = useState(!!quote.has_guessed);
@@ -70,6 +74,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
         quotedUserId: quote.quoted_user ? String(quote.quoted_user.id) : '',
         quotedUsername: quote.quoted_user?.username ?? quote.quoted_name ?? '',
         guessable: guessable ? '1' : '0',
+        isSaved: quote.is_saved ? '1' : '0',
       },
     });
   };

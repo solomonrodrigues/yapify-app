@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -23,9 +23,14 @@ const QuotesFeed: React.FC = () => {
   const styles = useThemedStyles(getStyles);
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
-  const { quotes, refreshing, isLoadingMore, hasMore, refreshQuotes, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById } = useQuotes();
+  const { quotes, refreshing, isLoadingMore, hasMore, refreshQuotes, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById, saveQuoteById, unsaveQuoteById } = useQuotes();
   const insets = useSafeAreaInsets();
   const paddingTop = Platform.OS === 'ios' ? 0 : 16;
+  
+  // Filter out hidden quotes from the main feed
+  const visibleQuotes = useMemo(() => {
+    return quotes.filter((q: Quote) => !q.is_hidden);
+  }, [quotes]);
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;
@@ -44,7 +49,7 @@ const QuotesFeed: React.FC = () => {
     }
   };
 
-  if (!refreshing && quotes.length === 0) {
+  if (!refreshing && visibleQuotes.length === 0) {
     return (
       <View style={styles.centerContainer}>
         <Text style={styles.emptyText}>No quotes available</Text>
@@ -64,7 +69,7 @@ const QuotesFeed: React.FC = () => {
         }}
       >
         <LegendList
-          data={quotes}
+          data={visibleQuotes}
           keyExtractor={(item: Quote) => item.id.toString()}
           renderItem={({ item }) => (
             <FeedQuote
@@ -73,6 +78,8 @@ const QuotesFeed: React.FC = () => {
               onLike={likeQuoteById}
               onWitness={witnessQuoteById}
               onGuess={guessQuoteById}
+              onSave={saveQuoteById}
+              onUnsave={unsaveQuoteById}
             />
           )}
           refreshing={refreshing}

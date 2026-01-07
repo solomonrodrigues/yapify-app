@@ -1,16 +1,16 @@
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { hideQuote, saveQuote, unsaveQuote } from '@/lib/api/quotes';
+import * as Clipboard from 'expo-clipboard';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
-  View,
+  StyleSheet,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  StyleSheet,
+  View,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as Clipboard from 'expo-clipboard';
 import Toast from 'react-native-toast-message';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { hideQuote, saveQuote } from '@/lib/api/quotes';
 
 type Params = {
   quoteId?: string;
@@ -20,6 +20,7 @@ type Params = {
   quotedUserId?: string;
   quotedUsername?: string;
   guessable?: string; // '1' or '0'
+  isSaved?: string; // '1' or '0'
 };
 
 const QuoteActionsModal = () => {
@@ -34,9 +35,11 @@ const QuoteActionsModal = () => {
     quotedUserId,
     quotedUsername,
     guessable,
+    isSaved,
   } = params;
 
   const isGuessable = guessable === '1';
+  const isSavedQuote = isSaved === '1';
   const showAuthor = !!authorId && !isGuessable;
   const showQuotedUser = !!quotedUserId && !isGuessable;
 
@@ -65,12 +68,32 @@ const QuoteActionsModal = () => {
     close();
   };
 
-  const handleSave = () => {
-    if (quoteId) {
-      saveQuote(parseInt(quoteId))
+  const handleSave = async () => {
+    if (!quoteId) {
+      close();
+      return;
+    }
+
+    try {
+      if (isSavedQuote) {
+        await unsaveQuote(parseInt(quoteId));
+        Toast.show({
+          type: 'info',
+          text1: 'Unsaved. Bye bye.'
+        });
+        // Small delay to ensure the API call completes before navigation
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } else {
+        await saveQuote(parseInt(quoteId));
+        Toast.show({
+          type: 'info',
+          text1: 'Saved. For future contemplation.'
+        });
+      }
+    } catch {
       Toast.show({
-        type: 'info',
-        text1: 'Saved. For future contemplation.'
+        type: 'error',
+        text1: 'Failed to update saved status.'
       });
     }
     close();
@@ -104,12 +127,12 @@ const QuoteActionsModal = () => {
         {/* Actions list */}
         <TouchableOpacity style={styles.item} onPress={handleSave}>
           <IconSymbol
-            name={'bookmark'}
+            name={isSavedQuote ? 'bookmark.fill' : 'bookmark'}
             size={styles.itemText.fontSize}
             color={styles.itemText.color}
             style={{ marginRight: 6 }}
           />
-          <Text style={styles.itemText}>Save</Text>
+          <Text style={styles.itemText}>{isSavedQuote ? 'Unsave' : 'Save'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.item} onPress={handleCopy}>

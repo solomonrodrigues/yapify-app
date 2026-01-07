@@ -1,18 +1,22 @@
 // hooks/useQuotesFeed.tsx
+import type { FeedScope } from "@/lib/api/quotes";
 import {
   getQuotes,
   guessQuote,
+  hideQuote,
   likeQuote,
+  saveQuote,
+  unhideQuote,
+  unsaveQuote,
   witnessQuote,
 } from "@/lib/api/quotes";
 import { getErrorMessage } from "@/lib/utils/error";
 import { PaginatedQuoteList, Quote } from "@/types/api";
 import {
   useCallback,
-  useState,
   useMemo,
+  useState,
 } from "react";
-import type { FeedScope } from "@/lib/api/quotes";
 
 type QuotesFetcher = (
   url?: string | null,
@@ -41,6 +45,10 @@ export interface QuotesFeedValue {
     guessedUserId?: number,
     skipped?: boolean
   ) => Promise<void>;
+  saveQuoteById: (id: number) => Promise<void>;
+  unsaveQuoteById: (id: number) => Promise<void>;
+  hideQuoteById: (id: number) => Promise<void>;
+  unhideQuoteById: (id: number) => Promise<void>;
 }
 
 interface UseQuotesFeedOptions {
@@ -249,6 +257,133 @@ export function useQuotesFeed(
     []
   );
 
+  const saveQuoteById = useCallback(async (id: number) => {
+    // optimistic update: mark quote as saved
+    setQuotes((prev) =>
+      prev.map((q) => {
+        if (q.id !== id) return q;
+        return {
+          ...q,
+          is_saved: true,
+        };
+      })
+    );
+
+    try {
+      await saveQuote(id);
+    } catch (e) {
+      console.error(e);
+      // rollback on failure
+      setQuotes((prev) =>
+        prev.map((q) =>
+          q.id === id
+            ? {
+                ...q,
+                is_saved: false,
+              }
+            : q
+        )
+      );
+    }
+  }, []);
+
+  const unsaveQuoteById = useCallback(
+    async (id: number) => {
+      // optimistic update: mark quote as unsaved
+      setQuotes((prev) =>
+        prev.map((q) => {
+          if (q.id !== id) return q;
+          return {
+            ...q,
+            is_saved: false,
+          };
+        })
+      );
+
+      try {
+        await unsaveQuote(id);
+      } catch (e) {
+        console.error(e);
+        // rollback on failure
+        setQuotes((prev) =>
+          prev.map((q) =>
+            q.id === id
+              ? {
+                  ...q,
+                  is_saved: true,
+                }
+              : q
+          )
+        );
+      }
+    },
+    []
+  );
+
+  const hideQuoteById = useCallback(async (id: number) => {
+    // optimistic update: mark quote as hidden
+    setQuotes((prev) =>
+      prev.map((q) => {
+        if (q.id !== id) return q;
+        return {
+          ...q,
+          is_hidden: true,
+        };
+      })
+    );
+
+    try {
+      await hideQuote(id);
+    } catch (e) {
+      console.error(e);
+      // rollback on failure
+      setQuotes((prev) =>
+        prev.map((q) =>
+          q.id === id
+            ? {
+                ...q,
+                is_hidden: false,
+              }
+            : q
+        )
+      );
+    }
+  }, []);
+
+  const unhideQuoteById = useCallback(async (id: number) => {
+    // optimistic update: mark quote as not hidden
+    setQuotes((prev) =>
+      prev.map((q) => {
+        if (q.id !== id) return q;
+        return {
+          ...q,
+          is_hidden: false,
+        };
+      })
+    );
+
+    try {
+      await unhideQuote(id);
+    } catch (e) {
+      console.error(e);
+      // rollback on failure
+      setQuotes((prev) =>
+        prev.map((q) =>
+          q.id === id
+            ? {
+                ...q,
+                is_hidden: true,
+              }
+            : q
+        )
+      );
+    }
+  }, []);
+
+  const refreshQuotes = useCallback(async () => {
+    await loadQuotes(true);
+  }, [loadQuotes]);
+
   return {
     quotes,
     initialLoading,
@@ -259,9 +394,13 @@ export function useQuotesFeed(
     hasMore,
     loadMore,
     loadQuotes,
-    refreshQuotes: () => loadQuotes(true),
+    refreshQuotes,
     likeQuoteById,
     witnessQuoteById,
     guessQuoteById,
+    saveQuoteById,
+    unsaveQuoteById,
+    hideQuoteById,
+    unhideQuoteById,
   };
 }

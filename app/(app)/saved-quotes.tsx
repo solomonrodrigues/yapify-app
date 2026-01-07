@@ -1,4 +1,5 @@
 // app/(app)/saved-quotes.tsx
+import { LegendList } from "@legendapp/list";
 import React, { useEffect } from "react";
 import {
   ActivityIndicator,
@@ -8,15 +9,14 @@ import {
   View,
   useColorScheme,
 } from "react-native";
-import { LegendList } from "@legendapp/list";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import FeedQuote from "@/components/FeedQuote";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
-import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { useSavedQuotesFeed } from "@/hooks/useSavedQuotesFeed";
+import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { Quote } from "@/types/api";
 
 const SavedQuotesScreen = () => {
@@ -32,6 +32,7 @@ const SavedQuotesScreen = () => {
     likeQuoteById,
     witnessQuoteById,
     guessQuoteById,
+    unsaveQuoteById,
     error,
   } = useSavedQuotesFeed();
 
@@ -44,6 +45,7 @@ const SavedQuotesScreen = () => {
   useEffect(() => {
     loadQuotes();
   }, [loadQuotes]);
+
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;
@@ -104,6 +106,7 @@ const SavedQuotesScreen = () => {
               onLike={likeQuoteById}
               onWitness={witnessQuoteById}
               onGuess={guessQuoteById}
+              onUnsave={unsaveQuoteById}
             />
           )}
           refreshing={refreshing}
