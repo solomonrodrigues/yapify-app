@@ -1,243 +1,207 @@
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { hideQuote, saveQuote, unsaveQuote } from '@/lib/api/quotes';
-import * as Clipboard from 'expo-clipboard';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-} from 'react-native';
-import Toast from 'react-native-toast-message';
+// app/(app)/(modals)/quote-actions.tsx
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { useQuoteActionsModal } from "@/context/QuoteActionsModalContext";
+import { useUser } from "@/context/UserContext";
+import { hideQuote, saveQuote, unsaveQuote } from "@/lib/api/quotes";
+import * as Clipboard from "expo-clipboard";
+import { useRouter } from "expo-router";
+import React, { useMemo } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import Toast from "react-native-toast-message";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type Params = {
-  quoteId?: string;
-  text?: string;
-  authorId?: string;
-  authorUsername?: string;
-  quotedUserId?: string;
-  quotedUsername?: string;
-  guessable?: string; // '1' or '0'
-  isSaved?: string; // '1' or '0'
-};
-
-const QuoteActionsModal = () => {
-  const params = useLocalSearchParams<Params>();
+export default function QuoteActionsModal() {
+  const { selectedQuote, closeModal } = useQuoteActionsModal();
+  const { user } = useUser();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
-  const {
-    quoteId,
-    text,
-    authorId,
-    authorUsername,
-    quotedUserId,
-    quotedUsername,
-    guessable,
-    isSaved,
-  } = params;
+  const quoteData = useMemo(() => {
+    if (!selectedQuote) return null;
 
-  const isGuessable = guessable === '1';
-  const isSavedQuote = isSaved === '1';
-  const showAuthor = !!authorId && !isGuessable;
-  const showQuotedUser = !!quotedUserId && !isGuessable;
+    const isGuessable =
+      !selectedQuote.has_guessed &&
+      (selectedQuote.guess_options?.length ?? 0) > 1 &&
+      selectedQuote.author.id !== user?.id;
 
-  const close = () => {
-    router.back();
-  };
+    const isSavedQuote = selectedQuote.is_saved ?? false;
+    const showAuthor = !!selectedQuote.author && !isGuessable;
+    const showQuotedUser = !!selectedQuote.quoted_user && !isGuessable;
 
-  const goToProfile = (userId: string | undefined) => {
+    return { quote: selectedQuote, isSavedQuote, showAuthor, showQuotedUser };
+  }, [selectedQuote, user?.id]);
+
+  // If no quote is selected, don't render anything
+  if (!selectedQuote || !quoteData) return null;
+
+  const { quote, isSavedQuote, showAuthor, showQuotedUser } = quoteData;
+
+  const goToProfile = (userId: number) => {
     if (!userId) return;
-    // Close the modal, then navigate
-    router.dismiss(); // closes this modal screen
-    router.push({
-      pathname: '/user/[userID]',
-      params: { userID: userId },
-    });
+    closeModal();
+    router.push({ pathname: "/user/[userID]", params: { userID: String(userId) } });
   };
 
   const handleCopy = async () => {
-    if (text) {
-      await Clipboard.setStringAsync(text);
-      Toast.show({
-        type: 'success',
-        text1: 'Copied. Try not to misuse this power.'
-      });
+    if (quote.text) {
+      await Clipboard.setStringAsync(quote.text);
+      Toast.show({ type: "success", text1: "Copied. Try not to misuse this power." });
     }
-    close();
+    closeModal();
   };
 
   const handleSave = async () => {
-    if (!quoteId) {
-      close();
-      return;
-    }
+    if (!quote.id) return closeModal();
 
     try {
       if (isSavedQuote) {
-        await unsaveQuote(parseInt(quoteId));
-        Toast.show({
-          type: 'info',
-          text1: 'Unsaved. Bye bye.'
-        });
-        // Small delay to ensure the API call completes before navigation
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await unsaveQuote(quote.id);
+        Toast.show({ type: "info", text1: "Unsaved. Bye bye." });
+        await new Promise((r) => setTimeout(r, 100));
       } else {
-        await saveQuote(parseInt(quoteId));
-        Toast.show({
-          type: 'info',
-          text1: 'Saved. For future contemplation.'
-        });
+        await saveQuote(quote.id);
+        Toast.show({ type: "info", text1: "Saved. For future contemplation." });
       }
     } catch {
-      Toast.show({
-        type: 'error',
-        text1: 'Failed to update saved status.'
-      });
+      Toast.show({ type: "error", text1: "Failed to update saved status." });
     }
-    close();
+    closeModal();
   };
 
   const handleHide = () => {
-    if (quoteId) {
-      hideQuote(parseInt(quoteId))
-      Toast.show({
-        type: 'info',
-        text1: 'Hidden. Nothing to see here.'
-      });
+    if (quote.id) {
+      hideQuote(quote.id);
+      Toast.show({ type: "info", text1: "Hidden. Nothing to see here." });
     }
-    // ToDo: Update quote UI to hide immediately the user requests it to be hidden. Display a way to immediately unhide aswell.
-    close();
+    closeModal();
   };
 
   return (
-    <View style={styles.overlay}>
-      {/* Dismiss on tap outside */}
-      <TouchableWithoutFeedback onPress={close}>
-        <View style={styles.backdrop} />
-      </TouchableWithoutFeedback>
+    <View style={styles.root} pointerEvents="box-none">
+      {/* Sheet */}
+      <View style={styles.bottom} pointerEvents="box-none">
+        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 12), paddingTop: 24 }]}>
+          <View style={styles.group}>
+            <ActionRow
+              icon={isSavedQuote ? "bookmark.fill" : "bookmark"}
+              label={isSavedQuote ? "Unsave" : "Save"}
+              onPress={handleSave}
+            />
+            <Divider />
+            <ActionRow icon="doc.on.doc" label="Copy text" onPress={handleCopy} />
+          </View>
 
-      {/* Bottom sheet */}
-      <View style={styles.sheet}>
-        <View style={styles.handle} />
+          <View style={styles.group}>
+            <ActionRow
+              icon="eye.slash"
+              label="Hide this quote"
+              onPress={handleHide}
+              destructive
+            />
+          </View>
 
-        <Text style={styles.title}>Quote Actions</Text>
+          {(showAuthor || showQuotedUser) && (
+            <View style={styles.group}>
+              {showAuthor && (
+                <>
+                  <ActionRow
+                    label={`View ${quote.author.username} (poster)`}
+                    onPress={() => goToProfile(quote.author.id)}
+                  />
+                  {showQuotedUser && <Divider />}
+                </>
+              )}
 
-        {/* Actions list */}
-        <TouchableOpacity style={styles.item} onPress={handleSave}>
-          <IconSymbol
-            name={isSavedQuote ? 'bookmark.fill' : 'bookmark'}
-            size={styles.itemText.fontSize}
-            color={styles.itemText.color}
-            style={{ marginRight: 6 }}
-          />
-          <Text style={styles.itemText}>{isSavedQuote ? 'Unsave' : 'Save'}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.item} onPress={handleCopy}>
-          <IconSymbol
-            name={'doc.on.doc'}
-            size={styles.itemText.fontSize}
-            color={styles.itemText.color}
-            style={{ marginRight: 6 }}
-          />
-          <Text style={styles.itemText}>Copy text</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.item} onPress={handleHide}>
-          <IconSymbol
-            name={'eye.slash'}
-            size={styles.itemText.fontSize}
-            color={styles.destructive.color}
-            style={{ marginRight: 6 }}
-          />
-          <Text style={[styles.itemText, styles.destructive]}>Hide this quote</Text>
-        </TouchableOpacity>
-
-        {(showAuthor || showQuotedUser) && (
-          <View style={styles.separator} />
-        )}
-
-        {showAuthor && (
-          <TouchableOpacity
-            style={styles.item}
-            onPress={() => goToProfile(authorId)}
-          >
-            <Text style={styles.itemText}>View {authorUsername} (poster)</Text>
-          </TouchableOpacity>
-        )}
-
-        {(showAuthor && showQuotedUser) && (
-          <View style={styles.separator} />
-        )}
-
-        {showQuotedUser && (
-          <TouchableOpacity
-            style={styles.item}
-            onPress={() => goToProfile(quotedUserId)}
-          >
-            <Text style={styles.itemText}>View {quotedUsername} (speaker)</Text>
-          </TouchableOpacity>
-        )}
-
-        {(showAuthor || showQuotedUser) && (
-          <View style={styles.separator} />
-        )}
+              {showQuotedUser && quote.quoted_user && (
+                <ActionRow
+                  label={`View ${quote.quoted_user.username} (speaker)`}
+                  onPress={() => goToProfile(quote.quoted_user.id)}
+                />
+              )}
+            </View>
+          )}
+        </View>
       </View>
     </View>
   );
-};
+}
 
-export default QuoteActionsModal;
+function ActionRow({
+  icon,
+  label,
+  onPress,
+  destructive,
+}: {
+  icon?: string;
+  label: string;
+  onPress: () => void;
+  destructive?: boolean;
+}) {
+  return (
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}>
+      {icon ? (
+        <IconSymbol
+          name={icon as any}
+          size={16}
+          color={destructive ? styles.destructive.color : styles.rowText.color}
+          style={{ marginRight: 10 }}
+        />
+      ) : (
+        <View style={{ width: 16, marginRight: 10 }} />
+      )}
+      <Text style={[styles.rowText, destructive && styles.destructive]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function Divider() {
+  return <View style={styles.divider} />;
+}
 
 const styles = StyleSheet.create({
-  overlay: {
+  root: { flex: 1 },
+  bottom: {
     flex: 1,
-    justifyContent: 'flex-end',
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: "flex-end",
   },
   sheet: {
-    backgroundColor: '#101113',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 24,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: 8,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    paddingTop: 10,
+    paddingHorizontal: 14,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  item: {
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  itemText: {
     fontSize: 16,
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
+    marginBottom: 10,
+    paddingHorizontal: 6,
+  },
+  group: {
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderRadius: 14,
+    overflow: "hidden",
+    marginBottom: 12,
+  },
+  row: {
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  rowPressed: {
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  rowText: {
+    fontSize: 16,
+    color: "#fff",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    marginLeft: 12,
   },
   destructive: {
-    color: '#ff4d4d',
-  },
-  separator: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    marginVertical: 8,
-    marginHorizontal: -20,
+    color: "#ff4d4d",
   },
 });

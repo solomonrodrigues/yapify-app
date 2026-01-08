@@ -1,9 +1,14 @@
 // app/(app)/_layout.tsx
+import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
 import { Redirect, Stack } from "expo-router";
+import { Platform, useColorScheme } from "react-native";
 
 export default function AppLayout() {
   const { isLoggedIn, isLoading } = useAuth();
+  const majorVersionIOS = parseInt(String(Platform.Version), 10);
+  const colorScheme = useColorScheme() ?? 'dark';
+  const theme = Colors[colorScheme];
 
   // While auth state is being restored, don't render anything yet
   if (isLoading) return null;
@@ -29,9 +34,13 @@ export default function AppLayout() {
       <Stack.Screen
         name="(modals)/quote-actions"
         options={{
-          presentation: 'transparentModal',
+          presentation: "formSheet",
           headerShown: false,
-          animation: 'fade',
+          sheetAllowedDetents: "fitToContents",
+          sheetGrabberVisible: true,
+          contentStyle: {
+            backgroundColor: majorVersionIOS >= 26 ? "transparent" : theme.modalBackground,
+          },
         }}
       />
     </Stack>

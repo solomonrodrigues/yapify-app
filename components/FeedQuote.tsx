@@ -2,6 +2,7 @@ import GuessGameModal from '@/components/modals/GuessGameModal';
 import PillActionButton from '@/components/PillActionButton';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
+import { useQuoteActionsModal } from '@/context/QuoteActionsModalContext';
 import { useUser } from '@/context/UserContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getPastelFromId } from '@/lib/utils/style';
@@ -40,6 +41,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   const [showGuessModal, setShowGuessModal] = useState(false);
   const { user } = useUser();
   const router = useRouter();
+  const { openModal } = useQuoteActionsModal();
 
   // Random but deterministic pastel for the background (based on ID)
   const randomPastel = getPastelFromId(quote.id, theme);
@@ -63,20 +65,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   };
 
   const openActionsModal = () => {
-    router.push({
-      // Adjust this path to match where you put the modal file
-      pathname: '/(app)/(modals)/quote-actions',
-      params: {
-        quoteId: String(quote.id),
-        text: quote.text,
-        authorId: String(quote.author.id),
-        authorUsername: quote.author.username,
-        quotedUserId: quote.quoted_user ? String(quote.quoted_user.id) : '',
-        quotedUsername: quote.quoted_user?.username ?? quote.quoted_name ?? '',
-        guessable: guessable ? '1' : '0',
-        isSaved: quote.is_saved ? '1' : '0',
-      },
-    });
+    openModal(quote);
   };
 
   return (
