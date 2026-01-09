@@ -1,14 +1,16 @@
 // app/(app)/_layout.tsx
 import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
-import { Redirect, Stack } from "expo-router";
+import { Redirect, Stack, useRouter } from "expo-router";
 import { Platform, useColorScheme } from "react-native";
+import { HeaderBackButton } from "@react-navigation/elements";
 
 export default function AppLayout() {
   const { isLoggedIn, isLoading } = useAuth();
   const majorVersionIOS = parseInt(String(Platform.Version), 10);
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
+  const router = useRouter();
 
   // While auth state is being restored, don't render anything yet
   if (isLoading) return null;
@@ -18,6 +20,16 @@ export default function AppLayout() {
     return <Redirect href="/(auth)" />;
   }
 
+  // Custom back handler - ensures navigation always works
+  const handleBackPress = (fallbackRoute: string) => () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      // Fallback to specified route if no history
+      router.replace(fallbackRoute);
+    }
+  };
+
   return (
     <Stack
       screenOptions={{
@@ -25,9 +37,53 @@ export default function AppLayout() {
       }}
     >
       <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="my-account" options={{ headerShown: true, headerTitle: 'My Account', headerBackTitle: 'Back' }} />
-      <Stack.Screen name="saved-quotes" options={{ headerShown: true, headerTitle: 'Saved Quotes', headerBackTitle: 'Back' }} />
-      <Stack.Screen name="user/[userID]" options={{ headerShown: true, headerTitle: '', headerBackTitle: 'Back' }} />
+      <Stack.Screen name="[quoteID]" options={{ headerShown: false }} />
+      <Stack.Screen name="search" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="my-account"
+        options={{
+          headerShown: true,
+          headerTitle: 'My Account',
+          headerLeft: (props) => (
+            <HeaderBackButton
+              {...props}
+              onPress={handleBackPress('/(tabs)/profile')}
+              tintColor={theme.text}
+              label={"Back"}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="saved-quotes"
+        options={{
+          headerShown: true,
+          headerTitle: 'Saved Quotes',
+          headerLeft: (props) => (
+            <HeaderBackButton
+              {...props}
+              onPress={handleBackPress('/(tabs)/profile')}
+              tintColor={theme.text}
+              label={"Back"}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="user/[userID]"
+        options={{
+          headerShown: true,
+          headerTitle: '',
+          headerLeft: (props) => (
+            <HeaderBackButton
+              {...props}
+              onPress={handleBackPress('/(tabs)/profile')}
+              tintColor={theme.text}
+              label={"Back"}
+            />
+          ),
+        }}
+      />
       <Stack.Screen name="onboarding" options={{ headerShown: false, headerTitle: '', headerBackTitle: 'Back' }} />
 
       {/* Modal group */}
