@@ -21,9 +21,7 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
   const [loadingMessage, setLoadingMessage] = useState('');
 
   // Preload data immediately
-  useEffect(() => {
-    console.log('Preloading data for authenticated user...');
-    
+  useEffect(() => {    
     if (!quotesLoaded) {
       console.log('Loading quotes...');
       loadQuotes(false);
@@ -59,8 +57,6 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
     (!quotesLoaded && !quotesInitialLoading) // Haven't started loading quotes yet
   );
   
-  console.log('Loading decision:', { showInitialLoading, hasUser: !!user });
-  
   if (showInitialLoading) {
     console.log('Blocking render - showing loading screen');
     return (
@@ -82,6 +78,5 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
     );
   }
 
-  console.log('Rendering children - all data loaded');
   return <>{children}</>;
 }
