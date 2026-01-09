@@ -74,6 +74,11 @@ const QuoteDetail: React.FC = () => {
     return unsubscribe;
   }, [navigation, quote, fetchQuote]);
 
+  // Reset modal state when quote changes
+  useEffect(() => {
+    setShowGuessModal(false);
+  }, [quoteID]);
+
   const handleLike = async () => {
     if (!quote) return;
     try {
@@ -128,8 +133,16 @@ const QuoteDetail: React.FC = () => {
   };
 
   const openGuessModal = () => {
-    if (quote && !guessMade && quote.guess_options?.length) {
+    // Allow opening modal if quote has guess options and user is not the author
+    // Modal can be opened even after guess is made to see results
+    if (quote && (quote.guess_options?.length ?? 0) > 1 && quote.author.id !== user?.id) {
       setShowGuessModal(true);
+    } else {
+      console.log('Cannot open guess modal:', {
+        hasQuote: !!quote,
+        optionsLength: quote?.guess_options?.length,
+        isOwnQuote: quote?.author.id === user?.id,
+      });
     }
   };
 
@@ -193,6 +206,7 @@ const QuoteDetail: React.FC = () => {
   const randomPastel = getPastelFromId(quote.id, theme);
   const guessable = (!guessMade && quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
   const showGuessButton = (quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
+  const hasGuessedAlready = guessMade || quote.has_guessed;
 
   return (
     <ThemedView style={styles.container}>
@@ -317,7 +331,7 @@ const QuoteDetail: React.FC = () => {
             <PillActionButton
               icon={
                 <IconSymbol
-                  name="person.fill.viewfinder"
+                  name={hasGuessedAlready ? "person.fill.checkmark" : "person.fill.viewfinder"}
                   color={theme.accent}
                   size={20}
                   style={{ marginRight: 6 }}
@@ -327,7 +341,10 @@ const QuoteDetail: React.FC = () => {
               color={theme.accent}
               borderColor={guessable ? theme.accent : theme.border}
               highlightBgColor={theme.accent}
-              onPress={openGuessModal}
+              onPress={() => {
+                console.log('YapGuess button pressed, guessable:', guessable, 'showGuessModal:', showGuessModal);
+                openGuessModal();
+              }}
               highlighted={guessable}
             />
           )}

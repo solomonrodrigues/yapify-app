@@ -49,6 +49,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   const randomPastel = getPastelFromId(quote.id, theme);
   const guessable = (!guessMade && quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
   const showGuessButton = (quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
+  const hasGuessedAlready = guessMade || quote.has_guessed;
 
   const handleGuess = (userId?: number, skipped?: boolean) => {
     onGuess(quote.id, userId, skipped);
@@ -192,7 +193,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
           <PillActionButton
             icon={
               <IconSymbol
-                name="person.fill.viewfinder"
+                name={hasGuessedAlready ? "person.fill.checkmark" : "person.fill.viewfinder"}
                 color={theme.accent}
                 size={18}
                 style={{ marginRight: 6 }}
