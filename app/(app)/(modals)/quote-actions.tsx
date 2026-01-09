@@ -112,7 +112,9 @@ export default function QuoteActionsModal() {
               {showAuthor && (
                 <>
                   <ActionRow
-                    label={`View ${quote.author.username} (poster)`}
+                    icon="person.circle"
+                    label={`@${quote.author.username}`}
+                    subtitle="Posted this quote"
                     onPress={() => goToProfile(quote.author.id)}
                   />
                   {showQuotedUser && <Divider />}
@@ -121,7 +123,9 @@ export default function QuoteActionsModal() {
 
               {showQuotedUser && quote.quoted_user && (
                 <ActionRow
-                  label={`View ${quote.quoted_user.username} (speaker)`}
+                  icon="quote.bubble"
+                  label={`@${quote.quoted_user.username}`}
+                  subtitle="Said this quote"
                   onPress={() => goToProfile(quote.quoted_user.id)}
                 />
               )}
@@ -136,27 +140,30 @@ export default function QuoteActionsModal() {
 function ActionRow({
   icon,
   label,
+  subtitle,
   onPress,
   destructive,
 }: {
   icon?: string;
   label: string;
+  subtitle?: string;
   onPress: () => void;
   destructive?: boolean;
 }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}>
-      {icon ? (
+      {icon && (
         <IconSymbol
           name={icon as any}
-          size={16}
+          size={20}
           color={destructive ? styles.destructive.color : styles.rowText.color}
-          style={{ marginRight: 10 }}
+          style={{ marginRight: 12 }}
         />
-      ) : (
-        <View style={{ width: 16, marginRight: 10 }} />
       )}
-      <Text style={[styles.rowText, destructive && styles.destructive]}>{label}</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.rowText, destructive && styles.destructive]}>{label}</Text>
+        {subtitle && <Text style={styles.rowSubtitle}>{subtitle}</Text>}
+      </View>
     </Pressable>
   );
 }
@@ -202,6 +209,12 @@ const styles = StyleSheet.create({
   rowText: {
     fontSize: 16,
     color: "#fff",
+    fontWeight: "500",
+  },
+  rowSubtitle: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.6)",
+    marginTop: 2,
   },
   divider: {
     height: 1,
