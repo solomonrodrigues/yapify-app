@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { createContext, useCallback, useContext, useState } from 'react';
 
 type QuoteActionsModalContextType = {
-  selectedQuote: Quote | null;
+  selectedQuoteId: number | null;
   openModal: (quote: Quote) => void;
   closeModal: () => void;
   isOpen: boolean;
@@ -14,11 +14,11 @@ const QuoteActionsModalContext = createContext<QuoteActionsModalContextType | un
 export const QuoteActionsModalProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
+  const [selectedQuoteId, setSelectedQuoteId] = useState<number | null>(null);
   const router = useRouter();
 
   const openModal = useCallback((quote: Quote) => {
-    setSelectedQuote(quote);
+    setSelectedQuoteId(quote.id);
     router.push('/(app)/(modals)/quote-actions');
   }, [router]);
 
@@ -26,17 +26,17 @@ export const QuoteActionsModalProvider: React.FC<{ children: React.ReactNode }> 
     router.back();
     // Clear quote after a small delay to allow navigation to complete
     setTimeout(() => {
-      setSelectedQuote(null);
+      setSelectedQuoteId(null);
     }, 100);
   }, [router]);
 
   return (
     <QuoteActionsModalContext.Provider
       value={{
-        selectedQuote,
+        selectedQuoteId,
         openModal,
         closeModal,
-        isOpen: selectedQuote !== null,
+        isOpen: selectedQuoteId !== null,
       }}
     >
       {children}

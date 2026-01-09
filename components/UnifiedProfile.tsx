@@ -81,7 +81,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     }
   }, [userId, isOwnProfile]);
 
-  const { quotes, refreshing, isLoadingMore, refreshQuotes, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById } = useQuotesFeed({
+  const { quotes, refreshing, isLoadingMore, refreshQuotes, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById, unhideQuoteById } = useQuotesFeed({
     scope: { type: 'user', id: userId ?? currentUser.id },
   });
 
@@ -335,6 +335,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
                   onLike={likeQuoteById}
                   onWitness={witnessQuoteById}
                   onGuess={guessQuoteById}
+                  onUnhide={unhideQuoteById}
                 />
               )}
               refreshing={refreshing}
@@ -361,6 +362,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
                   onLike={likeQuoteById}
                   onWitness={witnessQuoteById}
                   onGuess={guessQuoteById}
+                  onUnhide={unhideQuoteById}
                 />
               )}
               refreshing={refreshing}

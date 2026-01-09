@@ -1,8 +1,8 @@
 // app/(app)/(modals)/quote-actions.tsx
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useQuoteActionsModal } from "@/context/QuoteActionsModalContext";
+import { useQuotes } from "@/context/QuotesContext";
 import { useUser } from "@/context/UserContext";
-import { hideQuote, saveQuote, unsaveQuote } from "@/lib/api/quotes";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import React, { useMemo } from "react";
@@ -11,10 +11,17 @@ import Toast from "react-native-toast-message";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function QuoteActionsModal() {
-  const { selectedQuote, closeModal } = useQuoteActionsModal();
+  const { selectedQuoteId, closeModal } = useQuoteActionsModal();
+  const { quotes, saveQuoteById, unsaveQuoteById, hideQuoteById } = useQuotes();
   const { user } = useUser();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  // Get the latest quote from the feed using the ID
+  const selectedQuote = useMemo(() => {
+    if (!selectedQuoteId) return null;
+    return quotes.find((q) => q.id === selectedQuoteId);
+  }, [selectedQuoteId, quotes]);
 
   const quoteData = useMemo(() => {
     if (!selectedQuote) return null;
@@ -55,11 +62,11 @@ export default function QuoteActionsModal() {
 
     try {
       if (isSavedQuote) {
-        await unsaveQuote(quote.id);
+        await unsaveQuoteById(quote.id);
         Toast.show({ type: "info", text1: "Unsaved. Bye bye." });
         await new Promise((r) => setTimeout(r, 100));
       } else {
-        await saveQuote(quote.id);
+        await saveQuoteById(quote.id);
         Toast.show({ type: "info", text1: "Saved. For future contemplation." });
       }
     } catch {
@@ -68,10 +75,10 @@ export default function QuoteActionsModal() {
     closeModal();
   };
 
-  const handleHide = () => {
+  const handleHide = async () => {
     if (quote.id) {
-      hideQuote(quote.id);
-      Toast.show({ type: "info", text1: "Hidden. Nothing to see here." });
+      await hideQuoteById(quote.id);
+      Toast.show({ type: "info", text1: "Hidden. Tap to undo." });
     }
     closeModal();
   };

@@ -33,6 +33,7 @@ const SavedQuotesScreen = () => {
     witnessQuoteById,
     guessQuoteById,
     unsaveQuoteById,
+    unhideQuoteById,
     error,
   } = useSavedQuotesFeed();
 
@@ -107,6 +108,7 @@ const SavedQuotesScreen = () => {
               onWitness={witnessQuoteById}
               onGuess={guessQuoteById}
               onUnsave={unsaveQuoteById}
+              onUnhide={unhideQuoteById}
             />
           )}
           refreshing={refreshing}

@@ -25,6 +25,7 @@ interface FeedQuoteProps {
   onGuess: (quoteId: number, guessedUserId?: number, skipped?: boolean) => void;
   onSave?: (quoteId: number) => void;
   onUnsave?: (quoteId: number) => void;
+  onUnhide?: (quoteId: number) => void;
 }
 
 const FeedQuote: React.FC<FeedQuoteProps> = ({
@@ -35,6 +36,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   onGuess,
   onSave,
   onUnsave,
+  onUnhide,
 }) => {
   const styles = useThemedStyles(getStyles);
   const [guessMade, setGuessMade] = useState(!!quote.has_guessed);
@@ -67,6 +69,35 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   const openActionsModal = () => {
     openModal(quote);
   };
+
+  const handleUnhide = () => {
+    if (onUnhide) {
+      onUnhide(quote.id);
+    }
+  };
+
+  // If quote is hidden, show a collapsed version with undo option
+  if (quote.is_hidden) {
+    return (
+      <View style={[styles.quoteContainer, styles.hiddenContainer, { backgroundColor: theme.background }]}>
+        <View style={styles.hiddenContent}>
+          <View style={styles.hiddenLeftSection}>
+            <IconSymbol
+              name="eye.slash"
+              size={16}
+              color={theme.secondaryText}
+              style={{ marginRight: 8 }}
+            />
+            <Text style={styles.hiddenText}>Quote hidden</Text>
+          </View>
+          <TouchableOpacity onPress={handleUnhide} style={styles.undoButton}>
+            <Text style={styles.undoText}>Undo</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.divider} />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.quoteContainer, { backgroundColor: theme.background }]}>
@@ -250,6 +281,37 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       backgroundColor: theme.divider,
       marginTop: 10,
       marginHorizontal: -16,
+    },
+    hiddenContainer: {
+      opacity: 0.6,
+      paddingTop: 12,
+      paddingBottom: 8,
+    },
+    hiddenContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 8,
+    },
+    hiddenLeftSection: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    hiddenText: {
+      fontSize: 14,
+      color: theme.secondaryText,
+      fontStyle: 'italic',
+    },
+    undoButton: {
+      paddingHorizontal: 16,
+      paddingVertical: 6,
+      backgroundColor: theme.accent,
+      borderRadius: 6,
+    },
+    undoText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.background,
     },
   }
 );
