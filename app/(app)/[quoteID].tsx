@@ -18,9 +18,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUser } from '@/context/UserContext';
 import { getQuote, likeQuote, witnessQuote, guessQuote } from '@/lib/api/quotes';
 import { useNavigation } from '@react-navigation/native';
-import { useLocalSearchParams } from 'expo-router';
-import ActionChip from '@/components/ActionChip';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import PillActionButton from '@/components/PillActionButton';
 import { getPastelFromId } from '@/lib/utils/style';
+import { timeAgo } from '@/lib/utils/timeAgo';
+import { useQuoteActionsModal } from '@/context/QuoteActionsModalContext';
 
 const QuoteDetail: React.FC = () => {
   const styles = useThemedStyles(getStyles);
@@ -29,7 +31,9 @@ const QuoteDetail: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { user } = useUser();
   const navigation = useNavigation();
-  
+  const router = useRouter();
+  const { openModal } = useQuoteActionsModal();
+
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -123,6 +127,19 @@ const QuoteDetail: React.FC = () => {
     }
   };
 
+  const navigateToProfile = (userId: number) => {
+    router.push({
+      pathname: "/user/[userID]",
+      params: { userID: userId },
+    });
+  };
+
+  const openActionsModal = () => {
+    if (quote) {
+      openModal(quote);
+    }
+  };
+
   if (loading) {
     return (
       <ThemedView style={styles.container}>
@@ -163,6 +180,7 @@ const QuoteDetail: React.FC = () => {
   // Random but deterministic pastel for the background (based on ID)
   const randomPastel = getPastelFromId(quote.id, theme);
   const guessable = (!guessMade && quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
+  const showGuessButton = (quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
 
   return (
     <ThemedView style={styles.container}>
@@ -172,101 +190,147 @@ const QuoteDetail: React.FC = () => {
           <IconSymbol name="chevron.left" size={24} color={theme.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Quote</Text>
-        <View style={{ width: 40 }} />
+        <TouchableOpacity
+          onPress={openActionsModal}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={styles.menuButton}
+        >
+          <IconSymbol name="ellipsis" size={18} color={theme.secondaryText} />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView 
+      <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 32 }]}
       >
-        {/* Author Section */}
-        <View style={styles.authorSection}>
-          <View style={[styles.authorAvatar, { backgroundColor: randomPastel }]}>
-            <Text style={styles.avatarText}>
-              {quote.author.display_name.charAt(0).toUpperCase()}
-            </Text>
-          </View>
-          <View style={styles.authorInfo}>
-            <Text style={styles.authorName}>{guessable ? '???' : quote.author.display_name}</Text>
-            <Text style={styles.quotedText}>
-              quoted {guessable ? '???' : quote.quoted_user?.display_name ?? quote.quoted_name}
-            </Text>
+        {/* Quote Header - Similar to FeedQuote */}
+        <View style={styles.quoteHeader}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+            {guessable ? (
+              <Text style={[styles.authorText, styles.mysteryText]}>???</Text>
+            ) : (
+              <TouchableOpacity onPress={() => navigateToProfile(quote.author.id)}>
+                <Text style={styles.authorText}>{quote.author.display_name}</Text>
+              </TouchableOpacity>
+            )}
+
+            <Text style={styles.quotedLabelText}> quoted </Text>
+
+            {guessable ? (
+              <Text style={[styles.quotedNameText, styles.mysteryText]}>???</Text>
+            ) : quote.quoted_user ? (
+              <TouchableOpacity onPress={() => navigateToProfile(quote.quoted_user.id)}>
+                <Text style={styles.quotedNameText}>{quote.quoted_user.display_name}</Text>
+              </TouchableOpacity>
+            ) : (
+              <Text style={styles.quotedNameText}>{quote.quoted_name}</Text>
+            )}
           </View>
         </View>
 
-        {/* Quote Content */}
-        <View style={[styles.quoteContainer, { backgroundColor: randomPastel + '15' }]}>
+        {/* Quote Content - Larger and centered */}
+        <View style={styles.contentContainer}>
           <Text style={styles.quoteContent}>&ldquo;{quote.text}&rdquo;</Text>
         </View>
 
-        {/* Guess Result */}
-        {quote.has_guessed && (
+        {/* Timestamp */}
+        <View style={styles.timestampContainer}>
+          <Text style={styles.timestampText}>{timeAgo(quote.created_at)}</Text>
+        </View>
+
+        {/* Guess Result Banner */}
+        {quote.has_guessed && quote.guess && (
           <View style={[
             styles.guessResultBanner,
-            { backgroundColor: quote.guess?.correct ? theme.witnessButton + '20' : theme.destructive + '20' }
+            {
+              backgroundColor: quote.guess.skipped
+                ? theme.border + '40'
+                : quote.guess.correct
+                ? theme.witnessButton + '20'
+                : theme.destructive + '20'
+            }
           ]}>
             <IconSymbol
-              name={quote.guess?.skipped ? 'forward.fill' : quote.guess?.correct ? 'checkmark.circle.fill' : 'xmark.circle.fill'}
-              size={20}
-              color={quote.guess?.correct ? theme.witnessButton : theme.destructive}
-              style={{ marginRight: 8 }}
+              name={quote.guess.skipped ? 'forward.fill' : quote.guess.correct ? 'checkmark.circle.fill' : 'xmark.circle.fill'}
+              size={22}
+              color={quote.guess.skipped ? theme.secondaryText : quote.guess.correct ? theme.witnessButton : theme.destructive}
+              style={{ marginRight: 10 }}
             />
             <Text style={[
               styles.guessResultText,
-              { color: quote.guess?.correct ? theme.witnessButton : theme.destructive }
+              { color: quote.guess.skipped ? theme.secondaryText : quote.guess.correct ? theme.witnessButton : theme.destructive }
             ]}>
-              {quote.guess?.skipped
+              {quote.guess.skipped
                 ? 'You skipped this guess'
-                : quote.guess?.correct
+                : quote.guess.correct
                 ? 'You guessed correctly!'
-                : `Incorrect - It was ${quote.quoted_user?.display_name ?? quote.quoted_name}`}
+                : `Incorrect guess - It was ${quote.quoted_user?.display_name ?? quote.quoted_name}`}
             </Text>
           </View>
         )}
 
-        {/* Toolbar */}
-        <View style={styles.toolbar}>
-          <ActionChip
-            icon="heart"
-            activeIcon="heart.fill"
-            active={!!quote.is_liked}
+        {/* Divider */}
+        <View style={styles.divider} />
+
+        {/* Action Buttons - Using PillActionButton like FeedQuote */}
+        <View style={styles.actionsBar}>
+          <PillActionButton
+            icon={
+              <IconSymbol
+                name={quote.is_liked ? 'heart.fill' : 'heart'}
+                color={quote.is_liked ? theme.likeButton : theme.secondaryText}
+                size={20}
+                style={{ marginRight: 6 }}
+              />
+            }
             label={quote.like_count}
+            color={quote.is_liked ? theme.likeButton : theme.secondaryText}
+            borderColor={theme.border}
+            highlightBgColor={theme.likeButton}
             onPress={handleLike}
-            color={theme.likeButton}
           />
 
-          <View style={styles.toolbarDivider} />
+          {!guessable && (
+            <PillActionButton
+              icon={<Text style={{ marginRight: 6 }}>👀</Text>}
+              label={`${quote.witness_count} ${quote.witness_count === 1 ? 'witness' : 'witnesses'}`}
+              color={quote.is_witnessed ? theme.witnessButton : theme.secondaryText}
+              borderColor={theme.border}
+              highlightBgColor={theme.witnessButton}
+              onPress={handleWitness}
+            />
+          )}
 
-          <ActionChip
-            icon="eye"
-            activeIcon="eye"
-            // active state doesn't currently exist for witness; keep it neutral
-            label={quote.witness_count}
-            onPress={!guessable ? handleWitness : undefined}
-            color={theme.witnessButton}
-            disabled={guessable} // if guessable, encourage guessing instead of witnessing
-          />
-
-          {guessable && (
-            <>
-              <View style={styles.toolbarDivider} />
-              <TouchableOpacity
-                onPress={openGuessModal}
-                style={[styles.guessPill, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <IconSymbol name="questionmark.circle.fill" size={16} color={theme.text} style={{ marginRight: 6 }} />
-                <Text style={styles.guessPillText}>Guess</Text>
-              </TouchableOpacity>
-            </>
+          {showGuessButton && (
+            <PillActionButton
+              icon={
+                <IconSymbol
+                  name="person.fill.viewfinder"
+                  color={theme.accent}
+                  size={20}
+                  style={{ marginRight: 6 }}
+                />
+              }
+              label="YapGuess"
+              color={theme.accent}
+              borderColor={guessable ? theme.accent : theme.border}
+              highlightBgColor={theme.accent}
+              onPress={openGuessModal}
+              highlighted={guessable}
+            />
           )}
         </View>
 
-        {/* Metadata */}
-        <View style={styles.metadata}>
-          <Text style={styles.metadataText}>
-            Quote #{quote.id}
-          </Text>
+        {/* Stats Section */}
+        <View style={styles.statsSection}>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{quote.like_count}</Text>
+            <Text style={styles.statLabel}>Likes</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{quote.witness_count}</Text>
+            <Text style={styles.statLabel}>Witnesses</Text>
+          </View>
         </View>
       </ScrollView>
 
@@ -297,7 +361,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       paddingHorizontal: 16,
       paddingBottom: 12,
       borderBottomWidth: 1,
-      borderBottomColor: theme.border,
+      borderBottomColor: theme.divider,
     },
     backButton: {
       width: 40,
@@ -305,8 +369,14 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
+    menuButton: {
+      width: 40,
+      height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     headerTitle: {
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: '600',
       color: theme.text,
     },
@@ -335,52 +405,51 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       color: theme.accent,
     },
     scrollContent: {
-      padding: 16,
-      paddingBottom: 32,
-      flex: 1,
+      paddingHorizontal: 16,
+      paddingTop: 24,
     },
-    authorSection: {
+    quoteHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 24,
+      marginBottom: 32,
     },
-    authorAvatar: {
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginRight: 12,
+    authorText: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: theme.text,
     },
-    avatarText: {
-      fontSize: 24,
-      fontWeight: '600',
-      color: '#fff',
+    quotedLabelText: {
+      fontSize: 15,
+      color: theme.secondaryText,
     },
-    authorInfo: {
-      flex: 1,
-    },
-    authorName: {
-      fontSize: 18,
+    quotedNameText: {
+      fontSize: 15,
       fontWeight: '600',
       color: theme.text,
-      marginBottom: 4,
     },
-    quotedText: {
-      fontSize: 14,
+    mysteryText: {
+      fontWeight: '600',
       fontStyle: 'italic',
       color: theme.secondaryText,
     },
-    quoteContainer: {
-      padding: 24,
-      borderRadius: 16,
+    contentContainer: {
       marginBottom: 24,
+      paddingVertical: 16,
     },
     quoteContent: {
-      fontSize: 24,
-      fontWeight: '300',
-      lineHeight: 34,
+      fontSize: 32,
+      lineHeight: 42,
       color: theme.text,
+      fontWeight: '300',
+      letterSpacing: 0.3,
+      textAlign: 'left',
+    },
+    timestampContainer: {
+      marginBottom: 24,
+    },
+    timestampText: {
+      fontSize: 14,
+      color: theme.secondaryText,
     },
     guessResultBanner: {
       flexDirection: 'row',
@@ -394,91 +463,44 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontSize: 15,
       fontWeight: '500',
     },
-    statsContainer: {
-      flexDirection: 'row',
-      backgroundColor: theme.cardBackground,
-      borderRadius: 12,
-      padding: 20,
-      marginBottom: 24,
-      borderWidth: 1,
-      borderColor: theme.border,
+    divider: {
+      height: 1,
+      backgroundColor: theme.divider,
+      marginBottom: 20,
     },
-    statItem: {
+    actionsBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      marginBottom: 32,
+      flexWrap: 'wrap',
+    },
+    statsSection: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 8,
+    },
+    statCard: {
       flex: 1,
+      padding: 20,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.divider,
+      backgroundColor: theme.cardBackground,
       alignItems: 'center',
     },
-    statDivider: {
-      width: 1,
-      backgroundColor: theme.border,
-      marginHorizontal: 16,
-    },
     statNumber: {
-      fontSize: 28,
-      fontWeight: '600',
+      fontSize: 24,
+      fontWeight: '700',
       color: theme.text,
       marginBottom: 4,
     },
     statLabel: {
-      fontSize: 14,
-      color: theme.secondaryText,
-    },
-    actionButtons: {
-      gap: 12,
-      marginBottom: 24,
-    },
-    primaryActionButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 16,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: theme.border,
-    },
-    primaryActionText: {
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    metadata: {
-      alignItems: 'center',
-      paddingTop: 16,
-      borderTopWidth: 1,
-      borderTopColor: theme.border,
-    },
-    metadataText: {
       fontSize: 13,
       color: theme.secondaryText,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
-    toolbar: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 8,
-      paddingHorizontal: 12,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: theme.border,
-      backgroundColor: theme.cardBackground,
-      marginBottom: 16,
-    },
-    toolbarDivider: {
-      width: 1,
-      height: 20,
-      backgroundColor: theme.border,
-      marginHorizontal: 10,
-    },
-    guessPill: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 8,
-      paddingHorizontal: 12,
-      borderRadius: 999,
-      borderWidth: 1,
-    },
-    guessPillText: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: theme.text,
-    },    
   });
 
 export default QuoteDetail;
