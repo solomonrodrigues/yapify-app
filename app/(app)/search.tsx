@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { timeAgo } from "@/lib/utils/timeAgo";
 import { FilterPicker } from "@/components/FilterPicker";
 import { MONTH_KEYS, MONTH_MAP, MONTH_MAP_REVERSE } from "@/constants/Months";
+import { useUser } from "@/context/UserContext";
 
 type SearchScope = "users" | "quotes";
 
@@ -32,6 +33,7 @@ const SearchScreen = () => {
   const theme = Colors[colorScheme ?? "dark"];
   const styles = useThemedStyles(getStyles);
   const insets = useSafeAreaInsets();
+  const { user: currentUser } = useUser();
 
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState<SearchScope>("quotes");
@@ -115,19 +117,37 @@ const SearchScreen = () => {
     </TouchableOpacity>
   );
 
-  const QuoteItem = ({ quote }: { quote: Quote }) => (
-    <TouchableOpacity style={styles.quoteCard} onPress={() => handlePressQuote(quote)}>
-      <View style={styles.quoteHeader}>
-        <InitialsAvatar user={quote.author} size={32} />
-        <View style={{ marginLeft: 8 }}>
-          <ThemedText style={styles.displayName}>{quote.author.display_name}</ThemedText>
-          <ThemedText style={styles.username}>@{quote.author.username}</ThemedText>
+  const QuoteItem = ({ quote }: { quote: Quote }) => {
+    // Check if the quote is guessable and not yet guessed
+    const isGuessable =
+      !quote.has_guessed &&
+      (quote.guess_options?.length ?? 0) > 1 &&
+      quote.author.id !== currentUser?.id;
+
+    return (
+      <TouchableOpacity style={styles.quoteCard} onPress={() => handlePressQuote(quote)}>
+        <View style={styles.quoteHeader}>
+          {isGuessable ? (
+            <View style={styles.mysteryAuthor}>
+              <IconSymbol name="person.fill.questionmark" size={32} color={theme.secondaryText} />
+            </View>
+          ) : (
+            <InitialsAvatar user={quote.author} size={32} />
+          )}
+          <View style={{ marginLeft: 8 }}>
+            <ThemedText style={[styles.displayName, isGuessable && styles.mysteryText]}>
+              {isGuessable ? "???" : quote.author.display_name}
+            </ThemedText>
+            <ThemedText style={[styles.username, isGuessable && styles.mysteryText]}>
+              {isGuessable ? "Mystery author" : `@${quote.author.username}`}
+            </ThemedText>
+          </View>
         </View>
-      </View>
-      <ThemedText style={styles.quoteText}>{highlightText(quote.text, query)}</ThemedText>
-      <ThemedText style={styles.quoteDate}>{timeAgo(quote.created_at)}</ThemedText>
-    </TouchableOpacity>
-  );
+        <ThemedText style={styles.quoteText}>{highlightText(quote.text, query)}</ThemedText>
+        <ThemedText style={styles.quoteDate}>{timeAgo(quote.created_at)}</ThemedText>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <ThemedView>
@@ -286,5 +306,17 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     quoteHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
     quoteText: { fontSize: 15, lineHeight: 22 },
-    quoteDate: { fontSize: 12, color: theme.secondaryText, marginTop: 6 },    
+    quoteDate: { fontSize: 12, color: theme.secondaryText, marginTop: 6 },
+    mysteryAuthor: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: theme.inputBackground,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    mysteryText: {
+      fontStyle: "italic",
+      color: theme.secondaryText,
+    },
   });
