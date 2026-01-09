@@ -11,17 +11,20 @@ import Toast from "react-native-toast-message";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function QuoteActionsModal() {
-  const { selectedQuoteId, closeModal } = useQuoteActionsModal();
+  const { selectedQuoteId, selectedQuote: contextQuote, closeModal } = useQuoteActionsModal();
   const { quotes, saveQuoteById, unsaveQuoteById, hideQuoteById } = useQuotes();
   const { user } = useUser();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  // Get the latest quote from the feed using the ID
+  // Get the quote from context first, or fall back to looking it up in the feed
   const selectedQuote = useMemo(() => {
     if (!selectedQuoteId) return null;
-    return quotes.find((q) => q.id === selectedQuoteId);
-  }, [selectedQuoteId, quotes]);
+    // If we have the quote in context (from detail screen), use it
+    if (contextQuote && contextQuote.id === selectedQuoteId) return contextQuote;
+    // Otherwise, look it up in the feed (from feed screen)
+    return quotes.find((q) => q.id === selectedQuoteId) || null;
+  }, [selectedQuoteId, contextQuote, quotes]);
 
   const quoteData = useMemo(() => {
     if (!selectedQuote) return null;

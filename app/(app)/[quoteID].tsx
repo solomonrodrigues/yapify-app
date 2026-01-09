@@ -62,6 +62,18 @@ const QuoteDetail: React.FC = () => {
     fetchQuote();
   }, [fetchQuote, quoteID]);
 
+  // Refresh quote when returning from modal or when screen is focused
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Refresh the quote when returning to this screen
+      if (quote) {
+        fetchQuote();
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, quote, fetchQuote]);
+
   const handleLike = async () => {
     if (!quote) return;
     try {
@@ -151,7 +163,7 @@ const QuoteDetail: React.FC = () => {
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={theme.accent} />
+          <ActivityIndicator size="large" />
         </View>
       </ThemedView>
     );

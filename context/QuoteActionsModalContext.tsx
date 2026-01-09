@@ -4,6 +4,7 @@ import React, { createContext, useCallback, useContext, useState } from 'react';
 
 type QuoteActionsModalContextType = {
   selectedQuoteId: number | null;
+  selectedQuote: Quote | null;
   openModal: (quote: Quote) => void;
   closeModal: () => void;
   isOpen: boolean;
@@ -15,11 +16,20 @@ export const QuoteActionsModalProvider: React.FC<{ children: React.ReactNode }> 
   children,
 }) => {
   const [selectedQuoteId, setSelectedQuoteId] = useState<number | null>(null);
+  const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
   const router = useRouter();
 
   const openModal = useCallback((quote: Quote) => {
     setSelectedQuoteId(quote.id);
-    router.push('/(app)/(modals)/quote-actions');
+    setSelectedQuote(quote);
+    // Navigate to modal - works from any screen in the app
+    try {
+      router.push({
+        pathname: '/(app)/(modals)/quote-actions',
+      });
+    } catch (error) {
+      console.error('Error opening quote actions modal:', error);
+    }
   }, [router]);
 
   const closeModal = useCallback(() => {
@@ -27,6 +37,7 @@ export const QuoteActionsModalProvider: React.FC<{ children: React.ReactNode }> 
     // Clear quote after a small delay to allow navigation to complete
     setTimeout(() => {
       setSelectedQuoteId(null);
+      setSelectedQuote(null);
     }, 100);
   }, [router]);
 
@@ -34,6 +45,7 @@ export const QuoteActionsModalProvider: React.FC<{ children: React.ReactNode }> 
     <QuoteActionsModalContext.Provider
       value={{
         selectedQuoteId,
+        selectedQuote,
         openModal,
         closeModal,
         isOpen: selectedQuoteId !== null,
