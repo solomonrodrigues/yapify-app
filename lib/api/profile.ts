@@ -7,6 +7,7 @@ export const getProfile = async (): Promise<User> => {
 };
 
 export const updateProfile = async (updates: Partial<User>): Promise<User> => {
-  const res = await api.put<User>('/profile/', updates);
+  console.log('Updating profile with:', updates);
+  const res = await api.patch<User>('/profile/', updates);
   return res.data;
 };

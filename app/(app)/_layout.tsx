@@ -55,6 +55,21 @@ export default function AppLayout() {
         }}
       />
       <Stack.Screen
+        name="edit-profile"
+        options={{
+          headerShown: true,
+          headerTitle: 'Edit Profile',
+          headerLeft: (props) => (
+            <HeaderBackButton
+              {...props}
+              onPress={handleBackPress('/(tabs)/profile')}
+              tintColor={theme.text}
+              label={"Back"}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
         name="saved-quotes"
         options={{
           headerShown: true,

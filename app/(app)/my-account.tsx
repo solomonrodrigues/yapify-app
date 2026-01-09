@@ -36,12 +36,12 @@ export default function MyAccountScreen() {
 
   const menuItems: MenuItem[] = [
     {
-      title: "Settings",
-      icon: "gear",
-      onPress: () => router.push("/profile"), // ToDo: Implement account settings
+      title: "Edit Profile",
+      icon: "person.crop.circle",
+      onPress: () => router.push("/edit-profile"),
     },
     {
-      title: "Saved",
+      title: "Saved Quotes",
       icon: "bookmark",
       onPress: () => router.push("/saved-quotes"),
     },
@@ -57,7 +57,7 @@ export default function MyAccountScreen() {
     },
     {
       title: "Onboarding",
-      icon: "person.crop.circle",
+      icon: "sparkles",
       onPress: () => router.push("/onboarding"),
     },
     {
