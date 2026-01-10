@@ -60,6 +60,13 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   const postedPulseAnim = useRef(new Animated.Value(1)).current;
   const receivedPulseAnim = useRef(new Animated.Value(1)).current;
 
+  // Update user when currentUser changes (for own profile)
+  useEffect(() => {
+    if (isOwnProfile) {
+      setUser(currentUser);
+    }
+  }, [currentUser, isOwnProfile]);
+
   // Load user profile
   useEffect(() => {
     const loadUser = async () => {

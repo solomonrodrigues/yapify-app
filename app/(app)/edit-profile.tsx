@@ -45,7 +45,7 @@ const PROFILE_COLORS: { value: ProfileColorEnum; hex: string; name: string }[] =
 }));
 
 export default function EditProfileScreen() {
-  const { user, refetch } = useUser();
+  const { user, updateUser } = useUser();
   const styles = useThemedStyles(getStyles);
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
@@ -64,7 +64,8 @@ export default function EditProfileScreen() {
 
     try {
       setSaving(true);
-      await updateProfile({
+      // Use updateUser from context which automatically updates the context state
+      await updateUser({
         bio: bio || null,
         quote_visibility: quoteVisibility,
         profile_color: profileColor,
@@ -75,9 +76,6 @@ export default function EditProfileScreen() {
         text1: 'Profile updated',
         text2: 'Your changes have been saved',
       });
-
-      // Refresh user data
-      await refetch?.();
     } catch (error) {
       const message = getErrorMessage(error);
       Alert.alert('Error', message || 'Failed to update profile');

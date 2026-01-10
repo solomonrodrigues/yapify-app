@@ -98,19 +98,19 @@ export const Colors = {
 };
 
 export const ProfileColorHexMap: Record<ProfileColorEnum, string> = {
-  RED:    "#D32F2F", // vivid red (AA with white text)
-  BLUE:   "#1976D2", // vivid blue
-  GREEN:  "#2E7D32", // vivid green
-  YELLOW: "#996515", // deep yellow/goldenrod (keeps contrast)
-  ORANGE: "#BF360C", // bold orange-red
-  PURPLE: "#6A1B9A", // strong purple
-  PINK:   "#D81B60", // hot pink/rose
-  BROWN:  "#6D4C41", // rich brown
-  BLACK:  "#424242", // dark grey (comfortable with white text)
-  WHITE:  "#6E6E6E", // mid grey so white text is legible
-  GREY:   "#757575", // medium-dark grey
-  CYAN:   "#00838F", // deep cyan/teal
-  MAGENTA:"#AD1457", // deep magenta
+  RED:    "#EF5350", // bright red
+  BLUE:   "#42A5F5", // bright blue
+  GREEN:  "#66BB6A", // bright green
+  YELLOW: "#FFCA28", // bright yellow
+  ORANGE: "#FF7043", // bright orange
+  PURPLE: "#AB47BC", // bright purple
+  PINK:   "#EC407A", // bright pink
+  BROWN:  "#8D6E63", // warm brown
+  BLACK:  "#424242", // dark grey
+  WHITE:  "#E0E0E0", // light grey
+  GREY:   "#9E9E9E", // medium grey
+  CYAN:   "#26C6DA", // bright cyan
+  MAGENTA:"#D81B60", // bright magenta
 };
 
 export const ProfileColorHexMapPastel: Record<ProfileColorEnum, string> = {
