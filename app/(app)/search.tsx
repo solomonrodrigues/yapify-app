@@ -219,9 +219,21 @@ const SearchScreen = () => {
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (scope === "users" ? <UserItem user={item as User} /> : <QuoteItem quote={item as Quote} />)}
             ListEmptyComponent={() => (
-              <ThemedText style={{ textAlign: "center", marginTop: 40 }}>
-                {query.length < 2 ? "Type at least 2 characters to search." : "No results found."}
-              </ThemedText>
+              <View style={styles.emptyContainer}>
+                <ThemedText style={styles.emptyText}>
+                  {query.length < 2 ? "Type at least 2 characters to search." : "No results found."}
+                </ThemedText>
+                {query.length >= 2 && (
+                  <TouchableOpacity
+                    style={styles.switchScopeButton}
+                    onPress={() => setScope(scope === "users" ? "quotes" : "users")}
+                  >
+                    <ThemedText style={styles.switchScopeText}>
+                      {scope === "users" ? "Search quotes instead?" : "Search people instead?"}
+                    </ThemedText>
+                  </TouchableOpacity>
+                )}
+              </View>
             )}
           />
         )}
@@ -318,5 +330,28 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     mysteryText: {
       fontStyle: "italic",
       color: theme.secondaryText,
+    },
+    emptyContainer: {
+      alignItems: "center",
+      marginTop: 40,
+      paddingHorizontal: 20,
+    },
+    emptyText: {
+      textAlign: "center",
+      color: theme.secondaryText,
+    },
+    switchScopeButton: {
+      marginTop: 16,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 20,
+      backgroundColor: theme.cardBackground,
+      borderWidth: 1,
+      borderColor: theme.divider,
+    },
+    switchScopeText: {
+      fontSize: 14,
+      fontWeight: "500",
+      color: theme.text,
     },
   });
