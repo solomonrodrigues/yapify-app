@@ -88,9 +88,18 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     }
   }, [userId, isOwnProfile]);
 
-  const { quotes, refreshing, isLoadingMore, refreshQuotes, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById, unhideQuoteById } = useQuotesFeed({
-    scope: { type: 'user', id: userId ?? currentUser.id },
+  // Separate feeds for posted and received quotes
+  const postedFeed = useQuotesFeed({
+    scope: { type: 'user-posted', id: userId ?? currentUser.id },
   });
+
+  const receivedFeed = useQuotesFeed({
+    scope: { type: 'user-received', id: userId ?? currentUser.id },
+  });
+
+  // Use the active tab's feed
+  const activeFeed = activeTab === 'posted' ? postedFeed : receivedFeed;
+  const { quotes, refreshing, isLoadingMore, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById, unhideQuoteById } = activeFeed;
 
   // Load friends
   const loadFriends = useCallback(
@@ -140,12 +149,13 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     [user]
   );
 
-  // Initial load of quotes
+  // Initial load of quotes for both tabs
   useEffect(() => {
     if (user) {
-      refreshQuotes();
+      postedFeed.loadQuotes();
+      receivedFeed.loadQuotes();
     }
-  }, []);
+  }, [user]);
 
   // Handlers
   const handleLoadMoreFriends = () => {
@@ -155,11 +165,11 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   };
 
   const handleRefreshPosted = () => {
-    refreshQuotes();
+    postedFeed.refreshQuotes();
   };
 
   const handleRefreshReceived = () => {
-    refreshQuotes();
+    receivedFeed.refreshQuotes();
   };
 
   const handleRefreshFriends = () => {

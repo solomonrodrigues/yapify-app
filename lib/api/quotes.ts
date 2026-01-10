@@ -2,7 +2,8 @@ import { Quote, PaginatedQuoteList } from '../../types/api';
 import api from './client';
 
 export type FeedScope =
-  | { type: 'user'; id: number };
+  | { type: 'user-posted'; id: number }
+  | { type: 'user-received'; id: number };
 
 /**
  * Fetch feed items. When a full pagination URL is provided, it is used as-is.
@@ -17,7 +18,14 @@ export const getQuotes = async (
   if (url) {
     endpoint = url;
   } else if (scope) {
-    endpoint = `/quotes/user/${scope.id}/`;
+    // Use the appropriate endpoint based on scope type
+    if (scope.type === 'user-posted') {
+      endpoint = `/users/${scope.id}/quotes/posted/`;
+    } else if (scope.type === 'user-received') {
+      endpoint = `/users/${scope.id}/quotes/received/`;
+    } else {
+      endpoint = '/quotes/';
+    }
   } else {
     endpoint = '/quotes/';
   }
