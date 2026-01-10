@@ -16,6 +16,7 @@ interface PillActionButtonProps {
   borderColor?: string;
   highlightBgColor?: string;
   onPress: () => void;
+  onLongPress?: () => void;
   highlighted?: boolean;
   testID?: string;
 }
@@ -27,6 +28,7 @@ const PillActionButton: React.FC<PillActionButtonProps> = ({
   borderColor,
   highlightBgColor = color,
   onPress,
+  onLongPress,
   highlighted = false,
   testID,
 }) => {
@@ -34,26 +36,33 @@ const PillActionButton: React.FC<PillActionButtonProps> = ({
   const scale = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
-    Animated.spring(scale, { 
-      toValue: 0.96, 
-      useNativeDriver: true, 
-      speed: 20, 
-      bounciness: 6 
+    Animated.spring(scale, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      speed: 20,
+      bounciness: 6
     }).start();
   };
 
   const handlePressOut = () => {
-    Animated.spring(scale, { 
-      toValue: 1, 
-      useNativeDriver: true, 
-      speed: 20, 
-      bounciness: 6 
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 20,
+      bounciness: 6
     }).start();
   };
 
   const handlePress = () => {
     Haptics.selectionAsync().catch(() => {});
     onPress();
+  };
+
+  const handleLongPress = () => {
+    if (onLongPress) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      onLongPress();
+    }
   };
 
   return (
@@ -63,6 +72,7 @@ const PillActionButton: React.FC<PillActionButtonProps> = ({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={handlePress}
+        onLongPress={handleLongPress}
         hitSlop={8}
         style={({ pressed }) => [
           styles.actionPill,

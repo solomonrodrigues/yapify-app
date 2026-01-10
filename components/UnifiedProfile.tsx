@@ -3,6 +3,7 @@ import { FriendButton } from '@/components/FriendButton';
 import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { UserListModal } from '@/components/UserListModal';
 import { Colors } from '@/constants/Colors';
 import { useQuotesFeed } from '@/hooks/useQuotesFeed';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
@@ -13,15 +14,14 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Animated,
-    Modal,
     StyleSheet,
     Text,
-    TextInput,
     TouchableOpacity,
     useColorScheme,
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
 type ProfileUser = CurrentUser | PublicUser;
 
@@ -39,22 +39,17 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   const styles = useThemedStyles(getStyles);
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
+  const router = useRouter();
   const isOwnProfile = !userId || userId === currentUser.id;
-  
+
   // State
   const [user, setUser] = useState<ProfileUser | null>(isOwnProfile ? currentUser : null);
   const [loading, setLoading] = useState(!isOwnProfile);
   const [activeTab, setActiveTab] = useState<TabType>('posted');
   const [friendship, setFriendship] = useState<Friendship | null>(null);
-  
+
   // Friends modal state
   const [friendsModalVisible, setFriendsModalVisible] = useState(false);
-  const [friends, setFriends] = useState<PublicUser[]>([]);
-  const [friendsNextUrl, setFriendsNextUrl] = useState<string | null>(null);
-  const [friendsSearchQuery, setFriendsSearchQuery] = useState('');
-  const [loadingFriends, setLoadingFriends] = useState(false);
-  const [hasMoreFriends, setHasMoreFriends] = useState(true);
-  const [refreshingFriends, setRefreshingFriends] = useState(false);
 
   // Animation refs for pulse effect
   const postedPulseAnim = useRef(new Animated.Value(1)).current;
@@ -101,50 +96,13 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   const activeFeed = activeTab === 'posted' ? postedFeed : receivedFeed;
   const { quotes, refreshing, isLoadingMore, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById, unhideQuoteById } = activeFeed;
 
-  // Load friends
-  const loadFriends = useCallback(
-    async ({
-      url,
-      search,
-      refresh = false,
-    }: {
-      url?: string | null;
-      search?: string;
-      refresh?: boolean;
-    } = {}) => {
-      if (!user) return;
-
-      if (refresh) {
-        setRefreshingFriends(true);
-      } else {
-        setLoadingFriends(true);
+  // Friends fetcher for UserListModal
+  const friendsFetcher = useCallback(
+    async ({ url, search }: { url?: string | null; search?: string }) => {
+      if (!user) {
+        return { results: [], next: null };
       }
-
-      try {
-        // If this is a fresh load (no pagination url), reset pagination cursors
-        if (!url) {
-          setFriendsNextUrl(null);
-        }
-
-        const data = await getUserFriends(
-          user.id,
-          url ? { url } : { search }
-        );
-
-        if (refresh || !url) {
-          setFriends(data.results);
-        } else {
-          setFriends((prev) => [...prev, ...data.results]);
-        }
-
-        setFriendsNextUrl(data.next ?? null);
-        setHasMoreFriends(Boolean(data.next));
-      } catch (error) {
-        console.error("Failed to load friends:", error);
-      } finally {
-        setLoadingFriends(false);
-        setRefreshingFriends(false);
-      }
+      return await getUserFriends(user.id, url ? { url } : { search });
     },
     [user]
   );
@@ -158,12 +116,6 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   }, [user]);
 
   // Handlers
-  const handleLoadMoreFriends = () => {
-    if (hasMoreFriends && !loadingFriends && friendsNextUrl) {
-      loadFriends({ url: friendsNextUrl });
-    }
-  };
-
   const handleRefreshPosted = () => {
     postedFeed.refreshQuotes();
   };
@@ -172,20 +124,13 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     receivedFeed.refreshQuotes();
   };
 
-  const handleRefreshFriends = () => {
-    loadFriends({ refresh: true, search: friendsSearchQuery || undefined });
-  };
-
   const handleOpenFriends = () => {
     setFriendsModalVisible(true);
-    if (friends.length === 0) {
-      loadFriends({ search: friendsSearchQuery || undefined });
-    }
   };
 
-  const handleFriendsSearchChange = (text: string) => {
-    setFriendsSearchQuery(text);
-    loadFriends({ search: text, refresh: true });
+  const handleUserPress = (pressedUser: PublicUser) => {
+    setFriendsModalVisible(false);
+    router.push({ pathname: '/user/[userID]', params: { userID: String(pressedUser.id) } });
   };
 
   const handleFriendshipChange = (newFriendship: Friendship | null) => {
@@ -225,16 +170,6 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
       </View>
     );
   };
-
-  const renderFriendItem = ({ item }: { item: PublicUser }) => (
-    <TouchableOpacity style={styles.friendItem} activeOpacity={0.7}>
-      <InitialsAvatar user={item} size={48} />
-      <View style={styles.friendInfo}>
-        <ThemedText style={styles.friendName}>{item.display_name}</ThemedText>
-        <ThemedText style={styles.friendUsername}>@{item.username}</ThemedText>
-      </View>
-    </TouchableOpacity>
-  );
 
   if (loading) {
     return (
@@ -399,56 +334,15 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
         </View>
 
         {/* Friends Modal */}
-        <Modal
+        <UserListModal
           visible={friendsModalVisible}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={() => setFriendsModalVisible(false)}
-        >
-          <ThemedView style={styles.modalContainer}>
-            <SafeAreaView edges={['top', 'bottom']} style={styles.modalSafeArea}>
-              <View style={styles.modalHeader}>
-                <ThemedText type="title">Friends</ThemedText>
-                <TouchableOpacity
-                  onPress={() => setFriendsModalVisible(false)}
-                  style={styles.closeButton}
-                >
-                  <ThemedText style={styles.closeButtonText}>✕</ThemedText>
-                </TouchableOpacity>
-              </View>
-              <TextInput
-                style={[
-                  styles.searchInput,
-                  { borderColor: theme.divider, backgroundColor: theme.cardBackground, color: theme.text },
-                ]}
-                placeholder="Search friends"
-                placeholderTextColor={theme.secondaryText}
-                value={friendsSearchQuery}
-                onChangeText={handleFriendsSearchChange}
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="search"
-              />
-              <LegendList
-                data={friends}
-                keyExtractor={(item: PublicUser) => item.id.toString()}
-                renderItem={renderFriendItem}
-                refreshing={refreshingFriends}
-                onRefresh={handleRefreshFriends}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.friendsList}
-                onEndReached={handleLoadMoreFriends}
-                onEndReachedThreshold={0.5}
-                ListFooterComponent={renderFooter(loadingFriends)}
-                ListEmptyComponent={
-                  <View style={styles.emptyContainer}>
-                    <ThemedText style={styles.emptyText}>No friends yet</ThemedText>
-                  </View>
-                }
-              />
-            </SafeAreaView>
-          </ThemedView>
-        </Modal>
+          onClose={() => setFriendsModalVisible(false)}
+          title="Friends"
+          fetcher={friendsFetcher}
+          onUserPress={handleUserPress}
+          searchable={true}
+          emptyMessage="No friends yet"
+        />
       </SafeAreaView>
     </ThemedView>
   );
@@ -578,61 +472,6 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontSize: 16,
       color: theme.secondaryText,
       textAlign: 'center',
-    },
-    modalContainer: {
-      flex: 1,
-    },
-    modalSafeArea: {
-      flex: 1,
-    },
-    modalHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.divider,
-    },
-    closeButton: {
-      padding: 8,
-    },
-    closeButtonText: {
-      fontSize: 24,
-      color: theme.text,
-    },
-    searchInput: {
-      marginHorizontal: 16,
-      marginBottom: 12,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
-      borderRadius: 12,
-      borderWidth: 1,
-      fontSize: 15,
-    },
-    friendsList: {
-      padding: 16,
-    },
-    friendItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 12,
-      borderRadius: 12,
-      marginBottom: 8,
-      backgroundColor: theme.cardBackground,
-    },
-    friendInfo: {
-      marginLeft: 12,
-      flex: 1,
-    },
-    friendName: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: theme.text,
-    },
-    friendUsername: {
-      fontSize: 14,
-      color: theme.secondaryText,
-      marginTop: 2,
     },
   });
 

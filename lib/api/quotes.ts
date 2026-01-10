@@ -143,3 +143,35 @@ export const getHiddenQuotes = async (
   const res = await api.get<PaginatedQuoteList>(endpoint);
   return res.data;
 };
+
+export const getQuoteLikes = async (
+  quoteId: number,
+  url?: string | null
+): Promise<{ results: import('@/types/api').PublicUser[]; next: string | null }> => {
+  let endpoint: string;
+
+  if (url) {
+    endpoint = url;
+  } else {
+    endpoint = `/quotes/${quoteId}/likes/`;
+  }
+
+  const res = await api.get<{ results: import('@/types/api').PublicUser[]; next: string | null }>(endpoint);
+  return res.data;
+};
+
+export const getQuoteWitnesses = async (
+  quoteId: number,
+  url?: string | null
+): Promise<{ results: import('@/types/api').PublicUser[]; next: string | null }> => {
+  let endpoint: string;
+
+  if (url) {
+    endpoint = url;
+  } else {
+    endpoint = `/quotes/${quoteId}/witnesses/`;
+  }
+
+  const res = await api.get<{ results: import('@/types/api').PublicUser[]; next: string | null }>(endpoint);
+  return res.data;
+};

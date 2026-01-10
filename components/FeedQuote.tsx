@@ -1,14 +1,16 @@
 import GuessGameModal from '@/components/modals/GuessGameModal';
 import PillActionButton from '@/components/PillActionButton';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { UserListModal } from '@/components/UserListModal';
 import { Colors } from '@/constants/Colors';
 import { useQuoteActionsModal } from '@/context/QuoteActionsModalContext';
 import { useUser } from '@/context/UserContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { getQuoteLikes, getQuoteWitnesses } from '@/lib/api/quotes';
 import { getPastelFromId } from '@/lib/utils/style';
-import { Quote } from '@/types/api';
+import { PublicUser, Quote } from '@/types/api';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -41,6 +43,8 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   const styles = useThemedStyles(getStyles);
   const [guessMade, setGuessMade] = useState(!!quote.has_guessed);
   const [showGuessModal, setShowGuessModal] = useState(false);
+  const [showLikesModal, setShowLikesModal] = useState(false);
+  const [showWitnessesModal, setShowWitnessesModal] = useState(false);
   const { user } = useUser();
   const router = useRouter();
   const { openModal } = useQuoteActionsModal();
@@ -75,6 +79,27 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
     if (onUnhide) {
       onUnhide(quote.id);
     }
+  };
+
+  // Fetchers for UserListModal
+  const likesFetcher = useCallback(
+    async ({ url, search }: { url?: string | null; search?: string }) => {
+      return await getQuoteLikes(quote.id, url);
+    },
+    [quote.id]
+  );
+
+  const witnessesFetcher = useCallback(
+    async ({ url, search }: { url?: string | null; search?: string }) => {
+      return await getQuoteWitnesses(quote.id, url);
+    },
+    [quote.id]
+  );
+
+  const handleUserPress = (pressedUser: PublicUser) => {
+    setShowLikesModal(false);
+    setShowWitnessesModal(false);
+    router.push({ pathname: '/user/[userID]', params: { userID: String(pressedUser.id) } });
   };
 
   // If quote is hidden, show a collapsed version with undo option
@@ -170,6 +195,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
           borderColor={theme.border}
           highlightBgColor={theme.likeButton}
           onPress={() => onLike(quote.id)}
+          onLongPress={() => setShowLikesModal(true)}
           // highlighted={quote.is_liked}
           testID="like-button"
         />
@@ -184,6 +210,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
             borderColor={theme.border}
             highlightBgColor={theme.witnessButton}
             onPress={() => onWitness(quote.id)}
+            onLongPress={() => setShowWitnessesModal(true)}
             // highlighted={quote.is_witnessed}
             testID="witness-button"
           />
@@ -220,6 +247,26 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
         onGuess={handleGuess}
         theme={theme}
         accent={randomPastel}
+      />
+
+      <UserListModal
+        visible={showLikesModal}
+        onClose={() => setShowLikesModal(false)}
+        title="Likes"
+        fetcher={likesFetcher}
+        onUserPress={handleUserPress}
+        searchable={false}
+        emptyMessage="No likes yet"
+      />
+
+      <UserListModal
+        visible={showWitnessesModal}
+        onClose={() => setShowWitnessesModal(false)}
+        title="Witnesses"
+        fetcher={witnessesFetcher}
+        onUserPress={handleUserPress}
+        searchable={false}
+        emptyMessage="No witnesses yet"
       />
     </View>
   );
