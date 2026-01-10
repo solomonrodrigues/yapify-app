@@ -261,7 +261,6 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
               friendship={friendship}
               onFriendshipChange={handleFriendshipChange}
               variant="default"
-              showIcon={true}
             />
           </View>
         )}

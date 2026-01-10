@@ -1,11 +1,10 @@
 // components/FriendButton.tsx
 import { ThemedText } from '@/components/ThemedText';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { respondToFriendRequest, cancelFriendRequest, sendFriendRequest, unfriend } from '@/lib/api/friends';
 import type { Friendship } from '@/types/api';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 type FriendAction = 'add' | 'cancel' | 'unfriend' | 'accept' | 'reject';
 
@@ -14,7 +13,6 @@ interface FriendButtonProps {
   friendship: Friendship | null;
   onFriendshipChange?: (friendship: Friendship | null) => void;
   variant?: 'default' | 'compact' | 'inline';
-  showIcon?: boolean;
 }
 
 export const FriendButton: React.FC<FriendButtonProps> = ({
@@ -22,7 +20,6 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
   friendship,
   onFriendshipChange,
   variant = 'default',
-  showIcon = true,
 }) => {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
@@ -73,7 +70,6 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
     style: any;
     textStyle: any;
     action?: FriendAction;
-    icon?: string;
   } => {
     if (!currentFriendship) {
       return {
@@ -81,7 +77,6 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
         style: { backgroundColor: '#0095f6' },
         textStyle: { color: '#ffffff', fontWeight: '600' as const },
         action: 'add',
-        icon: 'person.badge.plus',
       };
     }
 
@@ -97,7 +92,6 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
             style: { backgroundColor: theme.cardBackground, borderWidth: 1, borderColor: theme.divider },
             textStyle: { color: theme.text, fontWeight: '600' as const },
             action: 'cancel',
-            icon: 'clock',
           };
         } else {
           return {
@@ -105,16 +99,14 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
             style: { backgroundColor: theme.cardBackground, borderWidth: 1, borderColor: theme.divider },
             textStyle: { color: theme.text, fontWeight: '600' as const },
             action: 'cancel',
-            icon: 'clock',
           };
         }
       case 'accepted':
         return {
-          text: variant === 'compact' ? 'Friends' : 'Friends',
-          style: { backgroundColor: theme.cardBackground, borderWidth: 1, borderColor: '#4ade80' },
-          textStyle: { color: '#4ade80', fontWeight: '600' as const },
+          text: 'Friends',
+          style: { backgroundColor: theme.cardBackground, borderWidth: 1, borderColor: theme.divider },
+          textStyle: { color: theme.text, fontWeight: '600' as const },
           action: 'unfriend',
-          icon: 'checkmark.circle.fill',
         };
       case 'rejected':
         return {
@@ -134,7 +126,6 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
           style: { backgroundColor: '#0095f6' },
           textStyle: { color: '#ffffff', fontWeight: '600' as const },
           action: 'add',
-          icon: 'person.badge.plus',
         };
     }
   };
@@ -194,19 +185,9 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
       {loading ? (
         <ActivityIndicator size="small" color={config.action === 'add' ? '#fff' : theme.text} />
       ) : (
-        <View style={styles.buttonContent}>
-          {showIcon && config.icon && (
-            <IconSymbol
-              name={config.icon as any}
-              size={buttonSize === 'inline' ? 14 : 16}
-              color={config.textStyle.color}
-              style={styles.buttonIcon}
-            />
-          )}
-          <ThemedText style={[config.textStyle, buttonSize === 'inline' && styles.textInline]}>
-            {config.text}
-          </ThemedText>
-        </View>
+        <ThemedText style={[config.textStyle, buttonSize === 'inline' && styles.textInline]}>
+          {config.text}
+        </ThemedText>
       )}
     </TouchableOpacity>
   );
@@ -273,14 +254,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     minWidth: 90,
     minHeight: 32,
-  },
-  buttonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  buttonIcon: {
-    marginRight: 2,
   },
   textInline: {
     fontSize: 14,

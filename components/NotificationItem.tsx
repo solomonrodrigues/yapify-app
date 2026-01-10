@@ -126,7 +126,6 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
             userId={(sender as MinimalUser).id}
             friendship={friendship ?? null}
             variant="inline"
-            showIcon={false}
             onFriendshipChange={(f) => onFriendshipChange(notification.id, f)}
           />
         ) : (
