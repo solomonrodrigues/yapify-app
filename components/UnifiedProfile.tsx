@@ -14,12 +14,21 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Animated,
+    Pressable,
     StyleSheet,
     Text,
     TouchableOpacity,
     useColorScheme,
     View,
 } from 'react-native';
+import ReAnimated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withSequence,
+    withTiming,
+    withSpring,
+    Easing,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
@@ -54,6 +63,29 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   // Animation refs for pulse effect
   const postedPulseAnim = useRef(new Animated.Value(1)).current;
   const receivedPulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Avatar spin animation
+  const avatarRotation = useSharedValue(0);
+
+  const avatarAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${avatarRotation.value}deg` }],
+  }));
+
+  const handleAvatarPress = () => {
+    // Wind up (rotate backwards), then spin forward with spring
+    avatarRotation.value = withSequence(
+      // Wind up: rotate backwards 30 degrees
+      withTiming(-30, { duration: 150, easing: Easing.out(Easing.quad) }),
+      // Spin forward: full rotation plus overshoot
+      withSpring(360, {
+        damping: 12,
+        stiffness: 100,
+        mass: 0.8,
+      }),
+      // Reset to 0 for next tap
+      withTiming(0, { duration: 0 })
+    );
+  };
 
   // Update user when currentUser changes (for own profile)
   useEffect(() => {
@@ -207,7 +239,11 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
       <SafeAreaView edges={['bottom']} style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
-          <InitialsAvatar user={user} size={80} style={styles.headerAvatar} />
+          <Pressable onPress={handleAvatarPress}>
+            <ReAnimated.View style={[styles.headerAvatar, avatarAnimatedStyle]}>
+              <InitialsAvatar user={user} size={80} />
+            </ReAnimated.View>
+          </Pressable>
           <View style={styles.headerInfo}>
             <ThemedText type="title">{user.display_name}</ThemedText>
             <ThemedText style={styles.username}>@{user.username}</ThemedText>
