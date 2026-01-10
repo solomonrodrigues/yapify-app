@@ -1,6 +1,7 @@
 // hooks/useQuotesFeed.tsx
 import type { FeedScope } from "@/lib/api/quotes";
 import {
+  deleteQuote,
   getQuotes,
   guessQuote,
   hideQuote,
@@ -49,6 +50,7 @@ export interface QuotesFeedValue {
   unsaveQuoteById: (id: number) => Promise<void>;
   hideQuoteById: (id: number) => Promise<void>;
   unhideQuoteById: (id: number) => Promise<void>;
+  deleteQuoteById: (id: number) => Promise<void>;
 }
 
 interface UseQuotesFeedOptions {
@@ -380,6 +382,17 @@ export function useQuotesFeed(
     }
   }, []);
 
+  const deleteQuoteById = useCallback(async (id: number) => {
+    try {
+      await deleteQuote(id);
+      // Remove the quote from the list after successful deletion
+      setQuotes((prev) => prev.filter((q) => q.id !== id));
+    } catch (e) {
+      console.error(e);
+      throw e; // Re-throw to allow caller to handle error
+    }
+  }, []);
+
   const refreshQuotes = useCallback(async () => {
     await loadQuotes(true);
   }, [loadQuotes]);
@@ -402,5 +415,6 @@ export function useQuotesFeed(
     unsaveQuoteById,
     hideQuoteById,
     unhideQuoteById,
+    deleteQuoteById,
   };
 }

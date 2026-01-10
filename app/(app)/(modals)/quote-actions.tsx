@@ -6,13 +6,13 @@ import { useUser } from "@/context/UserContext";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import React, { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function QuoteActionsModal() {
   const { selectedQuoteId, selectedQuote: contextQuote, closeModal } = useQuoteActionsModal();
-  const { quotes, saveQuoteById, unsaveQuoteById, hideQuoteById } = useQuotes();
+  const { quotes, saveQuoteById, unsaveQuoteById, hideQuoteById, deleteQuoteById } = useQuotes();
   const { user } = useUser();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -37,14 +37,15 @@ export default function QuoteActionsModal() {
     const isSavedQuote = selectedQuote.is_saved ?? false;
     const showAuthor = !!selectedQuote.author && !isGuessable;
     const showQuotedUser = !!selectedQuote.quoted_user && !isGuessable;
+    const isOwnQuote = selectedQuote.author.id === user?.id;
 
-    return { quote: selectedQuote, isSavedQuote, showAuthor, showQuotedUser };
+    return { quote: selectedQuote, isSavedQuote, showAuthor, showQuotedUser, isOwnQuote };
   }, [selectedQuote, user?.id]);
 
   // If no quote is selected, don't render anything
   if (!selectedQuote || !quoteData) return null;
 
-  const { quote, isSavedQuote, showAuthor, showQuotedUser } = quoteData;
+  const { quote, isSavedQuote, showAuthor, showQuotedUser, isOwnQuote } = quoteData;
 
   const goToProfile = (userId: number) => {
     if (!userId) return;
@@ -86,6 +87,38 @@ export default function QuoteActionsModal() {
     closeModal();
   };
 
+  const handleDelete = () => {
+    if (!quote.id) return;
+
+    Alert.alert(
+      "Delete Quote",
+      "Are you sure you want to delete this quote? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteQuoteById(quote.id);
+              Toast.show({ type: "success", text1: "Quote deleted" });
+              closeModal();
+              // Navigate back if on detail screen
+              if (router.canGoBack()) {
+                router.back();
+              }
+            } catch (error) {
+              Toast.show({ type: "error", text1: "Failed to delete quote" });
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.root} pointerEvents="box-none">
       {/* Sheet */}
@@ -108,6 +141,17 @@ export default function QuoteActionsModal() {
               onPress={handleHide}
               destructive
             />
+            {isOwnQuote && (
+              <>
+                <Divider />
+                <ActionRow
+                  icon="trash"
+                  label="Delete quote"
+                  onPress={handleDelete}
+                  destructive
+                />
+              </>
+            )}
           </View>
 
           {(showAuthor || showQuotedUser) && (
