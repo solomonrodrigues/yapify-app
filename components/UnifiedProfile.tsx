@@ -98,11 +98,15 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
 
   // Friends fetcher for UserListModal
   const friendsFetcher = useCallback(
-    async ({ url, search }: { url?: string | null; search?: string }) => {
+    async ({ url, search }: { url?: string | null; search?: string }): Promise<{ results: PublicUser[]; next: string | null }> => {
       if (!user) {
         return { results: [], next: null };
       }
-      return await getUserFriends(user.id, url ? { url } : { search });
+      const result = await getUserFriends(user.id, url ? { url } : { search });
+      return {
+        results: result.results,
+        next: result.next ?? null,
+      };
     },
     [user]
   );
@@ -188,11 +192,10 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     );
   }
 
-  const friendsCount = 'friends_count' in user ? user.friends_count : '0';
-  const quotesPostedCount = 'total_quotes_posted' in user
-    ? user.total_quotes_posted
-    : parseInt(('quotes_count' in user && user.quotes_count) || '0');
-  const quotesReceivedCount = 'total_quotes_received' in user ? user.total_quotes_received : 0;
+  // Handle both User (string) and PublicUser (number) types
+  const friendsCount = user.friends_count;
+  const quotesPostedCount = user.quotes_posted;
+  const quotesReceivedCount = user.quotes_received;
 
   // Get user's profile color
   const userProfileColor = user.profile_color
