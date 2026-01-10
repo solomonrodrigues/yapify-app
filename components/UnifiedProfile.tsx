@@ -4,11 +4,11 @@ import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { UserListModal } from '@/components/UserListModal';
-import { Colors } from '@/constants/Colors';
+import { Colors, ProfileColorHexMap } from '@/constants/Colors';
 import { useQuotesFeed } from '@/hooks/useQuotesFeed';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getUser, getUserFriends } from '@/lib/api/friends';
-import type { User as CurrentUser, Friendship, PublicUser, Quote } from '@/types/api';
+import type { User as CurrentUser, Friendship, PublicUser, Quote, ProfileColorEnum } from '@/types/api';
 import { LegendList } from '@legendapp/list';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -189,10 +189,15 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   }
 
   const friendsCount = 'friends_count' in user ? user.friends_count : '0';
-  const quotesPostedCount = 'total_quotes_posted' in user 
-    ? user.total_quotes_posted 
+  const quotesPostedCount = 'total_quotes_posted' in user
+    ? user.total_quotes_posted
     : parseInt(('quotes_count' in user && user.quotes_count) || '0');
   const quotesReceivedCount = 'total_quotes_received' in user ? user.total_quotes_received : 0;
+
+  // Get user's profile color
+  const userProfileColor = user.profile_color
+    ? ProfileColorHexMap[user.profile_color as ProfileColorEnum]
+    : theme.pastels.purple;
 
   return (
     <ThemedView style={styles.container}>
@@ -253,7 +258,10 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
         {/* Tabs */}
         <View style={styles.tabsContainer}>
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'posted' && styles.tabActive]}
+            style={[
+              styles.tab,
+              activeTab === 'posted' && { borderBottomColor: userProfileColor },
+            ]}
             onPress={() => handleTabChange('posted')}
           >
             <Animated.View style={{ transform: [{ scale: postedPulseAnim }] }}>
@@ -263,7 +271,10 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
             </Animated.View>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'received' && styles.tabActive]}
+            style={[
+              styles.tab,
+              activeTab === 'received' && { borderBottomColor: userProfileColor },
+            ]}
             onPress={() => handleTabChange('received')}
           >
             <Animated.View style={{ transform: [{ scale: receivedPulseAnim }] }}>
@@ -425,9 +436,6 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       alignItems: 'center',
       borderBottomWidth: 2,
       borderBottomColor: 'transparent',
-    },
-    tabActive: {
-      borderBottomColor: theme.pastels.purple,
     },
     tabText: {
       fontSize: 15,
