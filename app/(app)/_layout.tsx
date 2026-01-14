@@ -7,7 +7,7 @@ import { HeaderBackButton } from "@react-navigation/elements";
 
 export default function AppLayout() {
   const { isLoggedIn, isLoading } = useAuth();
-  const majorVersionIOS = parseInt(String(Platform.Version), 10);
+  const isIOS = Platform.OS === 'ios';
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
   const router = useRouter();
@@ -105,12 +105,14 @@ export default function AppLayout() {
       <Stack.Screen
         name="(modals)/quote-actions"
         options={{
-          presentation: "formSheet",
+          presentation: isIOS ? "formSheet" : "transparentModal",
           headerShown: false,
-          sheetAllowedDetents: "fitToContents",
-          sheetGrabberVisible: true,
+          ...(isIOS && {
+            sheetAllowedDetents: "fitToContents",
+            sheetGrabberVisible: true,
+          }),
           contentStyle: {
-            backgroundColor: majorVersionIOS >= 26 ? "transparent" : theme.modalBackground,
+            backgroundColor: "transparent",
           },
         }}
       />

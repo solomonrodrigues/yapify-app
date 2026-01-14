@@ -6,9 +6,11 @@ import { useUser } from "@/context/UserContext";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import React, { useMemo } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const isIOS = Platform.OS === 'ios';
 
 export default function QuoteActionsModal() {
   const { selectedQuoteId, selectedQuote: contextQuote, closeModal } = useQuoteActionsModal();
@@ -121,9 +123,13 @@ export default function QuoteActionsModal() {
 
   return (
     <View style={styles.root} pointerEvents="box-none">
+      {/* Backdrop for Android */}
+      {!isIOS && (
+        <Pressable style={styles.backdrop} onPress={closeModal} />
+      )}
       {/* Sheet */}
       <View style={styles.bottom} pointerEvents="box-none">
-        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 12), paddingTop: 24 }]}>
+        <View style={[styles.sheet, !isIOS && styles.sheetAndroid, { paddingBottom: Math.max(insets.bottom, 12), paddingTop: 24 }]}>
           <View style={styles.group}>
             <ActionRow
               icon={isSavedQuote ? "bookmark.fill" : "bookmark"}
@@ -221,6 +227,10 @@ function Divider() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
   bottom: {
     flex: 1,
     justifyContent: "flex-end",
@@ -230,6 +240,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 18,
     paddingTop: 10,
     paddingHorizontal: 14,
+  },
+  sheetAndroid: {
+    backgroundColor: "#1c1c1e",
   },
   title: {
     fontSize: 16,
