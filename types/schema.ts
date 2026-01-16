@@ -389,6 +389,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/quotes/{quote_id}/respond/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Allow the quoted user to confirm or deny a quote attributed to them.
+         *
+         *     POST with {"response": "confirmed"} or {"response": "denied"} or {"response": null} */
+        post: operations["quotes_respond_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/quotes/{quote_id}/save/": {
         parameters: {
             query?: never;
@@ -693,6 +712,8 @@ export interface components {
          * @enum {string}
          */
         NotificationTypeEnum: "friend_request" | "friend_accepted" | "new_quote" | "quote_witnessed" | "quote_liked";
+        /** @enum {unknown} */
+        NullEnum: null;
         PaginatedFriendshipList: {
             /** @example 123 */
             count: number;
@@ -762,6 +783,13 @@ export interface components {
             readonly quoted_user?: components["schemas"]["MinimalUser"];
             quoted_user_id?: number | null;
             quoted_name?: string | null;
+            /** @description Whether the quoted user has confirmed or denied this quote
+             *
+             *     * `confirmed` - Confirmed
+             *     * `denied` - Denied */
+            readonly quoted_user_response?: (components["schemas"]["QuotedUserResponseEnum"] | components["schemas"]["NullEnum"]) | null;
+            /** @description Check if current user is the quoted user and can respond to this quote */
+            readonly can_respond?: boolean;
             /** Format: date-time */
             readonly created_at?: string;
             /** Format: date-time */
@@ -842,6 +870,13 @@ export interface components {
             readonly quoted_user: components["schemas"]["MinimalUser"];
             quoted_user_id?: number | null;
             quoted_name?: string | null;
+            /** @description Whether the quoted user has confirmed or denied this quote
+             *
+             *     * `confirmed` - Confirmed
+             *     * `denied` - Denied */
+            readonly quoted_user_response: (components["schemas"]["QuotedUserResponseEnum"] | components["schemas"]["NullEnum"]) | null;
+            /** @description Check if current user is the quoted user and can respond to this quote */
+            readonly can_respond: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -882,6 +917,12 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /**
+         * @description * `confirmed` - Confirmed
+         *     * `denied` - Denied
+         * @enum {string}
+         */
+        QuotedUserResponseEnum: "confirmed" | "denied";
         RecentSearchCreate: {
             kind: components["schemas"]["KindEnum"];
             target_id: string;
@@ -1591,6 +1632,26 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PaginatedPublicUserList"];
                 };
+            };
+        };
+    };
+    quotes_respond_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quote_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
