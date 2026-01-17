@@ -488,6 +488,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/quotes/guessable/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description List quotes the current user can guess on (and hasn't yet). */
+        get: operations["quotes_guessable_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/quotes/hidden/": {
         parameters: {
             query?: never;
@@ -497,6 +514,23 @@ export interface paths {
         };
         /** @description List the current user's hidden quotes */
         get: operations["quotes_hidden_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/quotes/respondable/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description List quotes the current user can respond to (confirm/deny) and hasn't yet. */
+        get: operations["quotes_respondable_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -601,6 +635,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/users/{user_id}/block/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Block a user. */
+        post: operations["users_block_create"];
+        /** @description Unblock a user. */
+        delete: operations["users_block_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/users/{user_id}/friends/": {
         parameters: {
             query?: never;
@@ -644,6 +696,23 @@ export interface paths {
         };
         /** @description List quotes about a specific user (where they are the quoted_user) */
         get: operations["users_quotes_received_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users/blocked/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description List users blocked by the current user. */
+        get: operations["users_blocked_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -838,6 +907,8 @@ export interface components {
             readonly is_liked?: boolean;
             readonly is_saved?: boolean;
             readonly is_hidden?: boolean;
+            /** @description Check if current user can guess on this quote */
+            readonly can_guess?: boolean;
             readonly has_guessed?: boolean;
             readonly guess?: components["schemas"]["QuoteGuess"] | null;
             readonly remaining_skips?: number;
@@ -925,6 +996,8 @@ export interface components {
             readonly is_liked: boolean;
             readonly is_saved: boolean;
             readonly is_hidden: boolean;
+            /** @description Check if current user can guess on this quote */
+            readonly can_guess: boolean;
             readonly has_guessed: boolean;
             readonly guess: components["schemas"]["QuoteGuess"] | null;
             readonly remaining_skips: number;
@@ -1816,7 +1889,55 @@ export interface operations {
             };
         };
     };
+    quotes_guessable_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedQuoteList"];
+                };
+            };
+        };
+    };
     quotes_hidden_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedQuoteList"];
+                };
+            };
+        };
+    };
+    quotes_respondable_list: {
         parameters: {
             query?: {
                 /** @description A page number within the paginated result set. */
@@ -1996,6 +2117,46 @@ export interface operations {
             };
         };
     };
+    users_block_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    users_block_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     users_friends_list: {
         parameters: {
             query?: {
@@ -2072,6 +2233,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaginatedQuoteList"];
+                };
+            };
+        };
+    };
+    users_blocked_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedPublicUserList"];
                 };
             };
         };
