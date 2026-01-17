@@ -18,7 +18,6 @@ import GuessesModal from '@/components/modals/GuessesModal';
 import QuoteResponseAction from '@/components/QuoteResponseAction';
 import QuoteResponseBadge from '@/components/QuoteResponseBadge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useUser } from '@/context/UserContext';
 import { getQuote, likeQuote, witnessQuote, guessQuote, respondToQuote } from '@/lib/api/quotes';
 import { useNavigation } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -32,7 +31,6 @@ const QuoteDetail: React.FC = () => {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
   const insets = useSafeAreaInsets();
-  const { user } = useUser();
   const navigation = useNavigation();
   const router = useRouter();
   const { openModal } = useQuoteActionsModal();
@@ -157,16 +155,9 @@ const QuoteDetail: React.FC = () => {
   };
 
   const openGuessModal = () => {
-    // Allow opening modal if quote has guess options and user is not the author
-    // Modal can be opened even after guess is made to see results
-    if (quote && (quote.guess_options?.length ?? 0) > 1 && quote.author.id !== user?.id) {
+    // Use can_guess to determine if modal can be opened
+    if (quote?.can_guess) {
       setShowGuessModal(true);
-    } else {
-      console.log('Cannot open guess modal:', {
-        hasQuote: !!quote,
-        optionsLength: quote?.guess_options?.length,
-        isOwnQuote: quote?.author.id === user?.id,
-      });
     }
   };
 
@@ -233,8 +224,10 @@ const QuoteDetail: React.FC = () => {
 
   // Random but deterministic pastel for the background (based on ID)
   const randomPastel = getPastelFromId(quote.id, theme);
-  const guessable = (!guessMade && quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
-  const showGuessButton = (quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
+  // Use can_guess (server determines if user can guess: not author, not quoted_user, hasn't guessed)
+  const guessable = quote.can_guess && !guessMade;
+  // Show guess UI if user can guess or has already guessed (hides for author/quoted_user)
+  const showGuessButton = quote.can_guess || quote.has_guessed;
   const hasGuessedAlready = guessMade || quote.has_guessed;
 
   return (

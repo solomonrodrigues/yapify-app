@@ -7,7 +7,6 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { UserListModal } from '@/components/UserListModal';
 import { Colors } from '@/constants/Colors';
 import { useQuoteActionsModal } from '@/context/QuoteActionsModalContext';
-import { useUser } from '@/context/UserContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getQuoteLikes, getQuoteWitnesses } from '@/lib/api/quotes';
 import { getPastelFromId } from '@/lib/utils/style';
@@ -51,14 +50,15 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   const [showGuessesModal, setShowGuessesModal] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [showWitnessesModal, setShowWitnessesModal] = useState(false);
-  const { user } = useUser();
   const router = useRouter();
   const { openModal } = useQuoteActionsModal();
 
   // Random but deterministic pastel for the background (based on ID)
   const randomPastel = getPastelFromId(quote.id, theme);
-  const guessable = (!guessMade && quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
-  const showGuessButton = (quote.guess_options?.length > 1 && !(quote.author.id === user?.id));
+  // Use can_guess (server determines if user can guess: not author, not quoted_user, hasn't guessed)
+  const guessable = quote.can_guess && !guessMade;
+  // Show guess UI if user can guess or has already guessed (hides for author/quoted_user)
+  const showGuessButton = quote.can_guess || quote.has_guessed;
   const hasGuessedAlready = guessMade || quote.has_guessed;
 
   const handleGuess = (userId?: number, skipped?: boolean) => {
