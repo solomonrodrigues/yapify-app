@@ -14,6 +14,8 @@ import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import GuessGameModal from '@/components/modals/GuessGameModal';
+import QuoteResponseAction from '@/components/QuoteResponseAction';
+import QuoteResponseBadge from '@/components/QuoteResponseBadge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUser } from '@/context/UserContext';
 import { getQuote, likeQuote, witnessQuote, guessQuote, respondToQuote } from '@/lib/api/quotes';
@@ -251,7 +253,7 @@ const QuoteDetail: React.FC = () => {
       >
         {/* Quote Header - Similar to FeedQuote */}
         <View style={styles.quoteHeader}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
             {guessable ? (
               <Text style={[styles.authorText, styles.mysteryText]}>???</Text>
             ) : (
@@ -265,9 +267,15 @@ const QuoteDetail: React.FC = () => {
             {guessable ? (
               <Text style={[styles.quotedNameText, styles.mysteryText]}>???</Text>
             ) : quote.quoted_user ? (
-              <TouchableOpacity onPress={() => navigateToProfile(quote.quoted_user.id)}>
-                <Text style={styles.quotedNameText}>{quote.quoted_user.display_name}</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <TouchableOpacity onPress={() => navigateToProfile(quote.quoted_user.id)}>
+                  <Text style={styles.quotedNameText}>{quote.quoted_user.display_name}</Text>
+                </TouchableOpacity>
+                {/* Inline response badge */}
+                {quote.quoted_user_response && !quote.can_respond && (
+                  <QuoteResponseBadge response={quote.quoted_user_response} compact />
+                )}
+              </View>
             ) : (
               <Text style={styles.quotedNameText}>{quote.quoted_name}</Text>
             )}
@@ -284,80 +292,12 @@ const QuoteDetail: React.FC = () => {
           <Text style={styles.timestampText}>{timeAgo(quote.created_at)}</Text>
         </View>
 
-        {/* Quoted User Response Section */}
-        {(quote.quoted_user_response || quote.can_respond) && (
-          <View style={styles.responseSection}>
-            {quote.can_respond ? (
-              // User can respond - show confirm/deny buttons
-              <View style={styles.responseButtonsContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.responseButton,
-                    quote.quoted_user_response === 'confirmed' && styles.responseButtonActive,
-                  ]}
-                  onPress={() => handleRespond(quote.quoted_user_response === 'confirmed' ? null : 'confirmed')}
-                >
-                  <IconSymbol
-                    name="checkmark.circle.fill"
-                    size={18}
-                    color={quote.quoted_user_response === 'confirmed' ? '#fff' : '#4CAF50'}
-                    style={{ marginRight: 6 }}
-                  />
-                  <Text
-                    style={[
-                      styles.responseButtonText,
-                      { color: quote.quoted_user_response === 'confirmed' ? '#fff' : '#4CAF50' },
-                    ]}
-                  >
-                    I said this
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.responseButton,
-                    { borderColor: '#F44336' },
-                    quote.quoted_user_response === 'denied' && styles.responseButtonActiveDenied,
-                  ]}
-                  onPress={() => handleRespond(quote.quoted_user_response === 'denied' ? null : 'denied')}
-                >
-                  <IconSymbol
-                    name="xmark.circle.fill"
-                    size={18}
-                    color={quote.quoted_user_response === 'denied' ? '#fff' : '#F44336'}
-                    style={{ marginRight: 6 }}
-                  />
-                  <Text
-                    style={[
-                      styles.responseButtonText,
-                      { color: quote.quoted_user_response === 'denied' ? '#fff' : '#F44336' },
-                    ]}
-                  >
-                    Not me
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : quote.quoted_user_response ? (
-              // Display response badge for others
-              <View
-                style={[
-                  styles.responseBadge,
-                  quote.quoted_user_response === 'confirmed'
-                    ? styles.responseBadgeConfirmed
-                    : styles.responseBadgeDenied,
-                ]}
-              >
-                <IconSymbol
-                  name={quote.quoted_user_response === 'confirmed' ? 'checkmark.circle.fill' : 'xmark.circle.fill'}
-                  size={16}
-                  color="#fff"
-                  style={{ marginRight: 6 }}
-                />
-                <Text style={styles.responseBadgeText}>
-                  {quote.quoted_user_response === 'confirmed' ? 'Confirmed' : 'Denied'} by {quote.quoted_user?.display_name || 'them'}
-                </Text>
-              </View>
-            ) : null}
-          </View>
+        {/* Quoted User Response Action - only for quoted user */}
+        {quote.can_respond && (
+          <QuoteResponseAction
+            currentResponse={quote.quoted_user_response as 'confirmed' | 'denied' | null}
+            onRespond={handleRespond}
+          />
         )}
 
         {/* Guess Result Banner */}
@@ -625,54 +565,6 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       color: theme.secondaryText,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
-    },
-    responseSection: {
-      marginBottom: 24,
-    },
-    responseButtonsContainer: {
-      flexDirection: 'row',
-      gap: 12,
-    },
-    responseButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 10,
-      paddingHorizontal: 16,
-      borderRadius: 24,
-      borderWidth: 1.5,
-      borderColor: '#4CAF50',
-      backgroundColor: 'transparent',
-    },
-    responseButtonActive: {
-      backgroundColor: '#4CAF50',
-      borderColor: '#4CAF50',
-    },
-    responseButtonActiveDenied: {
-      backgroundColor: '#F44336',
-      borderColor: '#F44336',
-    },
-    responseButtonText: {
-      fontSize: 14,
-      fontWeight: '600',
-    },
-    responseBadge: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      alignSelf: 'flex-start',
-      paddingVertical: 8,
-      paddingHorizontal: 14,
-      borderRadius: 20,
-    },
-    responseBadgeConfirmed: {
-      backgroundColor: '#4CAF50',
-    },
-    responseBadgeDenied: {
-      backgroundColor: '#F44336',
-    },
-    responseBadgeText: {
-      fontSize: 13,
-      fontWeight: '600',
-      color: '#fff',
     },
   });
 
