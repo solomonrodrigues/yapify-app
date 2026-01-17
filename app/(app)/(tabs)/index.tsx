@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LegendList } from '@legendapp/list';
 import FeedQuote from '@/components/FeedQuote';
 import { useFeedFilter } from '@/context/FeedFilterContext';
-import { useUser } from '@/context/UserContext';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
 
@@ -30,30 +29,6 @@ const QuotesFeed: React.FC = () => {
   const insets = useSafeAreaInsets();
   const paddingTop = Platform.OS === 'ios' ? 0 : 16;
   const { filter } = useFeedFilter();
-  const { user } = useUser();
-
-  // Filter quotes based on selected filter
-  const filteredQuotes = useMemo(() => {
-    switch (filter) {
-      case 'guessable':
-        // Quotes that can be guessed but haven't been guessed yet
-        return quotes.filter(
-          (q) =>
-            !q.has_guessed &&
-            q.guess_options &&
-            q.guess_options.length > 1 &&
-            q.author.id !== user?.id
-        );
-      case 'respondable':
-        // Quotes that can be responded to but haven't been responded yet
-        return quotes.filter(
-          (q) => q.can_respond && !q.quoted_user_response
-        );
-      case 'latest':
-      default:
-        return quotes;
-    }
-  }, [quotes, filter, user?.id]);
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;
@@ -95,7 +70,7 @@ const QuotesFeed: React.FC = () => {
     }
   };
 
-  if (!refreshing && filteredQuotes.length === 0) {
+  if (!refreshing && quotes.length === 0) {
     return (
       <ThemedView style={styles.centerContainer}>
         <IconSymbol
@@ -123,7 +98,7 @@ const QuotesFeed: React.FC = () => {
         }}
       >
         <LegendList
-          data={filteredQuotes}
+          data={quotes}
           keyExtractor={(item: Quote) => item.id.toString()}
           renderItem={({ item }) => (
             <FeedQuote

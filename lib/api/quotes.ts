@@ -199,3 +199,19 @@ export const getQuoteGuesses = async (
   const res = await api.get<{ results: import('@/types/api').QuoteGuessListItem[]; next: string | null }>(endpoint);
   return res.data;
 };
+
+export const getGuessableQuotes = async (
+  url?: string | null,
+): Promise<PaginatedQuoteList> => {
+  const endpoint = url ?? '/quotes/guessable/';
+  const res = await api.get<PaginatedQuoteList>(endpoint);
+  return res.data;
+};
+
+export const getRespondableQuotes = async (
+  url?: string | null,
+): Promise<PaginatedQuoteList> => {
+  const endpoint = url ?? '/quotes/respondable/';
+  const res = await api.get<PaginatedQuoteList>(endpoint);
+  return res.data;
+};

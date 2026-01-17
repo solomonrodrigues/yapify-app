@@ -1,5 +1,6 @@
 // app/_layout.tsx
 import { AuthProvider } from '@/context/AuthContext';
+import { FeedFilterProvider } from '@/context/FeedFilterContext';
 import { QuoteActionsModalProvider } from '@/context/QuoteActionsModalContext';
 import { QuotesProvider } from '@/context/QuotesContext';
 import { UserProvider } from '@/context/UserContext';
@@ -28,31 +29,33 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <UserProvider>
-        <QuotesProvider>
-          <QuoteActionsModalProvider>
-            <ThemeProvider value={theme}>
-              <GestureHandlerRootView>
-                <SafeAreaProvider>
-                  <KeyboardProvider>
-                    <Stack
-                      screenOptions={{
-                        headerShown: false,
-                        animation: 'none',
-                      }}
-                    >
-                      <Stack.Screen name="index" />
-                      <Stack.Screen name="(app)" />
-                      <Stack.Screen name="(auth)" />
-                      <Stack.Screen name="+not-found" />
-                    </Stack>
-                    <Toast />
-                    <StatusBar style="auto" />
-                  </KeyboardProvider>
-                </SafeAreaProvider>
-              </GestureHandlerRootView>
-            </ThemeProvider>
-          </QuoteActionsModalProvider>
-        </QuotesProvider>
+        <FeedFilterProvider>
+          <QuotesProvider>
+            <QuoteActionsModalProvider>
+              <ThemeProvider value={theme}>
+                <GestureHandlerRootView>
+                  <SafeAreaProvider>
+                    <KeyboardProvider>
+                      <Stack
+                        screenOptions={{
+                          headerShown: false,
+                          animation: 'none',
+                        }}
+                      >
+                        <Stack.Screen name="index" />
+                        <Stack.Screen name="(app)" />
+                        <Stack.Screen name="(auth)" />
+                        <Stack.Screen name="+not-found" />
+                      </Stack>
+                      <Toast />
+                      <StatusBar style="auto" />
+                    </KeyboardProvider>
+                  </SafeAreaProvider>
+                </GestureHandlerRootView>
+              </ThemeProvider>
+            </QuoteActionsModalProvider>
+          </QuotesProvider>
+        </FeedFilterProvider>
       </UserProvider>
     </AuthProvider>
   );

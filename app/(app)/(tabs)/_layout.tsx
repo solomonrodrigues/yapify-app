@@ -13,7 +13,6 @@ import { useUser } from '@/context/UserContext';
 import { DataPreloader } from '@/components/DataPreloader';
 import Toast from 'react-native-toast-message';
 import { markAllNotificationsRead } from '@/lib/api/notifications';
-import { FeedFilterProvider } from '@/context/FeedFilterContext';
 import FeedFilterDropdown from '@/components/FeedFilterDropdown';
 
 function TabContent() {
@@ -188,10 +187,8 @@ function TabContent() {
 
 export default function TabLayout() {
     return (
-        <FeedFilterProvider>
-            <DataPreloader>
-                <TabContent />
-            </DataPreloader>
-        </FeedFilterProvider>
+        <DataPreloader>
+            <TabContent />
+        </DataPreloader>
     );
 }
