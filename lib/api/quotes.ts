@@ -175,3 +175,11 @@ export const getQuoteWitnesses = async (
   const res = await api.get<{ results: import('@/types/api').PublicUser[]; next: string | null }>(endpoint);
   return res.data;
 };
+
+export const respondToQuote = async (
+  quoteId: number,
+  response: 'confirmed' | 'denied' | null
+) => {
+  const res = await api.post(`/quotes/${quoteId}/respond/`, { response });
+  return res.data;
+};

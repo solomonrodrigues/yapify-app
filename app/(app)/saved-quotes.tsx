@@ -34,6 +34,7 @@ const SavedQuotesScreen = () => {
     guessQuoteById,
     unsaveQuoteById,
     unhideQuoteById,
+    respondToQuoteById,
     error,
   } = useSavedQuotesFeed();
 
@@ -109,6 +110,7 @@ const SavedQuotesScreen = () => {
               onGuess={guessQuoteById}
               onUnsave={unsaveQuoteById}
               onUnhide={unhideQuoteById}
+              onRespond={respondToQuoteById}
             />
           )}
           refreshing={refreshing}

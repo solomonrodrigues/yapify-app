@@ -6,6 +6,7 @@ import {
   guessQuote,
   hideQuote,
   likeQuote,
+  respondToQuote,
   saveQuote,
   unhideQuote,
   unsaveQuote,
@@ -51,6 +52,7 @@ export interface QuotesFeedValue {
   hideQuoteById: (id: number) => Promise<void>;
   unhideQuoteById: (id: number) => Promise<void>;
   deleteQuoteById: (id: number) => Promise<void>;
+  respondToQuoteById: (id: number, response: 'confirmed' | 'denied' | null) => Promise<void>;
 }
 
 interface UseQuotesFeedOptions {
@@ -393,6 +395,44 @@ export function useQuotesFeed(
     }
   }, []);
 
+  const respondToQuoteById = useCallback(
+    async (id: number, response: 'confirmed' | 'denied' | null) => {
+      // Store previous state for rollback
+      let previousResponse: 'confirmed' | 'denied' | null = null;
+
+      // optimistic update
+      setQuotes((prev) =>
+        prev.map((q) => {
+          if (q.id !== id) return q;
+          previousResponse = q.quoted_user_response as 'confirmed' | 'denied' | null;
+          return {
+            ...q,
+            quoted_user_response: response,
+            can_respond: true, // user can still change their response
+          };
+        })
+      );
+
+      try {
+        await respondToQuote(id, response);
+      } catch (e) {
+        console.error(e);
+        // rollback on failure
+        setQuotes((prev) =>
+          prev.map((q) =>
+            q.id === id
+              ? {
+                  ...q,
+                  quoted_user_response: previousResponse,
+                }
+              : q
+          )
+        );
+      }
+    },
+    []
+  );
+
   const refreshQuotes = useCallback(async () => {
     await loadQuotes(true);
   }, [loadQuotes]);
@@ -416,5 +456,6 @@ export function useQuotesFeed(
     hideQuoteById,
     unhideQuoteById,
     deleteQuoteById,
+    respondToQuoteById,
   };
 }

@@ -23,7 +23,7 @@ const QuotesFeed: React.FC = () => {
   const styles = useThemedStyles(getStyles);
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
-  const { quotes, refreshing, isLoadingMore, hasMore, refreshQuotes, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById, saveQuoteById, unsaveQuoteById, unhideQuoteById } = useQuotes();
+  const { quotes, refreshing, isLoadingMore, hasMore, refreshQuotes, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById, saveQuoteById, unsaveQuoteById, unhideQuoteById, respondToQuoteById } = useQuotes();
   const insets = useSafeAreaInsets();
   const paddingTop = Platform.OS === 'ios' ? 0 : 16;
 
@@ -76,6 +76,7 @@ const QuotesFeed: React.FC = () => {
               onSave={saveQuoteById}
               onUnsave={unsaveQuoteById}
               onUnhide={unhideQuoteById}
+              onRespond={respondToQuoteById}
             />
           )}
           refreshing={refreshing}

@@ -16,7 +16,7 @@ import { useThemedStyles } from '@/hooks/useThemedStyles';
 import GuessGameModal from '@/components/modals/GuessGameModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUser } from '@/context/UserContext';
-import { getQuote, likeQuote, witnessQuote, guessQuote } from '@/lib/api/quotes';
+import { getQuote, likeQuote, witnessQuote, guessQuote, respondToQuote } from '@/lib/api/quotes';
 import { useNavigation } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import PillActionButton from '@/components/PillActionButton';
@@ -129,6 +129,26 @@ const QuoteDetail: React.FC = () => {
       });
     } catch (err) {
       console.error('Error submitting guess:', err);
+    }
+  };
+
+  const handleRespond = async (response: 'confirmed' | 'denied' | null) => {
+    if (!quote) return;
+    const previousResponse = quote.quoted_user_response;
+    // Optimistic update
+    setQuote({
+      ...quote,
+      quoted_user_response: response,
+    });
+    try {
+      await respondToQuote(quote.id, response);
+    } catch (err) {
+      console.error('Error responding to quote:', err);
+      // Rollback on failure
+      setQuote({
+        ...quote,
+        quoted_user_response: previousResponse,
+      });
     }
   };
 
@@ -263,6 +283,82 @@ const QuoteDetail: React.FC = () => {
         <View style={styles.timestampContainer}>
           <Text style={styles.timestampText}>{timeAgo(quote.created_at)}</Text>
         </View>
+
+        {/* Quoted User Response Section */}
+        {(quote.quoted_user_response || quote.can_respond) && (
+          <View style={styles.responseSection}>
+            {quote.can_respond ? (
+              // User can respond - show confirm/deny buttons
+              <View style={styles.responseButtonsContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.responseButton,
+                    quote.quoted_user_response === 'confirmed' && styles.responseButtonActive,
+                  ]}
+                  onPress={() => handleRespond(quote.quoted_user_response === 'confirmed' ? null : 'confirmed')}
+                >
+                  <IconSymbol
+                    name="checkmark.circle.fill"
+                    size={18}
+                    color={quote.quoted_user_response === 'confirmed' ? '#fff' : '#4CAF50'}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text
+                    style={[
+                      styles.responseButtonText,
+                      { color: quote.quoted_user_response === 'confirmed' ? '#fff' : '#4CAF50' },
+                    ]}
+                  >
+                    I said this
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.responseButton,
+                    { borderColor: '#F44336' },
+                    quote.quoted_user_response === 'denied' && styles.responseButtonActiveDenied,
+                  ]}
+                  onPress={() => handleRespond(quote.quoted_user_response === 'denied' ? null : 'denied')}
+                >
+                  <IconSymbol
+                    name="xmark.circle.fill"
+                    size={18}
+                    color={quote.quoted_user_response === 'denied' ? '#fff' : '#F44336'}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text
+                    style={[
+                      styles.responseButtonText,
+                      { color: quote.quoted_user_response === 'denied' ? '#fff' : '#F44336' },
+                    ]}
+                  >
+                    Not me
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : quote.quoted_user_response ? (
+              // Display response badge for others
+              <View
+                style={[
+                  styles.responseBadge,
+                  quote.quoted_user_response === 'confirmed'
+                    ? styles.responseBadgeConfirmed
+                    : styles.responseBadgeDenied,
+                ]}
+              >
+                <IconSymbol
+                  name={quote.quoted_user_response === 'confirmed' ? 'checkmark.circle.fill' : 'xmark.circle.fill'}
+                  size={16}
+                  color="#fff"
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={styles.responseBadgeText}>
+                  {quote.quoted_user_response === 'confirmed' ? 'Confirmed' : 'Denied'} by {quote.quoted_user?.display_name || 'them'}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        )}
 
         {/* Guess Result Banner */}
         {quote.has_guessed && quote.guess && (
@@ -529,6 +625,54 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       color: theme.secondaryText,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
+    },
+    responseSection: {
+      marginBottom: 24,
+    },
+    responseButtonsContainer: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    responseButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: 24,
+      borderWidth: 1.5,
+      borderColor: '#4CAF50',
+      backgroundColor: 'transparent',
+    },
+    responseButtonActive: {
+      backgroundColor: '#4CAF50',
+      borderColor: '#4CAF50',
+    },
+    responseButtonActiveDenied: {
+      backgroundColor: '#F44336',
+      borderColor: '#F44336',
+    },
+    responseButtonText: {
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    responseBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      borderRadius: 20,
+    },
+    responseBadgeConfirmed: {
+      backgroundColor: '#4CAF50',
+    },
+    responseBadgeDenied: {
+      backgroundColor: '#F44336',
+    },
+    responseBadgeText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: '#fff',
     },
   });
 

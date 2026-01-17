@@ -26,6 +26,7 @@ export type UserRegistration = components["schemas"]["UserRegistration"];
 export type KindEnum = components["schemas"]["KindEnum"];
 export type RecentSearchCreate = components["schemas"]["RecentSearchCreate"];
 export type RecentSearchItem = components["schemas"]["RecentSearchItem"];
+export type QuotedUserResponseEnum = components["schemas"]["QuotedUserResponseEnum"];
 
 // Response obj
 // type SuccessResponse =

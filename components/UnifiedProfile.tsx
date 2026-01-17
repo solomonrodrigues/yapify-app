@@ -126,7 +126,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
 
   // Use the active tab's feed
   const activeFeed = activeTab === 'posted' ? postedFeed : receivedFeed;
-  const { quotes, refreshing, isLoadingMore, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById, unhideQuoteById } = activeFeed;
+  const { quotes, refreshing, isLoadingMore, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById, unhideQuoteById, respondToQuoteById } = activeFeed;
 
   // Friends fetcher for UserListModal
   const friendsFetcher = useCallback(
@@ -337,6 +337,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
                   onWitness={witnessQuoteById}
                   onGuess={guessQuoteById}
                   onUnhide={unhideQuoteById}
+                  onRespond={respondToQuoteById}
                 />
               )}
               refreshing={refreshing}
@@ -364,6 +365,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
                   onWitness={witnessQuoteById}
                   onGuess={guessQuoteById}
                   onUnhide={unhideQuoteById}
+                  onRespond={respondToQuoteById}
                 />
               )}
               refreshing={refreshing}
