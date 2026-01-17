@@ -14,6 +14,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import GuessGameModal from '@/components/modals/GuessGameModal';
+import GuessesModal from '@/components/modals/GuessesModal';
 import QuoteResponseAction from '@/components/QuoteResponseAction';
 import QuoteResponseBadge from '@/components/QuoteResponseBadge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -41,6 +42,7 @@ const QuoteDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [guessMade, setGuessMade] = useState(false);
   const [showGuessModal, setShowGuessModal] = useState(false);
+  const [showGuessesModal, setShowGuessesModal] = useState(false);
 
   const params = useLocalSearchParams();
   const { quoteID } = params;
@@ -179,6 +181,11 @@ const QuoteDetail: React.FC = () => {
       pathname: "/user/[userID]",
       params: { userID: userId },
     });
+  };
+
+  const handleGuessesUserPress = (userId: number) => {
+    setShowGuessesModal(false);
+    navigateToProfile(userId);
   };
 
   const openActionsModal = () => {
@@ -364,25 +371,42 @@ const QuoteDetail: React.FC = () => {
           )}
 
           {showGuessButton && (
-            <PillActionButton
-              icon={
-                <IconSymbol
-                  name={hasGuessedAlready ? "person.fill.checkmark" : "person.fill.viewfinder"}
-                  color={theme.accent}
-                  size={20}
-                  style={{ marginRight: 6 }}
-                />
-              }
-              label="YapGuess"
-              color={theme.accent}
-              borderColor={guessable ? theme.accent : theme.border}
-              highlightBgColor={theme.accent}
-              onPress={() => {
-                console.log('YapGuess button pressed, guessable:', guessable, 'showGuessModal:', showGuessModal);
-                openGuessModal();
-              }}
-              highlighted={guessable}
-            />
+            hasGuessedAlready ? (
+              // After guessing: show "Guesses" button that opens GuessesModal
+              <PillActionButton
+                icon={
+                  <IconSymbol
+                    name="person.2.fill"
+                    color={theme.secondaryText}
+                    size={20}
+                    style={{ marginRight: 6 }}
+                  />
+                }
+                label="Guesses"
+                color={theme.secondaryText}
+                borderColor={theme.border}
+                highlightBgColor={theme.accent}
+                onPress={() => setShowGuessesModal(true)}
+              />
+            ) : (
+              // Before guessing: show "YapGuess" button that opens GuessGameModal
+              <PillActionButton
+                icon={
+                  <IconSymbol
+                    name="person.fill.viewfinder"
+                    color={theme.accent}
+                    size={20}
+                    style={{ marginRight: 6 }}
+                  />
+                }
+                label="YapGuess"
+                color={theme.accent}
+                borderColor={theme.accent}
+                highlightBgColor={theme.accent}
+                onPress={openGuessModal}
+                highlighted={true}
+              />
+            )
           )}
         </View>
 
@@ -407,6 +431,16 @@ const QuoteDetail: React.FC = () => {
           onGuess={handleGuess}
           theme={theme}
           accent={randomPastel}
+        />
+      )}
+
+      {quote && (
+        <GuessesModal
+          visible={showGuessesModal}
+          onClose={() => setShowGuessesModal(false)}
+          quoteId={quote.id}
+          quotedUser={quote.quoted_user}
+          onUserPress={handleGuessesUserPress}
         />
       )}
     </ThemedView>

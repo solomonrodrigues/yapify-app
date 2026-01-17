@@ -183,3 +183,19 @@ export const respondToQuote = async (
   const res = await api.post(`/quotes/${quoteId}/respond/`, { response });
   return res.data;
 };
+
+export const getQuoteGuesses = async (
+  quoteId: number,
+  url?: string | null
+): Promise<{ results: import('@/types/api').QuoteGuessListItem[]; next: string | null }> => {
+  let endpoint: string;
+
+  if (url) {
+    endpoint = url;
+  } else {
+    endpoint = `/quotes/${quoteId}/guesses/`;
+  }
+
+  const res = await api.get<{ results: import('@/types/api').QuoteGuessListItem[]; next: string | null }>(endpoint);
+  return res.data;
+};

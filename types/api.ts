@@ -27,6 +27,7 @@ export type KindEnum = components["schemas"]["KindEnum"];
 export type RecentSearchCreate = components["schemas"]["RecentSearchCreate"];
 export type RecentSearchItem = components["schemas"]["RecentSearchItem"];
 export type QuotedUserResponseEnum = components["schemas"]["QuotedUserResponseEnum"];
+export type QuoteGuessListItem = components["schemas"]["QuoteGuessListItem"];
 
 // Response obj
 // type SuccessResponse =

@@ -1,4 +1,5 @@
 import GuessGameModal from '@/components/modals/GuessGameModal';
+import GuessesModal from '@/components/modals/GuessesModal';
 import PillActionButton from '@/components/PillActionButton';
 import QuoteResponseAction from '@/components/QuoteResponseAction';
 import QuoteResponseBadge from '@/components/QuoteResponseBadge';
@@ -47,6 +48,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   const styles = useThemedStyles(getStyles);
   const [guessMade, setGuessMade] = useState(!!quote.has_guessed);
   const [showGuessModal, setShowGuessModal] = useState(false);
+  const [showGuessesModal, setShowGuessesModal] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [showWitnessesModal, setShowWitnessesModal] = useState(false);
   const { user } = useUser();
@@ -104,6 +106,11 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
     setShowLikesModal(false);
     setShowWitnessesModal(false);
     router.push({ pathname: '/user/[userID]', params: { userID: String(pressedUser.id) } });
+  };
+
+  const handleGuessesUserPress = (userId: number) => {
+    setShowGuessesModal(false);
+    router.push({ pathname: '/user/[userID]', params: { userID: String(userId) } });
   };
 
   // If quote is hidden, show a collapsed version with undo option
@@ -235,23 +242,44 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
         )}
 
         {showGuessButton && (
-          <PillActionButton
-            icon={
-              <IconSymbol
-                name={hasGuessedAlready ? "person.fill.checkmark" : "person.fill.viewfinder"}
-                color={theme.accent}
-                size={18}
-                style={{ marginRight: 6 }}
-              />
-            }
-            label="YapGuess"
-            color={theme.accent}
-            borderColor={guessable ? theme.accent : theme.border}
-            highlightBgColor={theme.accent}
-            onPress={openGuessModal}
-            highlighted={guessable}
-            testID="guess-button"
-          />
+          hasGuessedAlready ? (
+            // After guessing: show "Guesses" button that opens GuessesModal
+            <PillActionButton
+              icon={
+                <IconSymbol
+                  name="person.2.fill"
+                  color={theme.secondaryText}
+                  size={18}
+                  style={{ marginRight: 6 }}
+                />
+              }
+              label="Guesses"
+              color={theme.secondaryText}
+              borderColor={theme.border}
+              highlightBgColor={theme.accent}
+              onPress={() => setShowGuessesModal(true)}
+              testID="guesses-button"
+            />
+          ) : (
+            // Before guessing: show "YapGuess" button that opens GuessGameModal
+            <PillActionButton
+              icon={
+                <IconSymbol
+                  name="person.fill.viewfinder"
+                  color={theme.accent}
+                  size={18}
+                  style={{ marginRight: 6 }}
+                />
+              }
+              label="YapGuess"
+              color={theme.accent}
+              borderColor={theme.accent}
+              highlightBgColor={theme.accent}
+              onPress={openGuessModal}
+              highlighted={true}
+              testID="guess-button"
+            />
+          )
         )}
       </View>
 
@@ -285,6 +313,14 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
         onUserPress={handleUserPress}
         searchable={false}
         emptyMessage="No witnesses yet"
+      />
+
+      <GuessesModal
+        visible={showGuessesModal}
+        onClose={() => setShowGuessesModal(false)}
+        quoteId={quote.id}
+        quotedUser={quote.quoted_user}
+        onUserPress={handleGuessesUserPress}
       />
     </View>
   );
