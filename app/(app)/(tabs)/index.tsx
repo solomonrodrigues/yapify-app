@@ -16,6 +16,9 @@ import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LegendList } from '@legendapp/list';
 import FeedQuote from '@/components/FeedQuote';
+import { useFeedFilter } from '@/context/FeedFilterContext';
+import { useUser } from '@/context/UserContext';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 
 
 // Main Feed Component
@@ -26,6 +29,31 @@ const QuotesFeed: React.FC = () => {
   const { quotes, refreshing, isLoadingMore, hasMore, refreshQuotes, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById, saveQuoteById, unsaveQuoteById, unhideQuoteById, respondToQuoteById } = useQuotes();
   const insets = useSafeAreaInsets();
   const paddingTop = Platform.OS === 'ios' ? 0 : 16;
+  const { filter } = useFeedFilter();
+  const { user } = useUser();
+
+  // Filter quotes based on selected filter
+  const filteredQuotes = useMemo(() => {
+    switch (filter) {
+      case 'guessable':
+        // Quotes that can be guessed but haven't been guessed yet
+        return quotes.filter(
+          (q) =>
+            !q.has_guessed &&
+            q.guess_options &&
+            q.guess_options.length > 1 &&
+            q.author.id !== user?.id
+        );
+      case 'respondable':
+        // Quotes that can be responded to but haven't been responded yet
+        return quotes.filter(
+          (q) => q.can_respond && !q.quoted_user_response
+        );
+      case 'latest':
+      default:
+        return quotes;
+    }
+  }, [quotes, filter, user?.id]);
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;
@@ -44,14 +72,45 @@ const QuotesFeed: React.FC = () => {
     }
   };
 
-  if (!refreshing && quotes.length === 0) {
+  // Empty state messages based on filter
+  const getEmptyMessage = () => {
+    switch (filter) {
+      case 'guessable':
+        return "No quotes to guess right now";
+      case 'respondable':
+        return "No quotes to respond to";
+      default:
+        return "No quotes available";
+    }
+  };
+
+  const getEmptyIcon = () => {
+    switch (filter) {
+      case 'guessable':
+        return 'person.fill.viewfinder';
+      case 'respondable':
+        return 'bubble.left.fill';
+      default:
+        return 'quote.bubble';
+    }
+  };
+
+  if (!refreshing && filteredQuotes.length === 0) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.emptyText}>No quotes available</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={refreshQuotes}>
-          <Text style={styles.retryText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
+      <ThemedView style={styles.centerContainer}>
+        <IconSymbol
+          name={getEmptyIcon() as any}
+          size={48}
+          color={theme.secondaryText}
+          style={{ marginBottom: 16 }}
+        />
+        <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
+        {filter === 'latest' && (
+          <TouchableOpacity style={styles.retryButton} onPress={refreshQuotes}>
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        )}
+      </ThemedView>
     );
   }
 
@@ -64,7 +123,7 @@ const QuotesFeed: React.FC = () => {
         }}
       >
         <LegendList
-          data={quotes}
+          data={filteredQuotes}
           keyExtractor={(item: Quote) => item.id.toString()}
           renderItem={({ item }) => (
             <FeedQuote

@@ -13,6 +13,8 @@ import { useUser } from '@/context/UserContext';
 import { DataPreloader } from '@/components/DataPreloader';
 import Toast from 'react-native-toast-message';
 import { markAllNotificationsRead } from '@/lib/api/notifications';
+import { FeedFilterProvider } from '@/context/FeedFilterContext';
+import FeedFilterDropdown from '@/components/FeedFilterDropdown';
 
 function TabContent() {
   const colorScheme = useColorScheme() ?? 'dark';
@@ -85,6 +87,7 @@ function TabContent() {
             tabBarIcon: ({ color }) => <IconSymbol size={tabBarIconSize} name="house.fill" color={color} />,
             headerShown: true,
             headerTitle: '',
+            headerLeft: () => <FeedFilterDropdown />,
             headerRight: () => (
               <Pressable onPress={() => router.push('/search')}>
                 <IconSymbol
@@ -185,8 +188,10 @@ function TabContent() {
 
 export default function TabLayout() {
     return (
-        <DataPreloader>
-            <TabContent />
-        </DataPreloader>
+        <FeedFilterProvider>
+            <DataPreloader>
+                <TabContent />
+            </DataPreloader>
+        </FeedFilterProvider>
     );
 }
