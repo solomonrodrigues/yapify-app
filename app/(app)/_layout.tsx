@@ -85,6 +85,36 @@ export default function AppLayout() {
         }}
       />
       <Stack.Screen
+        name="privacy-security"
+        options={{
+          headerShown: true,
+          headerTitle: 'Privacy & Security',
+          headerLeft: (props) => (
+            <HeaderBackButton
+              {...props}
+              onPress={handleBackPress('/my-account')}
+              tintColor={theme.text}
+              label={"Back"}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="blocked-users"
+        options={{
+          headerShown: true,
+          headerTitle: 'Blocked Users',
+          headerLeft: (props) => (
+            <HeaderBackButton
+              {...props}
+              onPress={handleBackPress('/privacy-security')}
+              tintColor={theme.text}
+              label={"Back"}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
         name="user/[userID]"
         options={{
           headerShown: true,

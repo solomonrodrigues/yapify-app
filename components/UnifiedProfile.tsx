@@ -3,8 +3,11 @@ import { FriendButton } from '@/components/FriendButton';
 import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 import { UserListModal } from '@/components/UserListModal';
 import { Colors, ProfileColorHexMap } from '@/constants/Colors';
+import { useBlockedUsers } from '@/context/BlockedUsersContext';
+import { useQuotes } from '@/context/QuotesContext';
 import { useQuotesFeed } from '@/hooks/useQuotesFeed';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getUser, getUserFriends } from '@/lib/api/friends';
@@ -12,8 +15,11 @@ import type { User as CurrentUser, Friendship, PublicUser, Quote, ProfileColorEn
 import { LegendList } from '@legendapp/list';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+    ActionSheetIOS,
     ActivityIndicator,
+    Alert,
     Animated,
+    Platform,
     Pressable,
     StyleSheet,
     Text,
@@ -30,6 +36,7 @@ import ReAnimated, {
     Easing,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 
 type ProfileUser = CurrentUser | PublicUser;
@@ -50,6 +57,8 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   const theme = Colors[colorScheme];
   const router = useRouter();
   const isOwnProfile = !userId || userId === currentUser.id;
+  const { blockUserById } = useBlockedUsers();
+  const { removeQuotesInvolvingUser } = useQuotes();
 
   // State
   const [user, setUser] = useState<ProfileUser | null>(isOwnProfile ? currentUser : null);
@@ -197,6 +206,47 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     }
   };
 
+  const handleBlockUser = () => {
+    if (!user) return;
+
+    const performBlock = async () => {
+      try {
+        await blockUserById(user.id);
+        removeQuotesInvolvingUser(user.id);
+        Toast.show({ type: 'info', text1: `@${user.username} blocked` });
+        router.back();
+      } catch (error) {
+        Toast.show({ type: 'error', text1: 'Failed to block user' });
+      }
+    };
+
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Block Account'],
+          destructiveButtonIndex: 1,
+          cancelButtonIndex: 0,
+          title: `Block @${user.username}?`,
+          message: "You won’t see any quotes from them anymore. You can unblock them later in Settings.",
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            performBlock();
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        'Block Account',
+        `Are you sure you want to block @${user.username}? You won't see quotes from them anymore. You can unblock them later in Settings.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Block', style: 'destructive', onPress: performBlock },
+        ]
+      );
+    }
+  };
+
   const renderFooter = (isLoading: boolean) => {
     if (!isLoading) return null;
     return (
@@ -251,6 +301,15 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
               <ThemedText style={styles.bio}>{user.bio}</ThemedText>
             )}
           </View>
+          {!isOwnProfile && (
+            <TouchableOpacity
+              style={styles.moreButton}
+              onPress={handleBlockUser}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <IconSymbol name="ellipsis" size={22} color={theme.text} />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Friend Button (only for other users) */}
@@ -429,6 +488,11 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     headerInfo: {
       flex: 1,
+    },
+    moreButton: {
+      padding: 8,
+      marginLeft: 8,
+      alignSelf: 'flex-start',
     },
     username: {
       color: theme.secondaryText,

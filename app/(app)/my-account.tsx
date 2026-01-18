@@ -48,7 +48,7 @@ export default function MyAccountScreen() {
     {
       title: "Privacy & Security",
       icon: "lock",
-      onPress: () => router.push("/profile"), // ToDo: Implement privacy & security
+      onPress: () => router.push("/privacy-security"),
     },
     {
       title: "Help & Support",

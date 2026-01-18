@@ -1,5 +1,6 @@
 // app/_layout.tsx
 import { AuthProvider } from '@/context/AuthContext';
+import { BlockedUsersProvider } from '@/context/BlockedUsersContext';
 import { FeedFilterProvider } from '@/context/FeedFilterContext';
 import { QuoteActionsModalProvider } from '@/context/QuoteActionsModalContext';
 import { QuotesProvider } from '@/context/QuotesContext';
@@ -29,9 +30,10 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <UserProvider>
-        <FeedFilterProvider>
-          <QuotesProvider>
-            <QuoteActionsModalProvider>
+        <BlockedUsersProvider>
+          <FeedFilterProvider>
+            <QuotesProvider>
+              <QuoteActionsModalProvider>
               <ThemeProvider value={theme}>
                 <GestureHandlerRootView>
                   <SafeAreaProvider>
@@ -53,9 +55,10 @@ export default function RootLayout() {
                   </SafeAreaProvider>
                 </GestureHandlerRootView>
               </ThemeProvider>
-            </QuoteActionsModalProvider>
-          </QuotesProvider>
-        </FeedFilterProvider>
+              </QuoteActionsModalProvider>
+            </QuotesProvider>
+          </FeedFilterProvider>
+        </BlockedUsersProvider>
       </UserProvider>
     </AuthProvider>
   );

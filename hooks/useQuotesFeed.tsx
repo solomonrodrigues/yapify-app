@@ -53,6 +53,7 @@ export interface QuotesFeedValue {
   unhideQuoteById: (id: number) => Promise<void>;
   deleteQuoteById: (id: number) => Promise<void>;
   respondToQuoteById: (id: number, response: 'confirmed' | 'denied' | null) => Promise<void>;
+  removeQuotesInvolvingUser: (userId: number) => void;
 }
 
 interface UseQuotesFeedOptions {
@@ -437,6 +438,14 @@ export function useQuotesFeed(
     await loadQuotes(true);
   }, [loadQuotes]);
 
+  const removeQuotesInvolvingUser = useCallback((userId: number) => {
+    setQuotes((prev) =>
+      prev.filter(
+        (q) => q.author.id !== userId && q.quoted_user?.id !== userId
+      )
+    );
+  }, []);
+
   return {
     quotes,
     initialLoading,
@@ -457,5 +466,6 @@ export function useQuotesFeed(
     unhideQuoteById,
     deleteQuoteById,
     respondToQuoteById,
+    removeQuotesInvolvingUser,
   };
 }

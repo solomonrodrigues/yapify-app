@@ -84,6 +84,9 @@ const MAPPING = {
   'flame.fill':                        { name: 'fire' },              // streaks / hot
   'clock.arrow.circlepath':            { name: 'clock-rotate-left' }, // "on this day" / history
   'bolt.fill':                         { name: 'bolt' },              // energy / streaks
+  'nosign':                            { name: 'ban' },               // block / no entry
+  'trash':                             { name: 'trash' },             // delete
+  'person.circle':                     { name: 'user-circle' },       // user profile
 } as const satisfies Record<string, IconMappingEntry>;
 
 // Component props for FontAwesome 7
