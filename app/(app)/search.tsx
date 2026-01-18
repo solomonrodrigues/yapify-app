@@ -1,4 +1,5 @@
 import { InitialsAvatar } from "@/components/InitialsAvatar";
+import { SearchBar } from "@/components/SearchBar";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -12,12 +13,11 @@ import { useRouter } from "expo-router";
 import { debounce } from "lodash";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   useColorScheme,
   View,
-  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { timeAgo } from "@/lib/utils/timeAgo";
@@ -157,20 +157,14 @@ const SearchScreen = () => {
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <IconSymbol name="chevron.left" size={24} color={theme.text} />
           </TouchableOpacity>
-          <TextInput
-            style={styles.input}
-            placeholder="Search Yapify"
-            placeholderTextColor={theme.secondaryText}
-            value={query}
-            onChangeText={setQuery}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery("")} style={{ marginLeft: 8 }}>
-              <IconSymbol name="xmark.circle.fill" size={20} color={theme.secondaryText} />
-            </TouchableOpacity>
-          )}
+          <View style={styles.searchBarContainer}>
+            <SearchBar
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search Yapify"
+              autoFocus
+            />
+          </View>
         </View>
 
         {/* Scope & Filters */}
@@ -280,15 +274,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     container: { flex: 1, paddingHorizontal: 16 },
     headerRow: { flexDirection: "row", alignItems: "center", marginTop: 8 },
     backButton: { marginRight: 12 },
-    input: {
-      flex: 1,
-      fontSize: 16,
-      paddingVertical: 8,
-      paddingHorizontal: 12,
-      borderRadius: 20,
-      backgroundColor: theme.inputBackground,
-      color: theme.text,
-    },
+    searchBarContainer: { flex: 1 },
     filterRow: { flexDirection: "row", marginVertical: 12, flexWrap: "wrap", gap: 8 },
     filterChip: {
       paddingHorizontal: 12,

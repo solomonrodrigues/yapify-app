@@ -1,5 +1,6 @@
 // components/UserListModal.tsx
 import { InitialsAvatar } from '@/components/InitialsAvatar';
+import { SearchBar } from '@/components/SearchBar';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
@@ -12,9 +13,7 @@ import {
   Modal,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
-  useColorScheme,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -47,8 +46,6 @@ export const UserListModal: React.FC<UserListModalProps> = ({
   emptyMessage = 'No users found',
 }) => {
   const styles = useThemedStyles(getStyles);
-  const colorScheme = useColorScheme() ?? 'dark';
-  const theme = Colors[colorScheme];
 
   const [users, setUsers] = useState<PublicUser[]>([]);
   const [nextUrl, setNextUrl] = useState<string | null>(null);
@@ -142,7 +139,8 @@ export const UserListModal: React.FC<UserListModalProps> = ({
   );
 
   const renderFooter = () => {
-    if (!loading) return null;
+    // Only show footer when loading more (pagination), not on initial load
+    if (!loading || users.length === 0) return null;
     return (
       <View style={styles.loadingFooter}>
         <ActivityIndicator size="small" />
@@ -167,23 +165,13 @@ export const UserListModal: React.FC<UserListModalProps> = ({
             </TouchableOpacity>
           </View>
           {searchable && (
-            <TextInput
-              style={[
-                styles.searchInput,
-                {
-                  borderColor: theme.divider,
-                  backgroundColor: theme.cardBackground,
-                  color: theme.text,
-                },
-              ]}
-              placeholder="Search users"
-              placeholderTextColor={theme.secondaryText}
-              value={searchQuery}
-              onChangeText={handleSearchChange}
-              autoCapitalize="none"
-              autoCorrect={false}
-              returnKeyType="search"
-            />
+            <View style={styles.searchContainer}>
+              <SearchBar
+                value={searchQuery}
+                onChangeText={handleSearchChange}
+                placeholder="Search users"
+              />
+            </View>
           )}
           <LegendList
             data={users}
@@ -197,9 +185,15 @@ export const UserListModal: React.FC<UserListModalProps> = ({
             onEndReachedThreshold={0.5}
             ListFooterComponent={renderFooter}
             ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <ThemedText style={styles.emptyText}>{emptyMessage}</ThemedText>
-              </View>
+              loading ? (
+                <View style={styles.emptyContainer}>
+                  <ActivityIndicator size="large" />
+                </View>
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <ThemedText style={styles.emptyText}>{emptyMessage}</ThemedText>
+                </View>
+              )
             }
           />
         </SafeAreaView>
@@ -236,15 +230,10 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontWeight: '300',
       lineHeight: 28,
     },
-    searchInput: {
+    searchContainer: {
       marginHorizontal: 16,
       marginTop: 16,
       marginBottom: 12,
-      paddingHorizontal: 16,
-      paddingVertical: 14,
-      borderRadius: 12,
-      borderWidth: 1,
-      fontSize: 15,
     },
     usersList: {
       paddingHorizontal: 16,
