@@ -25,7 +25,7 @@ export const formatNotificationParts = (
       case "new_quote":
         return {
           actor: name,
-          action: "posted a quote about you.",
+          action: "posted a quote from you.",
           object: null
         };
   
