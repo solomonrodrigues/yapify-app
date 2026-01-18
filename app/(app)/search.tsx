@@ -50,7 +50,7 @@ const SearchScreen = () => {
 
   const debouncedSearch = useRef(
     debounce(async (text: string, scope: SearchScope, year?: number | null, month?: number | null) => {
-      if (text.length < 2) {
+      if (text.length === 0) {
         setUserResults([]);
         setQuoteResults([]);
         return;
@@ -221,9 +221,9 @@ const SearchScreen = () => {
             ListEmptyComponent={() => (
               <View style={styles.emptyContainer}>
                 <ThemedText style={styles.emptyText}>
-                  {query.length < 2 ? "Type at least 2 characters to search." : "No results found."}
+                  {query.length === 0 ? "Start typing to search." : "No results found."}
                 </ThemedText>
-                {query.length >= 2 && (
+                {query.length > 0 && (
                   <TouchableOpacity
                     style={styles.switchScopeButton}
                     onPress={() => setScope(scope === "users" ? "quotes" : "users")}
