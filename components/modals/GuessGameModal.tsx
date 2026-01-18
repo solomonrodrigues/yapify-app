@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Modal,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { Quote } from '@/types/api';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -89,6 +90,12 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
   // Helper to know the correct option id (if available)
   const correctId = quote?.quoted_user?.id ?? null;
   const isPostGuess = hasSubmitted || !!quote?.guess;
+
+  // Loading state: we've submitted but don't have the result yet
+  // (correct is null and it's not a skip)
+  const isWaitingForResult = isPostGuess &&
+    quote?.guess?.correct === null &&
+    !quote?.guess?.skipped;
 
   return (
     <Modal
@@ -194,6 +201,61 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
                 <IconSymbol name="forward.fill" size={14} color={palette.text} />
                 <Text style={[styles.skipText, { color: palette.text }]}>Skip</Text>
               </TouchableOpacity>
+            </>
+          ) : isWaitingForResult ? (
+            <>
+              {/* Loading state while waiting for result */}
+              <View style={styles.resultContainer}>
+                <View
+                  style={[
+                    styles.resultBadge,
+                    { backgroundColor: palette.accentSoft, borderColor: palette.border },
+                  ]}
+                >
+                  <ActivityIndicator size="small" color={palette.accent} />
+                  <Text style={[styles.resultText, { color: palette.text }]}>
+                    Checking...
+                  </Text>
+                </View>
+              </View>
+
+              {/* Show options in loading state */}
+              <View style={styles.optionsGrid}>
+                {quote.guess_options?.map((option) => {
+                  const isSelected = selectedOption === option.id;
+                  return (
+                    <View
+                      key={option.id}
+                      style={[
+                        styles.optionButton,
+                        {
+                          backgroundColor: isSelected ? palette.accentSoft : 'transparent',
+                          borderColor: isSelected ? palette.accent : palette.border,
+                          opacity: 1,
+                        },
+                      ]}
+                      pointerEvents="none"
+                    >
+                      <View style={styles.optionContent}>
+                        <Text
+                          style={[styles.optionText, { color: palette.text }]}
+                          numberOfLines={1}
+                        >
+                          {option.display_name}
+                        </Text>
+                        {!!option.username && (
+                          <Text
+                            style={[styles.optionSubText, { color: palette.textMuted }]}
+                            numberOfLines={1}
+                          >
+                            @{option.username}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
             </>
           ) : (
             <>
