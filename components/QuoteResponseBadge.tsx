@@ -44,7 +44,7 @@ const QuoteResponseBadge: React.FC<QuoteResponseBadgeProps> = ({
   }));
 
   if (compact) {
-    // Minimal icon-only badge for tight spaces
+    // Minimal badge with icon and colored text
     return (
       <Animated.View style={[styles.compactBadge, animatedStyle]}>
         <IconSymbol
@@ -52,6 +52,9 @@ const QuoteResponseBadge: React.FC<QuoteResponseBadgeProps> = ({
           size={14}
           color={isConfirmed ? '#34C759' : '#FF6B6B'}
         />
+        <Text style={[styles.compactText, isConfirmed ? styles.compactTextConfirmed : styles.compactTextDenied]}>
+          {isConfirmed ? 'Confirmed' : 'Disputed'}
+        </Text>
       </Animated.View>
     );
   }
@@ -100,7 +103,20 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       letterSpacing: 0.2,
     },
     compactBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
       marginLeft: 4,
+      gap: 4,
+    },
+    compactText: {
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    compactTextConfirmed: {
+      color: '#34C759',
+    },
+    compactTextDenied: {
+      color: '#FF6B6B',
     },
   });
 

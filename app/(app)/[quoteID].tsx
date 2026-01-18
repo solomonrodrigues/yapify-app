@@ -272,7 +272,7 @@ const QuoteDetail: React.FC = () => {
                   <Text style={styles.quotedNameText}>{quote.quoted_user.display_name}</Text>
                 </TouchableOpacity>
                 {/* Inline response badge */}
-                {quote.quoted_user_response && !quote.can_respond && (
+                {quote.quoted_user_response && (
                   <QuoteResponseBadge response={quote.quoted_user_response} compact />
                 )}
               </View>

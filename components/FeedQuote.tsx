@@ -169,7 +169,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
                 <Text style={styles.quotedNameLink}>{quote.quoted_user.display_name}</Text>
               </TouchableOpacity>
               {/* Inline response badge - compact version next to name */}
-              {quote.quoted_user_response && !quote.can_respond && (
+              {quote.quoted_user_response && (
                 <QuoteResponseBadge response={quote.quoted_user_response} compact />
               )}
             </View>
