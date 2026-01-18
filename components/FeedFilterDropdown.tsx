@@ -71,9 +71,9 @@ const FeedFilterDropdown: React.FC = () => {
           <Text style={styles.buttonText}>{FEED_FILTER_LABELS[filter]}</Text>
           <IconSymbol
             name="chevron.down"
-            size={12}
-            color={theme.text}
-            style={{ marginLeft: 4 }}
+            size={16}
+            color={theme.secondaryText}
+            style={{ marginLeft: 6 }}
           />
         </TouchableOpacity>
       </Animated.View>
@@ -132,15 +132,11 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     button: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 6,
-      paddingHorizontal: 12,
       marginLeft: 16,
-      borderRadius: 8,
-      backgroundColor: theme.cardBackground,
     },
     buttonText: {
-      fontSize: 16,
-      fontWeight: '600',
+      fontSize: 20,
+      fontWeight: '700',
       color: theme.text,
     },
     overlay: {

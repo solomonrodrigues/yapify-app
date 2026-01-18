@@ -33,6 +33,7 @@ const MAPPING = {
   'plus': { name: 'plus' },
   'chevron.left': { name: 'chevron-left' },
   'chevron.right': { name: 'chevron-right' },
+  'chevron.down': { name: 'chevron-down' },
   'person': { name: 'person' },
   'checkmark': { name: 'check' },
   'quote.bubble.fill': { name: 'comment-dots' },  // Or quote-right
