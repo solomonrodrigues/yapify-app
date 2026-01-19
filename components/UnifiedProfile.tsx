@@ -12,13 +12,13 @@ import { useQuotesFeed } from '@/hooks/useQuotesFeed';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getUser, getUserFriends } from '@/lib/api/friends';
 import type { User as CurrentUser, Friendship, PublicUser, Quote, ProfileColorEnum } from '@/types/api';
-import { LegendList } from '@legendapp/list';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActionSheetIOS,
     ActivityIndicator,
     Alert,
     Animated,
+    LayoutChangeEvent,
     Platform,
     Pressable,
     StyleSheet,
@@ -30,14 +30,18 @@ import {
 import ReAnimated, {
     useSharedValue,
     useAnimatedStyle,
+    useAnimatedScrollHandler,
+    interpolate,
+    Extrapolation,
     withSequence,
     withTiming,
     withSpring,
     Easing,
+    runOnJS,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 
 type ProfileUser = CurrentUser | PublicUser;
 
@@ -56,6 +60,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
   const router = useRouter();
+  const navigation = useNavigation();
   const isOwnProfile = !userId || userId === currentUser.id;
   const { blockUserById } = useBlockedUsers();
   const { removeQuotesInvolvingUser } = useQuotes();
@@ -68,6 +73,12 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
 
   // Friends modal state
   const [friendsModalVisible, setFriendsModalVisible] = useState(false);
+
+  // Sticky header state
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const [stickyTabsInteractive, setStickyTabsInteractive] = useState(false);
+  const [showHeaderTitle, setShowHeaderTitle] = useState(false);
+  const scrollY = useSharedValue(0);
 
   // Animation refs for pulse effect
   const postedPulseAnim = useRef(new Animated.Value(1)).current;
@@ -102,6 +113,20 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
       setUser(currentUser);
     }
   }, [currentUser, isOwnProfile]);
+
+  // Update navigation header title based on scroll
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: showHeaderTitle && user ? user.display_name : '',
+    });
+  }, [showHeaderTitle, user, navigation]);
+
+  // Reset scroll state when switching tabs
+  useEffect(() => {
+    scrollY.value = 0;
+    setStickyTabsInteractive(false);
+    setShowHeaderTitle(false);
+  }, [activeTab]);
 
   // Load user profile
   useEffect(() => {
@@ -247,6 +272,42 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     }
   };
 
+  // Update sticky tabs and header title state
+  const updateScrollState = useCallback((isInteractive: boolean, shouldShowTitle: boolean) => {
+    setStickyTabsInteractive(isInteractive);
+    setShowHeaderTitle(shouldShowTitle);
+  }, []);
+
+  // Animated scroll handler
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+      // Update interactive state when crossing threshold
+      const threshold = headerHeight;
+      const shouldBeInteractive = event.contentOffset.y >= threshold && headerHeight > 0;
+      // Show header title slightly before tabs stick (when profile info scrolls away)
+      const shouldShowTitle = event.contentOffset.y >= threshold * 0.6 && headerHeight > 0;
+      runOnJS(updateScrollState)(shouldBeInteractive, shouldShowTitle);
+    },
+  });
+
+  // Measure header height (content above tabs)
+  const handleHeaderLayout = useCallback((e: LayoutChangeEvent) => {
+    setHeaderHeight(e.nativeEvent.layout.height);
+  }, []);
+
+  // Animated style for sticky tabs
+  const stickyTabsStyle = useAnimatedStyle(() => {
+    const threshold = headerHeight;
+    const opacity = interpolate(
+      scrollY.value,
+      [threshold - 10, threshold],
+      [0, 1],
+      Extrapolation.CLAMP
+    );
+    return { opacity };
+  });
+
   const renderFooter = (isLoading: boolean) => {
     if (!isLoading) return null;
     return (
@@ -256,6 +317,130 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
       </View>
     );
   };
+
+  // Handle both User (string) and PublicUser (number) types
+  const friendsCount = user?.friends_count ?? 0;
+  const quotesPostedCount = user?.quotes_posted ?? 0;
+  const quotesReceivedCount = user?.quotes_received ?? 0;
+
+  // Get user's profile color
+  const userProfileColor = user?.profile_color
+    ? ProfileColorHexMap[user.profile_color as ProfileColorEnum]
+    : theme.pastels.purple;
+
+  // Render tabs (reused for inline and sticky)
+  const renderTabs = useCallback(() => (
+    <View style={styles.tabsContainer}>
+      <TouchableOpacity
+        style={[
+          styles.tab,
+          activeTab === 'posted' && { borderBottomColor: userProfileColor },
+        ]}
+        onPress={() => handleTabChange('posted')}
+      >
+        <Animated.View style={{ transform: [{ scale: postedPulseAnim }] }}>
+          <ThemedText style={[styles.tabText, activeTab === 'posted' && styles.tabTextActive]}>
+            Posted
+          </ThemedText>
+        </Animated.View>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[
+          styles.tab,
+          activeTab === 'received' && { borderBottomColor: userProfileColor },
+        ]}
+        onPress={() => handleTabChange('received')}
+      >
+        <Animated.View style={{ transform: [{ scale: receivedPulseAnim }] }}>
+          <ThemedText style={[styles.tabText, activeTab === 'received' && styles.tabTextActive]}>
+            Received
+          </ThemedText>
+        </Animated.View>
+      </TouchableOpacity>
+    </View>
+  ), [activeTab, userProfileColor, postedPulseAnim, receivedPulseAnim, handleTabChange, styles]);
+
+  // List header component with profile info and tabs
+  const ListHeaderComponent = useMemo(() => {
+    if (!user) return null;
+
+    return (
+      <View>
+        {/* Scrollable header content - measure this to know when tabs reach top */}
+        <View onLayout={handleHeaderLayout}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Pressable onPress={handleAvatarPress}>
+              <ReAnimated.View style={[styles.headerAvatar, avatarAnimatedStyle]}>
+                <InitialsAvatar user={user} size={80} />
+              </ReAnimated.View>
+            </Pressable>
+            <View style={styles.headerInfo}>
+              <ThemedText type="title">{user.display_name}</ThemedText>
+              <ThemedText style={styles.username}>@{user.username}</ThemedText>
+              {'bio' in user && user.bio && (
+                <ThemedText style={styles.bio}>{user.bio}</ThemedText>
+              )}
+            </View>
+            {!isOwnProfile && (
+              <TouchableOpacity
+                style={styles.moreButton}
+                onPress={handleBlockUser}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <IconSymbol name="ellipsis" size={22} color={theme.text} />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Friend Button (only for other users) */}
+          {!isOwnProfile && (
+            <View style={styles.actionContainer}>
+              <FriendButton
+                userId={user.id}
+                friendship={friendship}
+                onFriendshipChange={handleFriendshipChange}
+                variant="default"
+              />
+            </View>
+          )}
+
+          {/* Stats Row */}
+          <View style={styles.statsRow}>
+            <TouchableOpacity
+              style={styles.statCard}
+              activeOpacity={0.7}
+              onPress={() => handleTabChange('posted')}
+            >
+              <ThemedText type="title">{quotesPostedCount}</ThemedText>
+              <ThemedText style={styles.statLabel}>Posted</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.statCard}
+              activeOpacity={0.7}
+              onPress={() => handleTabChange('received')}
+            >
+              <ThemedText type="title">{quotesReceivedCount}</ThemedText>
+              <ThemedText style={styles.statLabel}>Received</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.statCard}
+              activeOpacity={0.7}
+              onPress={handleOpenFriends}
+            >
+              <ThemedText type="title">{friendsCount}</ThemedText>
+              <ThemedText style={styles.statLabel}>Friends</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Tabs */}
+        {renderTabs()}
+      </View>
+    );
+  }, [user, isOwnProfile, friendship, quotesPostedCount, quotesReceivedCount, friendsCount,
+      styles, theme, avatarAnimatedStyle, handleHeaderLayout, handleAvatarPress,
+      handleBlockUser, handleFriendshipChange, handleTabChange, handleOpenFriends, renderTabs]);
 
   if (loading) {
     return (
@@ -274,174 +459,54 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     );
   }
 
-  // Handle both User (string) and PublicUser (number) types
-  const friendsCount = user.friends_count;
-  const quotesPostedCount = user.quotes_posted;
-  const quotesReceivedCount = user.quotes_received;
-
-  // Get user's profile color
-  const userProfileColor = user.profile_color
-    ? ProfileColorHexMap[user.profile_color as ProfileColorEnum]
-    : theme.pastels.purple;
-
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView edges={['bottom']} style={styles.safeArea}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Pressable onPress={handleAvatarPress}>
-            <ReAnimated.View style={[styles.headerAvatar, avatarAnimatedStyle]}>
-              <InitialsAvatar user={user} size={80} />
-            </ReAnimated.View>
-          </Pressable>
-          <View style={styles.headerInfo}>
-            <ThemedText type="title">{user.display_name}</ThemedText>
-            <ThemedText style={styles.username}>@{user.username}</ThemedText>
-            {'bio' in user && user.bio && (
-              <ThemedText style={styles.bio}>{user.bio}</ThemedText>
-            )}
-          </View>
-          {!isOwnProfile && (
-            <TouchableOpacity
-              style={styles.moreButton}
-              onPress={handleBlockUser}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <IconSymbol name="ellipsis" size={22} color={theme.text} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Friend Button (only for other users) */}
-        {!isOwnProfile && (
-          <View style={styles.actionContainer}>
-            <FriendButton
-              userId={user.id}
-              friendship={friendship}
-              onFriendshipChange={handleFriendshipChange}
-              variant="default"
-            />
-          </View>
-        )}
-
-        {/* Stats Row */}
-        <View style={styles.statsRow}>
-          <TouchableOpacity 
-            style={styles.statCard}
-            activeOpacity={0.7}
-            onPress={() => handleTabChange('posted')}
-          >
-            <ThemedText type="title">{quotesPostedCount}</ThemedText>
-            <ThemedText style={styles.statLabel}>Posted</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.statCard}
-            activeOpacity={0.7}
-            onPress={() => handleTabChange('received')}
-          >
-            <ThemedText type="title">{quotesReceivedCount}</ThemedText>
-            <ThemedText style={styles.statLabel}>Received</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.statCard} 
-            activeOpacity={0.7}
-            onPress={handleOpenFriends}
-          >
-            <ThemedText type="title">{friendsCount}</ThemedText>
-            <ThemedText style={styles.statLabel}>Friends</ThemedText>
-          </TouchableOpacity>
-        </View>
-
-        {/* Tabs */}
-        <View style={styles.tabsContainer}>
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'posted' && { borderBottomColor: userProfileColor },
-            ]}
-            onPress={() => handleTabChange('posted')}
-          >
-            <Animated.View style={{ transform: [{ scale: postedPulseAnim }] }}>
-              <ThemedText style={[styles.tabText, activeTab === 'posted' && styles.tabTextActive]}>
-                Posted
-              </ThemedText>
-            </Animated.View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'received' && { borderBottomColor: userProfileColor },
-            ]}
-            onPress={() => handleTabChange('received')}
-          >
-            <Animated.View style={{ transform: [{ scale: receivedPulseAnim }] }}>
-              <ThemedText style={[styles.tabText, activeTab === 'received' && styles.tabTextActive]}>
-                Received
-              </ThemedText>
-            </Animated.View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Quote Feed */}
-        <View style={styles.feedContainer}>
-          {activeTab === 'posted' ? (
-            <LegendList
-              data={quotes}
-              keyExtractor={(item: Quote) => item.id.toString()}
-              renderItem={({ item }) => (
-                <FeedQuote
-                  quote={item}
-                  theme={theme}
-                  onLike={likeQuoteById}
-                  onWitness={witnessQuoteById}
-                  onGuess={guessQuoteById}
-                  onUnhide={unhideQuoteById}
-                  onRespond={respondToQuoteById}
-                />
-              )}
-              refreshing={refreshing}
-              onRefresh={handleRefreshPosted}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.listContent}
-              onEndReached={loadMore}
-              onEndReachedThreshold={0.5}
-              ListFooterComponent={renderFooter(isLoadingMore)}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <ThemedText style={styles.emptyText}>No quotes posted yet</ThemedText>
-                </View>
-              }
-            />
-          ) : (
-            <LegendList
-              data={quotes}
-              keyExtractor={(item: Quote) => item.id.toString()}
-              renderItem={({ item }) => (
-                <FeedQuote
-                  quote={item}
-                  theme={theme}
-                  onLike={likeQuoteById}
-                  onWitness={witnessQuoteById}
-                  onGuess={guessQuoteById}
-                  onUnhide={unhideQuoteById}
-                  onRespond={respondToQuoteById}
-                />
-              )}
-              refreshing={refreshing}
-              onRefresh={handleRefreshReceived}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.listContent}
-              onEndReached={loadMore}
-              onEndReachedThreshold={0.5}
-              ListFooterComponent={renderFooter(isLoadingMore)}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <ThemedText style={styles.emptyText}>No quotes received yet</ThemedText>
-                </View>
-              }
+        {/* Quote Feed with header */}
+        <ReAnimated.FlatList
+          key={activeTab}
+          data={quotes}
+          keyExtractor={(item: Quote) => item.id.toString()}
+          renderItem={({ item }) => (
+            <FeedQuote
+              quote={item}
+              theme={theme}
+              onLike={likeQuoteById}
+              onWitness={witnessQuoteById}
+              onGuess={guessQuoteById}
+              onUnhide={unhideQuoteById}
+              onRespond={respondToQuoteById}
             />
           )}
-        </View>
+          refreshing={refreshing}
+          onRefresh={activeTab === 'posted' ? handleRefreshPosted : handleRefreshReceived}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListHeaderComponent={ListHeaderComponent}
+          ListFooterComponent={renderFooter(isLoadingMore)}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <ThemedText style={styles.emptyText}>
+                {activeTab === 'posted' ? 'No quotes posted yet' : 'No quotes received yet'}
+              </ThemedText>
+            </View>
+          }
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+        />
+
+        {/* Sticky tabs - appear when tabs scroll to top */}
+        <ReAnimated.View
+          style={[
+            styles.stickyTabsContainer,
+            stickyTabsStyle
+          ]}
+          pointerEvents={stickyTabsInteractive ? 'auto' : 'none'}
+        >
+          {renderTabs()}
+        </ReAnimated.View>
 
         {/* Friends Modal */}
         <UserListModal
@@ -549,8 +614,13 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     tabTextActive: {
       color: theme.text,
     },
-    feedContainer: {
-      flex: 1,
+    stickyTabsContainer: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 99,
+      backgroundColor: theme.background,
     },
     listContent: {
       paddingBottom: 48,
