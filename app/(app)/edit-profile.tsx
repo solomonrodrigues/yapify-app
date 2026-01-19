@@ -6,12 +6,11 @@ import { useUser } from '@/context/UserContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { updateProfile } from '@/lib/api/profile';
 import { getErrorMessage } from '@/lib/utils/error';
-import { ProfileColorEnum, QuoteVisibilityEnum } from '@/types/api';
+import { ProfileColorEnum } from '@/types/api';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -21,19 +20,6 @@ import {
   View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-
-const QUOTE_VISIBILITY_OPTIONS: { value: QuoteVisibilityEnum; label: string; description: string }[] = [
-  {
-    value: 'mutuals',
-    label: 'Mutual Friends Only',
-    description: 'Only mutual friends can see your quotes',
-  },
-  {
-    value: 'extended',
-    label: 'Friends of Friends',
-    description: 'Your friends and their friends can see your quotes',
-  },
-];
 
 // Generate profile color options from the hex map
 const PROFILE_COLORS: { value: ProfileColorEnum; hex: string; name: string }[] = (
@@ -51,9 +37,6 @@ export default function EditProfileScreen() {
   const theme = Colors[colorScheme];
 
   const [bio, setBio] = useState(user?.bio || '');
-  const [quoteVisibility, setQuoteVisibility] = useState<QuoteVisibilityEnum>(
-    (user?.quote_visibility as QuoteVisibilityEnum) || 'mutuals'
-  );
   const [profileColor, setProfileColor] = useState<ProfileColorEnum>(
     (user?.profile_color as ProfileColorEnum) || 'PURPLE'
   );
@@ -67,7 +50,6 @@ export default function EditProfileScreen() {
       // Use updateUser from context which automatically updates the context state
       await updateUser({
         bio: bio || null,
-        quote_visibility: quoteVisibility,
         profile_color: profileColor,
       });
 
@@ -94,7 +76,6 @@ export default function EditProfileScreen() {
 
   const hasChanges =
     bio !== (user.bio || '') ||
-    quoteVisibility !== user.quote_visibility ||
     profileColor !== user.profile_color;
 
   return (
@@ -122,50 +103,6 @@ export default function EditProfileScreen() {
           <ThemedText style={styles.charCount}>
             {bio.length}/160 characters
           </ThemedText>
-        </View>
-
-        {/* Quote Visibility Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <IconSymbol name="eye" size={20} color={theme.text} />
-            <ThemedText style={styles.sectionTitle}>Quote Visibility</ThemedText>
-          </View>
-          <ThemedText style={styles.sectionDescription}>
-            Control who can see your quotes on Yapify
-          </ThemedText>
-          <View style={styles.optionsContainer}>
-            {QUOTE_VISIBILITY_OPTIONS.map((option) => (
-              <Pressable
-                key={option.value}
-                style={[
-                  styles.optionCard,
-                  {
-                    borderColor: theme.border,
-                    backgroundColor: theme.cardBackground,
-                  },
-                  quoteVisibility === option.value && {
-                    borderColor: theme.accent,
-                    backgroundColor: theme.accent + '10',
-                  },
-                ]}
-                onPress={() => setQuoteVisibility(option.value)}
-              >
-                <View style={styles.optionHeader}>
-                  <ThemedText style={styles.optionLabel}>{option.label}</ThemedText>
-                  {quoteVisibility === option.value && (
-                    <IconSymbol
-                      name="checkmark.circle.fill"
-                      size={20}
-                      color={theme.accent}
-                    />
-                  )}
-                </View>
-                <ThemedText style={styles.optionDescription}>
-                  {option.description}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </View>
         </View>
 
         {/* Profile Color Section */}
@@ -277,30 +214,6 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       color: theme.secondaryText,
       marginTop: 8,
       textAlign: 'right',
-    },
-    optionsContainer: {
-      gap: 12,
-    },
-    optionCard: {
-      padding: 16,
-      borderRadius: 12,
-      borderWidth: 2,
-    },
-    optionHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 4,
-    },
-    optionLabel: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: theme.text,
-    },
-    optionDescription: {
-      fontSize: 14,
-      color: theme.secondaryText,
-      lineHeight: 20,
     },
     colorsGrid: {
       flexDirection: 'row',
