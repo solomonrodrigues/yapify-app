@@ -115,6 +115,21 @@ export default function AppLayout() {
         }}
       />
       <Stack.Screen
+        name="help-support"
+        options={{
+          headerShown: true,
+          headerTitle: 'Help & Support',
+          headerLeft: (props) => (
+            <HeaderBackButton
+              {...props}
+              onPress={handleBackPress('/my-account')}
+              tintColor={theme.text}
+              label={"Back"}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
         name="user/[userID]"
         options={{
           headerShown: true,

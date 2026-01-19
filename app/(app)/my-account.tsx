@@ -53,7 +53,7 @@ export default function MyAccountScreen() {
     {
       title: "Help & Support",
       icon: "questionmark.circle.fill",
-      onPress: () => router.push("/profile"), // ToDo: Implement help & support
+      onPress: () => router.push("/help-support"),
     },
     {
       title: "Onboarding",
