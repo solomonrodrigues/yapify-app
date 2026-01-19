@@ -298,6 +298,10 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
 
   // Animated style for sticky tabs
   const stickyTabsStyle = useAnimatedStyle(() => {
+    // Don't show until header height is measured
+    if (headerHeight === 0) {
+      return { opacity: 0 };
+    }
     const threshold = headerHeight;
     const opacity = interpolate(
       scrollY.value,
