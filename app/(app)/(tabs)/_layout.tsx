@@ -10,9 +10,9 @@ import QuotePostModal from '@/components/modals/QuotePostModal';
 import { Quote } from '@/types/api';
 import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { useUser } from '@/context/UserContext';
+import { useNotifications } from '@/context/NotificationsContext';
 import { DataPreloader } from '@/components/DataPreloader';
 import Toast from 'react-native-toast-message';
-import { markAllNotificationsRead } from '@/lib/api/notifications';
 import FeedFilterDropdown from '@/components/FeedFilterDropdown';
 
 function TabContent() {
@@ -20,6 +20,7 @@ function TabContent() {
   const theme = Colors[colorScheme]
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const { user } = useUser();
+  const { markAllAsRead } = useNotifications();
 
   const handleQuoteCreated = (newQuote: Quote) => {
     console.log('New quote created:', newQuote);
@@ -32,12 +33,11 @@ function TabContent() {
 
   const handleMarkAllRead = async () => {
     try {
-      await markAllNotificationsRead();
+      await markAllAsRead();
       Toast.show({
         type: 'info',
         text1: 'You\'re all caught up.'
       });
-      // ToDo: update notifications is_read if possible.
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'Failed to mark all notifications as read');

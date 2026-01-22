@@ -2,6 +2,7 @@
 import { AuthProvider } from '@/context/AuthContext';
 import { BlockedUsersProvider } from '@/context/BlockedUsersContext';
 import { FeedFilterProvider } from '@/context/FeedFilterContext';
+import { NotificationsProvider } from '@/context/NotificationsContext';
 import { QuoteActionsModalProvider } from '@/context/QuoteActionsModalContext';
 import { QuotesProvider } from '@/context/QuotesContext';
 import { UserProvider } from '@/context/UserContext';
@@ -33,6 +34,7 @@ export default function RootLayout() {
         <BlockedUsersProvider>
           <FeedFilterProvider>
             <QuotesProvider>
+              <NotificationsProvider>
               <QuoteActionsModalProvider>
               <ThemeProvider value={theme}>
                 <GestureHandlerRootView>
@@ -56,6 +58,7 @@ export default function RootLayout() {
                 </GestureHandlerRootView>
               </ThemeProvider>
               </QuoteActionsModalProvider>
+              </NotificationsProvider>
             </QuotesProvider>
           </FeedFilterProvider>
         </BlockedUsersProvider>

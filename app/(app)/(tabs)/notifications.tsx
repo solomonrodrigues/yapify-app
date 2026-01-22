@@ -2,11 +2,11 @@ import { NotificationItem } from '@/components/NotificationItem';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
-import { getNotifications, markNotificationRead } from '@/lib/api/notifications';
-import { Friendship, Notification } from '@/types/api';
+import { useNotifications } from '@/context/NotificationsContext';
+import { Notification } from '@/types/api';
 import { LegendList } from '@legendapp/list';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -23,51 +23,26 @@ const NotificationsView: React.FC = () => {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
 
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [nextUrl, setNextUrl] = useState<string | null>(null);
-  const [prevUrl, setPrevUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-
-  const fetchNotifications = async (url?: string, mode: 'reset' | 'append' = 'reset') => {
-    try {
-      const res = await getNotifications(url); // accept optional full URL or page param in your client
-      setNextUrl(res.next ?? null);
-      setPrevUrl(res.previous ?? null);
-      setNotifications((prev) => (mode === 'append' ? [...prev, ...res.results] : res.results));
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Failed to load notifications');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-      setLoadingMore(false);
-    }
-  };
-
-  const loadMore = () => {
-    if (!loadingMore && nextUrl) {
-      setLoadingMore(true);
-      fetchNotifications(nextUrl, 'append');
-    }
-  };
-
-  const handleMarkRead = async (id: number) => {
-    try {
-      await markNotificationRead(id);
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-      );
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Failed to mark notification as read');
-    }
-  };
+  const {
+    notifications,
+    loading,
+    refreshing,
+    loadingMore,
+    hasLoadedOnce,
+    fetchNotifications,
+    loadMore,
+    markAsRead,
+    updateFriendship,
+    refresh,
+  } = useNotifications();
 
   const handleNotificationPress = async (item: Notification) => {
     if (!item.is_read) {
-      handleMarkRead(item.id);
+      try {
+        await markAsRead(item.id);
+      } catch {
+        Alert.alert('Error', 'Failed to mark notification as read');
+      }
     }
     if (item.notification_type === 'new_quote' || item.notification_type === 'quote_liked' || item.notification_type === 'quote_witnessed') {
       router.push({
@@ -77,19 +52,11 @@ const NotificationsView: React.FC = () => {
     }
   };
 
-  const handleInlineFriendshipChange = (notificationId: number, friendship: Friendship | null) => {
-    setNotifications(prev =>
-      prev.map(n =>
-        n.id === notificationId
-          ? { ...n, friendship, is_read: true } // mark read if you like
-          : n
-      )
-    );
-  };
-
   useEffect(() => {
-    fetchNotifications();
-  }, []);
+    if (!hasLoadedOnce) {
+      fetchNotifications();
+    }
+  }, [hasLoadedOnce, fetchNotifications]);
 
   if (loading) {
     return (
@@ -110,10 +77,7 @@ const NotificationsView: React.FC = () => {
         </ThemedText>
         <TouchableOpacity
           style={[styles.retryButton, { borderColor: theme.accent }]}
-          onPress={() => {
-            setRefreshing(true);
-            fetchNotifications();
-          }}
+          onPress={refresh}
         >
           <Text style={[styles.retryText, { color: theme.accent }]}>Retry</Text>
         </TouchableOpacity>
@@ -132,14 +96,11 @@ const NotificationsView: React.FC = () => {
               notification={item}
               theme={theme}
               onPress={() => handleNotificationPress(item)}
-              onFriendshipChange={handleInlineFriendshipChange}
+              onFriendshipChange={updateFriendship}
             />
           )}
           refreshing={refreshing}
-          onRefresh={() => {
-            setRefreshing(true);
-            fetchNotifications();
-          }}
+          onRefresh={refresh}
           onEndReachedThreshold={0.4}
           onEndReached={loadMore}
           showsVerticalScrollIndicator={false}
