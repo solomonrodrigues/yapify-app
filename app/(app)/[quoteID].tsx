@@ -83,31 +83,47 @@ const QuoteDetail: React.FC = () => {
 
   const handleLike = async () => {
     if (!quote) return;
+    const previousIsLiked = quote.is_liked;
+    const previousLikeCount = quote.like_count;
+    // Optimistic update
+    setQuote({
+      ...quote,
+      is_liked: !quote.is_liked,
+      like_count: quote.is_liked ? quote.like_count - 1 : quote.like_count + 1,
+    });
     try {
-      // ToDo: Implement optimistic UI update + rollback on fail here
       await likeQuote(quote.id);
-      setQuote({
-        ...quote,
-        is_liked: !quote.is_liked,
-        like_count: quote.is_liked ? quote.like_count - 1 : quote.like_count + 1,
-      });
     } catch (err) {
       console.error('Error liking quote:', err);
+      // Rollback on failure
+      setQuote((prev) => prev ? {
+        ...prev,
+        is_liked: previousIsLiked,
+        like_count: previousLikeCount,
+      } : null);
     }
   };
 
   const handleWitness = async () => {
     if (!quote) return;
+    const previousIsWitnessed = quote.is_witnessed;
+    const previousWitnessCount = quote.witness_count;
+    // Optimistic update
+    setQuote({
+      ...quote,
+      is_witnessed: !quote.is_witnessed,
+      witness_count: quote.is_witnessed ? quote.witness_count - 1 : quote.witness_count + 1,
+    });
     try {
-      // ToDo: Implement optimistic UI update + rollback on fail here
       await witnessQuote(quote.id);
-      setQuote({
-        ...quote,
-        is_witnessed: !quote.is_witnessed,
-        witness_count: quote.is_witnessed ? quote.witness_count - 1 : quote.witness_count + 1,
-      });
     } catch (err) {
       console.error('Error witnessing quote:', err);
+      // Rollback on failure
+      setQuote((prev) => prev ? {
+        ...prev,
+        is_witnessed: previousIsWitnessed,
+        witness_count: previousWitnessCount,
+      } : null);
     }
   };
 
