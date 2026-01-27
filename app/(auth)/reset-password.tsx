@@ -4,6 +4,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { sendPasswordReset } from "@/lib/api/auth";
+import { getErrorMessage } from "@/lib/api/errors";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -18,33 +19,6 @@ import {
     TouchableOpacity,
     TouchableWithoutFeedback,
 } from "react-native";
-
-// Extract error message from various API error formats
-function getApiErrorMessage(err: any): string {
-  const data = err.response?.data;
-
-  if (!data) {
-    return err.message || "Something went wrong.";
-  }
-
-  // Check for non_field_errors array (Django DRF format)
-  if (data.non_field_errors?.length > 0) {
-    return data.non_field_errors[0];
-  }
-
-  // Check for detail string
-  if (data.detail) {
-    return data.detail;
-  }
-
-  // Check for field-specific errors
-  if (data.email?.length > 0) {
-    return Array.isArray(data.email) ? data.email[0] : data.email;
-  }
-
-  // Fallback
-  return err.message || "Something went wrong.";
-}
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
@@ -66,8 +40,8 @@ export default function ForgotPasswordScreen() {
 
       // Navigate to confirmation screen with email param
       router.push(`/(auth)/reset-password-confirm?email=${encodeURIComponent(email)}`);
-    } catch (err: any) {
-      Alert.alert("Error", getApiErrorMessage(err));
+    } catch (err) {
+      Alert.alert("Error", getErrorMessage(err));
     } finally {
       setLoading(false);
     }

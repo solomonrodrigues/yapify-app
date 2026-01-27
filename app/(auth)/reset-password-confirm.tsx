@@ -4,6 +4,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { confirmPasswordReset, sendPasswordReset } from "@/lib/api/auth";
+import { getErrorMessage } from "@/lib/api/errors";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -19,36 +20,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-
-// Extract error message from various API error formats
-function getApiErrorMessage(err: any): string {
-  const data = err.response?.data;
-
-  if (!data) {
-    return err.message || "Something went wrong.";
-  }
-
-  // Check for non_field_errors array (Django DRF format)
-  if (data.non_field_errors?.length > 0) {
-    return data.non_field_errors[0];
-  }
-
-  // Check for detail string
-  if (data.detail) {
-    return data.detail;
-  }
-
-  // Check for field-specific errors (e.g., new_password, code)
-  const fieldErrors = ['code', 'new_password', 'new_password_confirm'];
-  for (const field of fieldErrors) {
-    if (data[field]?.length > 0) {
-      return Array.isArray(data[field]) ? data[field][0] : data[field];
-    }
-  }
-
-  // Fallback
-  return err.message || "Something went wrong.";
-}
 
 export default function ResetPasswordConfirmScreen() {
   const router = useRouter();
@@ -119,8 +90,8 @@ export default function ResetPasswordConfirmScreen() {
           },
         ]
       );
-    } catch (err: any) {
-      Alert.alert("Reset Failed", getApiErrorMessage(err));
+    } catch (err) {
+      Alert.alert("Reset Failed", getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -134,8 +105,8 @@ export default function ResetPasswordConfirmScreen() {
       Alert.alert("Code Sent", "A new reset code has been sent to your email.");
       setResendCooldown(5); // 5 second cooldown
       setCode(""); // Clear current code
-    } catch (err: any) {
-      Alert.alert("Resend Failed", getApiErrorMessage(err));
+    } catch (err) {
+      Alert.alert("Resend Failed", getErrorMessage(err));
     }
   };
 

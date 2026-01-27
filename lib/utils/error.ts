@@ -1,6 +1,3 @@
 // utils/error.ts
-export function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string') return error;
-  return 'An unknown error occurred';
-}
+// Re-export from centralized API error handling
+export { getErrorMessage } from '@/lib/api/errors';
