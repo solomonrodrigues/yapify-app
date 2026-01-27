@@ -5,7 +5,7 @@ import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { sendPasswordReset } from "@/lib/api/auth";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
     Alert,
     Keyboard,
@@ -17,25 +17,42 @@ import {
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    View
 } from "react-native";
+
+// Extract error message from various API error formats
+function getApiErrorMessage(err: any): string {
+  const data = err.response?.data;
+
+  if (!data) {
+    return err.message || "Something went wrong.";
+  }
+
+  // Check for non_field_errors array (Django DRF format)
+  if (data.non_field_errors?.length > 0) {
+    return data.non_field_errors[0];
+  }
+
+  // Check for detail string
+  if (data.detail) {
+    return data.detail;
+  }
+
+  // Check for field-specific errors
+  if (data.email?.length > 0) {
+    return Array.isArray(data.email) ? data.email[0] : data.email;
+  }
+
+  // Fallback
+  return err.message || "Something went wrong.";
+}
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
-  
+
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  
-  const styles = useThemedStyles(getStyles);
 
-  // Cooldown timer for resend functionality
-  useEffect(() => {
-    if (resendCooldown > 0) {
-      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendCooldown]);
+  const styles = useThemedStyles(getStyles);
 
   const handleSendReset = async () => {
     if (!email) {
@@ -47,15 +64,10 @@ export default function ForgotPasswordScreen() {
     try {
       await sendPasswordReset(email);
 
-      Alert.alert(
-        "Reset Link Sent",
-        "Check your email for the password reset link.",
-        [{ text: "OK", onPress: () => router.replace("/auth") }]
-      );
-
-      setResendCooldown(5); // 5 second cooldown
+      // Navigate to confirmation screen with email param
+      router.push(`/(auth)/reset-password-confirm?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
-      Alert.alert("Error", err.response?.data?.detail || err.message);
+      Alert.alert("Error", getApiErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -63,6 +75,15 @@ export default function ForgotPasswordScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      {/* Back button */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.back()}
+      >
+        <IconSymbol name="chevron.left" size={24} color={styles.backButtonText.color} />
+        <Text style={styles.backButtonText}>Back</Text>
+      </TouchableOpacity>
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -73,49 +94,35 @@ export default function ForgotPasswordScreen() {
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Header with icon */}
-            <View style={styles.headerContainer}>
-              <View style={styles.iconCircle}>
-                <IconSymbol name="lock.open" size={32} color="white" />
-              </View>
-              
-              <ThemedText type="title" style={styles.title}>
-                Forgot Password
-              </ThemedText>
-              
-              <ThemedText style={styles.subtitle}>
-                Enter your email and we&apos;ll send you a reset link
-              </ThemedText>
-            </View>
+            <ThemedText type="title" style={styles.title}>
+              Forgot Password
+            </ThemedText>
+
+            <ThemedText style={styles.subtitle}>
+              Enter your email and we&apos;ll send you a reset code
+            </ThemedText>
 
             {/* Email input */}
-            <View style={styles.inputContainer}>
-              <ThemedText style={styles.inputLabel}>Email</ThemedText>
-              <TextInput
-                key="forgot-password-email-input"
-                style={styles.textInput}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="you@example.com"
-                placeholderTextColor={styles.textInput.color + "40"}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
+            <TextInput
+              key="forgot-password-email-input"
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Email"
+              placeholderTextColor="#999"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
 
             {/* Send reset button */}
             <TouchableOpacity
-              style={[styles.sendButton, loading && styles.buttonDisabled]}
+              style={[styles.button, loading && styles.buttonDisabled]}
               onPress={handleSendReset}
-              disabled={loading || resendCooldown > 0}
+              disabled={loading}
             >
-              <Text style={styles.sendButtonText}>
-                {loading
-                  ? "Sending..."
-                  : resendCooldown > 0
-                  ? `Wait (${resendCooldown}s)`
-                  : "Send Reset Link"}
+              <Text style={styles.buttonText}>
+                {loading ? "Sending..." : "Send Reset Code"}
               </Text>
             </TouchableOpacity>
 
@@ -131,28 +138,22 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     container: {
       flex: 1,
     },
+    backButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingTop: Platform.OS === "ios" ? 60 : 20,
+      paddingBottom: 10,
+    },
+    backButtonText: {
+      color: theme.text,
+      fontSize: 16,
+      marginLeft: 4,
+    },
     scrollContent: {
       flexGrow: 1,
       justifyContent: "center",
       padding: 20,
-    },
-    headerContainer: {
-      alignItems: "center",
-      marginBottom: 40,
-    },
-    iconCircle: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
-      backgroundColor: theme.pastels.purple,
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: 20,
-      shadowColor: theme.pastels.purple,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 8,
     },
     title: {
       color: theme.text,
@@ -160,58 +161,38 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontWeight: "bold",
       marginBottom: 12,
       textAlign: "center",
+      alignSelf: "flex-start",
     },
     subtitle: {
       color: theme.text,
-      fontSize: 16,
-      textAlign: "center",
-      opacity: 0.8,
+      fontSize: 14,
+      marginBottom: 20,
+      opacity: 0.7,
     },
-    inputContainer: {
-      marginBottom: 40,
-    },
-    inputLabel: {
+    input: {
       color: theme.text,
-      fontSize: 16,
-      fontWeight: "500",
-      marginBottom: 10,
-      textAlign: "center",
-    },
-    textInput: {
-      height: 55,
-      borderWidth: 2,
+      borderWidth: 1,
       borderColor: theme.inputBorder,
-      borderRadius: 12,
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 12,
       fontSize: 16,
-      color: theme.text,
-      backgroundColor: theme.background,
-      shadowColor: theme.pastels.purple,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 2,
-      paddingHorizontal: 20,
     },
-    sendButton: {
+    button: {
       backgroundColor: theme.pastels.purple,
-      paddingVertical: 16,
-      borderRadius: 12,
-      shadowColor: theme.pastels.purple,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 6,
-      marginBottom: 30,
+      paddingVertical: 14,
+      borderRadius: 8,
+      marginTop: 4,
+      alignItems: "center",
+      justifyContent: "center",
     },
-    sendButtonText: {
-      color: "white",
+    buttonText: {
+      color: theme.buttonText,
       textAlign: "center",
       fontWeight: "bold",
       fontSize: 16,
     },
     buttonDisabled: {
       opacity: 0.6,
-      shadowOpacity: 0.1,
-      elevation: 1,
     },
   });

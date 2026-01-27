@@ -1,7 +1,7 @@
 // lib/api/auth.ts
 import api from '@/lib/api/client';
 import { setTokens } from '@/lib/utils/storage';
-import { RegisterResponse, TokenRefresh, UserRegistration } from '@/types/api';
+import { DetailResponse, PasswordResetConfirm, RegisterResponse, TokenRefresh, UserRegistration } from '@/types/api';
 
 export const register = async (data: UserRegistration): Promise<RegisterResponse> => {
   const res = await api.post<RegisterResponse>('/auth/register/', data);
@@ -14,18 +14,24 @@ export const apiLogin = async (email: string, password: string): Promise<TokenRe
   return res.data;
 };
 
-type SimpleDetail = { detail: string };  // Placeholder type
-
-export const verifyEmail = async (email: string, code: string): Promise<SimpleDetail> => {
-  const res = await api.post<SimpleDetail>('/auth/verify-email/', { email, code });
+export const verifyEmail = async (email: string, code: string): Promise<DetailResponse> => {
+  const res = await api.post<DetailResponse>('/auth/verify-email/', { email, code });
   return res.data;
 };
 
-export const resendVerificationCode = async (email: string): Promise<SimpleDetail> => {
-  const res = await api.post<SimpleDetail>('/auth/resend-verification/', { email });
+export const resendVerificationCode = async (email: string): Promise<DetailResponse> => {
+  const res = await api.post<DetailResponse>('/auth/resend-verification/', { email });
   return res.data;
 };
 
-export const sendPasswordReset = async (email: string): Promise<void> => {
-  console.log("ToDo: Implement sendPasswordReset API call");
-}
+export const sendPasswordReset = async (email: string): Promise<DetailResponse> => {
+  const res = await api.post<DetailResponse>('/auth/password-reset/', { email });
+  return res.data;
+};
+
+export const confirmPasswordReset = async (
+  data: PasswordResetConfirm
+): Promise<DetailResponse> => {
+  const res = await api.post<DetailResponse>('/auth/password-reset/confirm/', data);
+  return res.data;
+};

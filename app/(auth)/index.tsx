@@ -237,6 +237,24 @@ export default function AuthScreen() {
               </TouchableOpacity>
             </View>
 
+            {/* Forgot Password link - only in login mode */}
+            {isLogin && (
+              <TouchableOpacity
+                onPress={() => router.push("/(auth)/reset-password")}
+                disabled={isSubmitting}
+                style={styles.forgotPasswordContainer}
+              >
+                <Text
+                  style={[
+                    styles.forgotPasswordText,
+                    isSubmitting && styles.toggleTextDisabled,
+                  ]}
+                >
+                  Forgot Password?
+                </Text>
+              </TouchableOpacity>
+            )}
+
             {/* Confirm password field */}
             {!isLogin && (
               <View style={styles.inputContainer}>
@@ -375,6 +393,16 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       marginTop: 16,
     },
     toggleTextDisabled: {
+      opacity: 0.6,
+    },
+    forgotPasswordContainer: {
+      alignSelf: "flex-end",
+      marginBottom: 12,
+      marginTop: -4,
+    },
+    forgotPasswordText: {
+      color: theme.text,
+      fontSize: 14,
       opacity: 0.6,
     },
   });
