@@ -21,6 +21,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/password-reset/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request password reset
+         * @description Request a password reset code to be sent to the provided email address.
+         */
+        post: operations["auth_password_reset_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/password-reset/confirm/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm password reset
+         * @description Confirm password reset using the code received via email and set a new password.
+         */
+        post: operations["auth_password_reset_confirm_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/refresh/": {
         parameters: {
             query?: never;
@@ -748,6 +788,9 @@ export interface components {
             email: string;
             password: string;
         };
+        DetailResponse: {
+            detail: string;
+        };
         /** @description Serializer for sending friend requests */
         FriendRequest: {
             receiver_id: number;
@@ -879,6 +922,15 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["Quote"][];
+        };
+        PasswordResetConfirm: {
+            code: string;
+            new_password: string;
+            new_password_confirm: string;
+        };
+        PasswordResetRequest: {
+            /** Format: email */
+            email: string;
         };
         /** @description Serializer for quotes */
         PatchedQuote: {
@@ -1130,6 +1182,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomTokenObtainPair"];
+                };
+            };
+        };
+    };
+    auth_password_reset_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordResetRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PasswordResetRequest"];
+                "multipart/form-data": components["schemas"]["PasswordResetRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
+            };
+        };
+    };
+    auth_password_reset_confirm_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordResetConfirm"];
+                "application/x-www-form-urlencoded": components["schemas"]["PasswordResetConfirm"];
+                "multipart/form-data": components["schemas"]["PasswordResetConfirm"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
                 };
             };
         };
