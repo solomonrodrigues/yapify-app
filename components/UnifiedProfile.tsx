@@ -14,12 +14,10 @@ import { getUser, getUserFriends } from '@/lib/api/friends';
 import type { User as CurrentUser, Friendship, PublicUser, Quote, ProfileColorEnum } from '@/types/api';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    ActionSheetIOS,
     ActivityIndicator,
     Alert,
     Animated,
     LayoutChangeEvent,
-    Platform,
     Pressable,
     StyleSheet,
     Text,
@@ -114,12 +112,21 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     }
   }, [currentUser, isOwnProfile]);
 
-  // Update navigation header title based on scroll
+  // Update navigation header based on scroll and profile type
   useEffect(() => {
     navigation.setOptions({
       headerTitle: showHeaderTitle && user ? user.display_name : '',
+      headerRight: !isOwnProfile && user ? () => (
+        <TouchableOpacity
+          onPress={handleBlockUser}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={{ minWidth: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <IconSymbol name="ellipsis" size={22} color={theme.text} />
+        </TouchableOpacity>
+      ) : undefined,
     });
-  }, [showHeaderTitle, user, navigation]);
+  }, [showHeaderTitle, user, navigation, isOwnProfile, theme.text]);
 
   // Reset scroll state when switching tabs
   useEffect(() => {
@@ -245,31 +252,14 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
       }
     };
 
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ['Cancel', 'Block Account'],
-          destructiveButtonIndex: 1,
-          cancelButtonIndex: 0,
-          title: `Block @${user.username}?`,
-          message: "You won’t see any quotes from them anymore. You can unblock them later in Settings.",
-        },
-        (buttonIndex) => {
-          if (buttonIndex === 1) {
-            performBlock();
-          }
-        }
-      );
-    } else {
-      Alert.alert(
-        'Block Account',
-        `Are you sure you want to block @${user.username}? You won't see quotes from them anymore. You can unblock them later in Settings.`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Block', style: 'destructive', onPress: performBlock },
-        ]
-      );
-    }
+    Alert.alert(
+      `Block @${user.username}?`,
+      "You won't see any quotes from them anymore. You can unblock them later in Settings.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Block Account', style: 'destructive', onPress: performBlock },
+      ]
+    );
   };
 
   // Update sticky tabs and header title state
@@ -386,15 +376,6 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
                 <ThemedText style={styles.bio}>{user.bio}</ThemedText>
               )}
             </View>
-            {!isOwnProfile && (
-              <TouchableOpacity
-                style={styles.moreButton}
-                onPress={handleBlockUser}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <IconSymbol name="ellipsis" size={22} color={theme.text} />
-              </TouchableOpacity>
-            )}
           </View>
 
           {/* Friend Button (only for other users) */}
@@ -444,7 +425,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     );
   }, [user, isOwnProfile, friendship, quotesPostedCount, quotesReceivedCount, friendsCount,
       styles, theme, avatarAnimatedStyle, handleHeaderLayout, handleAvatarPress,
-      handleBlockUser, handleFriendshipChange, handleTabChange, handleOpenFriends, renderTabs]);
+      handleFriendshipChange, handleTabChange, handleOpenFriends, renderTabs]);
 
   if (loading) {
     return (
@@ -557,11 +538,6 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     headerInfo: {
       flex: 1,
-    },
-    moreButton: {
-      padding: 8,
-      marginLeft: 8,
-      alignSelf: 'flex-start',
     },
     username: {
       color: theme.secondaryText,
