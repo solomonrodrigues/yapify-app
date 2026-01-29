@@ -1,4 +1,5 @@
 // components/DataPreloader.tsx
+import { useNotifications } from '@/context/NotificationsContext';
 import { useQuotes } from '@/context/QuotesContext';
 import { useUser } from '@/context/UserContext';
 import { useEffect, useState } from 'react';
@@ -18,20 +19,25 @@ const loadingMessages = [
 export function DataPreloader({ children }: { children: React.ReactNode }) {
   const { loadQuotes, initialLoading: quotesInitialLoading, hasLoadedOnce: quotesLoaded } = useQuotes();
   const { loadUser, loading: userLoading, hasLoadedOnce: userLoaded, user } = useUser(); // Get user object
+  const { fetchNotifications, hasLoadedOnce: notificationsLoaded } = useNotifications();
   const [loadingMessage, setLoadingMessage] = useState('');
 
   // Preload data immediately
-  useEffect(() => {    
+  useEffect(() => {
     if (!quotesLoaded) {
       console.log('Loading quotes...');
       loadQuotes(false);
     }
-    
+
     if (!userLoaded) {
       console.log('Loading user...');
       loadUser();
     }
-  }, [quotesLoaded, userLoaded, loadQuotes, loadUser]);
+
+    if (!notificationsLoaded) {
+      fetchNotifications();
+    }
+  }, [quotesLoaded, userLoaded, notificationsLoaded, loadQuotes, loadUser, fetchNotifications]);
 
   // Handle loading message rotation
   useEffect(() => {

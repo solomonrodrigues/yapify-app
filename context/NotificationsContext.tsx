@@ -2,7 +2,7 @@
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from '@/lib/api/notifications';
 import { getErrorMessage } from '@/lib/utils/error';
 import { Friendship, Notification } from '@/types/api';
-import React, { createContext, ReactNode, useCallback, useContext, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 
 interface NotificationsContextValue {
   notifications: Notification[];
@@ -12,6 +12,7 @@ interface NotificationsContextValue {
   error: string | null;
   hasLoadedOnce: boolean;
   nextUrl: string | null;
+  unreadCount: number;
   fetchNotifications: (url?: string, mode?: 'reset' | 'append') => Promise<void>;
   loadMore: () => void;
   markAsRead: (id: number) => Promise<void>;
@@ -100,6 +101,11 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     await fetchNotifications();
   }, [fetchNotifications]);
 
+  const unreadCount = useMemo(
+    () => notifications.filter((n) => !n.is_read).length,
+    [notifications]
+  );
+
   return (
     <NotificationsContext.Provider value={{
       notifications,
@@ -109,6 +115,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       error,
       hasLoadedOnce,
       nextUrl,
+      unreadCount,
       fetchNotifications,
       loadMore,
       markAsRead,

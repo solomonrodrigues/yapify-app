@@ -1,7 +1,7 @@
 // app/(app)/(tabs)/_layout.tsx
 import { router, Tabs } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Platform, Pressable, useColorScheme } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
@@ -14,13 +14,47 @@ import { useNotifications } from '@/context/NotificationsContext';
 import { DataPreloader } from '@/components/DataPreloader';
 import Toast from 'react-native-toast-message';
 import FeedFilterDropdown from '@/components/FeedFilterDropdown';
+import { ThemedText } from '@/components/ThemedText';
+
+function NotificationBadge({ count }: { count: number }) {
+  if (count === 0) return null;
+
+  return (
+    <View style={badgeStyles.badge}>
+      <ThemedText style={badgeStyles.badgeText}>
+        {count <= 99 ? count : '99+'}
+      </ThemedText>
+    </View>
+  );
+}
+
+const badgeStyles = StyleSheet.create({
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -10,
+    backgroundColor: '#FF3B30',
+    borderRadius: 9,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
+    lineHeight: 14,
+  },
+});
 
 function TabContent() {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme]
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const { user } = useUser();
-  const { markAllAsRead } = useNotifications();
+  const { markAllAsRead, unreadCount } = useNotifications();
 
   const handleQuoteCreated = (newQuote: Quote) => {
     console.log('New quote created:', newQuote);
@@ -119,7 +153,12 @@ function TabContent() {
           name="notifications"
           options={{
             title: 'Notifications',
-            tabBarIcon: ({ color }) => <IconSymbol size={tabBarIconSize} name="bell.fill" color={color} />,
+            tabBarIcon: ({ color }) => (
+              <View>
+                <IconSymbol size={tabBarIconSize} name="bell.fill" color={color} />
+                <NotificationBadge count={unreadCount} />
+              </View>
+            ),
             headerShown: true,
             headerTitle: '',
             headerRight: () => (
