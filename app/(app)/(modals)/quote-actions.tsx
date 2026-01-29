@@ -1,12 +1,13 @@
 // app/(app)/(modals)/quote-actions.tsx
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { ShareableQuote } from "@/components/ShareableQuote";
 import { useBlockedUsers } from "@/context/BlockedUsersContext";
 import { useQuoteActionsModal } from "@/context/QuoteActionsModalContext";
 import { useQuotes } from "@/context/QuotesContext";
 import { useUser } from "@/context/UserContext";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -20,6 +21,7 @@ export default function QuoteActionsModal() {
   const { blockUserById } = useBlockedUsers();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const shareRef = useRef<{ share: () => Promise<void> }>(null);
 
   // Get the quote from context first, or fall back to looking it up in the feed
   const selectedQuote = useMemo(() => {
@@ -77,6 +79,15 @@ export default function QuoteActionsModal() {
     if (quote.text) {
       await Clipboard.setStringAsync(quote.text);
       Toast.show({ type: "success", text1: "Copied. Try not to misuse this power." });
+    }
+    closeModal();
+  };
+
+  const handleShare = async () => {
+    try {
+      await shareRef.current?.share();
+    } catch (error) {
+      console.error('Share failed:', error);
     }
     closeModal();
   };
@@ -187,6 +198,8 @@ export default function QuoteActionsModal() {
             />
             <Divider />
             <ActionRow icon="doc.on.doc" label="Copy text" onPress={handleCopy} />
+            <Divider />
+            <ActionRow icon="square.and.arrow.up" label="Share as image" onPress={handleShare} />
           </View>
 
           <View style={styles.group}>
@@ -259,6 +272,8 @@ export default function QuoteActionsModal() {
           )}
         </View>
       </View>
+      {/* Hidden component for share-as-image */}
+      <ShareableQuote ref={shareRef} quote={quote} />
     </View>
   );
 }

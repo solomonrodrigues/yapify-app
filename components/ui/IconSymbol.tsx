@@ -88,6 +88,7 @@ const MAPPING = {
   'nosign':                            { name: 'ban' },               // block / no entry
   'trash':                             { name: 'trash' },             // delete
   'person.circle':                     { name: 'user-circle' },       // user profile
+  'square.and.arrow.up':               { name: 'share-from-square' }, // share
 } as const satisfies Record<string, IconMappingEntry>;
 
 // Component props for FontAwesome 7
