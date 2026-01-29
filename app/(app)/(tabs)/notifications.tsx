@@ -1,4 +1,5 @@
 import { NotificationItem } from '@/components/NotificationItem';
+import { SkeletonNotificationItem } from '@/components/Skeleton';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
@@ -60,11 +61,12 @@ const NotificationsView: React.FC = () => {
 
   if (loading) {
     return (
-      <ThemedView style={styles.centerContainer}>
-        <ActivityIndicator size="large" />
-        <ThemedText style={styles.loadingText}>
-          Loading notifications...
-        </ThemedText>
+      <ThemedView style={{ flex: 1 }}>
+        <View style={styles.listContainer}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <SkeletonNotificationItem key={i} />
+          ))}
+        </View>
       </ThemedView>
     );
   }

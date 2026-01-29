@@ -1,16 +1,18 @@
 import { InitialsAvatar } from "@/components/InitialsAvatar";
+import { SkeletonUserItem } from "@/components/Skeleton";
 import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
+import { Spacing } from "@/constants/Spacing";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { getFriends, getRecentFriends, searchFriends } from "@/lib/api/friends";
 import { createQuote } from "@/lib/api/quotes";
 import { hexToRgba } from "@/lib/utils/style";
 import { Quote, User } from "@/types/api";
 import { LegendList } from "@legendapp/list";
+import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
 import {
-    Alert,
     Keyboard,
     KeyboardAvoidingView,
     Modal,
@@ -23,6 +25,10 @@ import {
     useColorScheme,
     View,
 } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import Toast from "react-native-toast-message";
+
+const QUOTE_MAX_LENGTH = 280;
 
 interface QuotePostModalProps {
   visible: boolean;
@@ -46,6 +52,17 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   const [creatingQuote, setCreatingQuote] = useState(false);
   const colorScheme = useColorScheme();
   const styles = useThemedStyles(getStyles);
+  const buttonScale = useSharedValue(1);
+
+  const charCountColor = quoteText.length > QUOTE_MAX_LENGTH
+    ? '#FF3B30'
+    : quoteText.length > QUOTE_MAX_LENGTH * 0.85
+      ? '#FF9500'
+      : colorScheme === 'dark' ? '#666' : '#999';
+
+  const animatedButtonStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonScale.value }],
+  }));
 
   // Load friends when modal opens
   useEffect(() => {
@@ -72,7 +89,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       setFriends(friendsData);
     } catch (error) {
       console.error('Error loading friends:', error);
-      Alert.alert('Error', 'Failed to load friends');
+      Toast.show({ type: 'error', text1: 'Failed to load friends' });
     } finally {
       setFriendsLoading(false);
     }
@@ -85,7 +102,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       setRecentUsers(recentData);
     } catch (error) {
       console.error('Error loading recent friends:', error);
-      Alert.alert('Error', 'Failed to load recent friends');
+      Toast.show({ type: 'error', text1: 'Failed to load recent friends' });
     } finally {
       setFriendsLoading(false);
     }
@@ -111,6 +128,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   };
 
   const handleUserSelect = (user: User | { display_name: string; username: string; id: null }) => {
+    Haptics.selectionAsync();
     setSelectedUser(user);
   };
 
@@ -127,13 +145,14 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
 
   const handleCreateQuote = async () => {
     if (!selectedUser || !quoteText.trim()) {
-      Alert.alert('Error', 'Please select a user and enter a quote');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      Toast.show({ type: 'error', text1: 'Please select a user and enter a quote' });
       return;
     }
 
     try {
       setCreatingQuote(true);
-      
+
       const quoteData: Partial<Quote> = {
         text: quoteText.trim(),
       };
@@ -146,16 +165,18 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       }
 
       const newQuote = await createQuote(quoteData);
-      
+
       if (onQuoteCreated) {
         onQuoteCreated(newQuote);
       }
-      
-      Alert.alert('Success', 'Quote created successfully!');
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Toast.show({ type: 'success', text1: 'Quote created!' });
       onClose();
     } catch (error) {
       console.error('Error creating quote:', error);
-      Alert.alert('Error', 'Failed to create quote');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Toast.show({ type: 'error', text1: 'Failed to create quote' });
     } finally {
       setCreatingQuote(false);
     }
@@ -251,7 +272,11 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
         {/* Content */}
         <View style={styles.content}>
             {loading ? (
-            <ThemedText style={styles.centerText}>Searching...</ThemedText>
+            <View>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <SkeletonUserItem key={i} />
+              ))}
+            </View>
             ) : query.length > 0 ? (
             <View>
                 {/* Search Results */}
@@ -287,7 +312,11 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
             ) : (
             <View>
                 {friendsLoading ? (
-                <ThemedText style={styles.centerText}>Loading friends...</ThemedText>
+                <View>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <SkeletonUserItem key={i} />
+                  ))}
+                </View>
                 ) : (
                 <>
                     {renderSection("Recent", recentUsers)}
@@ -377,16 +406,28 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
           </View>
         </View>
 
-        {/* Create Button */}
-        <TouchableOpacity
-          style={[styles.createButton, (!quoteText.trim() || creatingQuote) && styles.createButtonDisabled]}
-          onPress={handleCreateQuote}
-          disabled={!quoteText.trim() || creatingQuote}
-        >
-          <Text style={styles.createButtonText}>
-            {creatingQuote ? 'Creating...' : 'Create Quote'}
+        {/* Character Count */}
+        <View style={styles.charCountContainer}>
+          <Text style={[styles.charCountText, { color: charCountColor }]}>
+            {quoteText.length}/{QUOTE_MAX_LENGTH}
           </Text>
-        </TouchableOpacity>
+        </View>
+
+        {/* Create Button */}
+        <Animated.View style={animatedButtonStyle}>
+          <TouchableOpacity
+            style={[styles.createButton, (!quoteText.trim() || creatingQuote || quoteText.length > QUOTE_MAX_LENGTH) && styles.createButtonDisabled]}
+            onPress={handleCreateQuote}
+            onPressIn={() => { buttonScale.value = withSpring(0.96, { damping: 15, stiffness: 300 }); }}
+            onPressOut={() => { buttonScale.value = withSpring(1, { damping: 12, stiffness: 200 }); }}
+            disabled={!quoteText.trim() || creatingQuote || quoteText.length > QUOTE_MAX_LENGTH}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.createButtonText}>
+              {creatingQuote ? 'Creating...' : 'Create Quote'}
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
       </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     </Modal>
@@ -403,12 +444,12 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 10,
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.xxxl,
+    paddingBottom: Spacing.sm,
   },
   closeButton: {
-    padding: 8,
+    padding: Spacing.sm,
   },
   headerTitle: {
     fontSize: 28,
@@ -418,13 +459,13 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     color: theme.pastels.purple,
   },
   searchContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 30,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.xl,
   },
   subtitlePrefix: {
     fontSize: 28,
     fontWeight: '300',
-    marginBottom: 10,
+    marginBottom: Spacing.sm,
   },
   integratedInputContainer: {
     borderBottomWidth: 2,
@@ -433,31 +474,31 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   integratedInput: {
     fontSize: 28,
     fontWeight: '300',
-    paddingVertical: 8,
+    paddingVertical: Spacing.sm,
     paddingHorizontal: 0,
     minHeight: 40,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.md,
   },
   section: {
-    marginBottom: 25,
+    marginBottom: Spacing.lg,
   },
   sectionTitle: {
     fontSize: 12,
     fontWeight: '600',
-    marginBottom: 10,
+    marginBottom: Spacing.sm,
     letterSpacing: 1,
   },
   userItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 4,
+    paddingVertical: Spacing.sm + Spacing.xs,
+    paddingHorizontal: Spacing.xs,
   },
   userInfo: {
-    marginLeft: 12,
+    marginLeft: Spacing.sm + Spacing.xs,
     flex: 1,
   },
   displayName: {
@@ -471,9 +512,9 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   customOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-    marginTop: 10,
+    paddingVertical: Spacing.sm + Spacing.xs,
+    paddingHorizontal: Spacing.xs,
+    marginTop: Spacing.sm,
     borderTopWidth: 1,
     borderTopColor: theme.divider,
   },
@@ -495,20 +536,20 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   },
   centerText: {
     textAlign: 'center',
-    marginTop: 40,
+    marginTop: Spacing.xxl,
     fontSize: 16,
     opacity: 0.6,
   },
   // Quote creation screen styles
   selectedUserContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 30,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.xl,
   },
   selectedUser: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
     borderRadius: 12,
     backgroundColor: hexToRgba(theme.pastels.purple, 0.2),
   },
@@ -529,14 +570,14 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     opacity: 0.7,
   },
   quoteContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 40,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.xxl,
     flex: 1,
   },
   quotePrefix: {
     fontSize: 20,
     fontWeight: '400',
-    marginBottom: 20,
+    marginBottom: Spacing.md,
   },
   quoteInputWrapper: {
     borderBottomWidth: 2,
@@ -550,11 +591,20 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     minHeight: 60,
     textAlignVertical: 'top',
   },
+  charCountContainer: {
+    alignItems: 'flex-end',
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  charCountText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
   createButton: {
     backgroundColor: theme.pastels.purple,
-    paddingVertical: 16,
-    marginHorizontal: 20,
-    marginBottom: 80,
+    paddingVertical: Spacing.md,
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.xxxl + Spacing.md,
     borderRadius: 12,
     alignItems: 'center',
   },
