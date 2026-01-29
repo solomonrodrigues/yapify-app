@@ -100,10 +100,11 @@ const QuotesFeed: React.FC = () => {
         <LegendList
           data={quotes}
           keyExtractor={(item: Quote) => item.id.toString()}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <FeedQuote
               quote={item}
               theme={theme}
+              index={index}
               onLike={likeQuoteById}
               onWitness={witnessQuoteById}
               onGuess={guessQuoteById}

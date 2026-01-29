@@ -6,24 +6,27 @@ import QuoteResponseBadge from '@/components/QuoteResponseBadge';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { UserListModal } from '@/components/UserListModal';
 import { Colors } from '@/constants/Colors';
+import { Spacing } from '@/constants/Spacing';
 import { useQuoteActionsModal } from '@/context/QuoteActionsModalContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getQuoteLikes, getQuoteWitnesses } from '@/lib/api/quotes';
 import { getPastelFromId } from '@/lib/utils/style';
 import { PublicUser, Quote } from '@/types/api';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming, Easing } from 'react-native-reanimated';
 
 
 interface FeedQuoteProps {
   quote: Quote;
   theme: any;
+  index?: number;
   onLike: (quoteId: number) => void;
   onWitness: (quoteId: number) => void;
   onGuess: (quoteId: number, guessedUserId?: number, skipped?: boolean) => void;
@@ -36,6 +39,7 @@ interface FeedQuoteProps {
 const FeedQuote: React.FC<FeedQuoteProps> = ({
   quote,
   theme,
+  index = 0,
   onLike,
   onWitness,
   onGuess,
@@ -45,6 +49,24 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   onRespond,
 }) => {
   const styles = useThemedStyles(getStyles);
+
+  // Entrance animation (only for first 10 items)
+  const opacity = useSharedValue(index < 10 ? 0 : 1);
+  const translateY = useSharedValue(index < 10 ? 20 : 0);
+
+  useEffect(() => {
+    if (index < 10) {
+      const delay = index * 80;
+      opacity.value = withDelay(delay, withTiming(1, { duration: 300, easing: Easing.out(Easing.ease) }));
+      translateY.value = withDelay(delay, withTiming(0, { duration: 300, easing: Easing.out(Easing.ease) }));
+    }
+  }, []);
+
+  const entranceStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateY: translateY.value }],
+  }));
+
   const [guessMade, setGuessMade] = useState(!!quote.has_guessed);
   const [showGuessModal, setShowGuessModal] = useState(false);
   const [showGuessesModal, setShowGuessesModal] = useState(false);
@@ -137,7 +159,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   }
 
   return (
-    <View style={[styles.quoteContainer, { backgroundColor: theme.background }]}>
+    <Animated.View style={[styles.quoteContainer, { backgroundColor: theme.background }, entranceStyle]}>
       {/* Header */}
       <View
         style={[
@@ -322,7 +344,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
         quotedUser={quote.quoted_user}
         onUserPress={handleGuessesUserPress}
       />
-    </View>
+    </Animated.View>
   );
 };
 
@@ -331,15 +353,15 @@ export default FeedQuote;
 export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   StyleSheet.create({
     quoteContainer: {
-      paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 12,
+      paddingHorizontal: Spacing.md,
+      paddingTop: Spacing.md,
+      paddingBottom: Spacing.sm + Spacing.xs,
     },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       flexWrap: 'wrap',
-      marginBottom: 16,
+      marginBottom: Spacing.md,
     },
     authorName: {
       fontSize: 14,
@@ -362,8 +384,8 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontStyle: 'italic',
     },
     contentContainer: {
-      marginBottom: 20,
-      paddingVertical: 8,
+      marginBottom: Spacing.md + Spacing.xs,
+      paddingVertical: Spacing.sm,
     },
     quoteContent: {
       fontSize: 26,
@@ -375,25 +397,25 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     actionsBar: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
-      paddingVertical: 10,
+      gap: Spacing.sm + 2,
+      paddingVertical: Spacing.sm + 2,
     },
     divider: {
       height: 1,
       backgroundColor: theme.divider,
-      marginTop: 10,
-      marginHorizontal: -16,
+      marginTop: Spacing.sm + 2,
+      marginHorizontal: -Spacing.md,
     },
     hiddenContainer: {
       opacity: 0.6,
-      paddingTop: 12,
-      paddingBottom: 8,
+      paddingTop: Spacing.sm + Spacing.xs,
+      paddingBottom: Spacing.sm,
     },
     hiddenContent: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingVertical: 8,
+      paddingVertical: Spacing.sm,
     },
     hiddenLeftSection: {
       flexDirection: 'row',
@@ -405,8 +427,8 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontStyle: 'italic',
     },
     undoButton: {
-      paddingHorizontal: 16,
-      paddingVertical: 6,
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.xs + 2,
       backgroundColor: theme.accent,
       borderRadius: 6,
     },
