@@ -1,7 +1,6 @@
 // app/(app)/(modals)/quote-actions.tsx
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ShareableQuote } from "@/components/ShareableQuote";
-import { useBlockedUsers } from "@/context/BlockedUsersContext";
 import { useQuoteActionsModal } from "@/context/QuoteActionsModalContext";
 import { useQuotes } from "@/context/QuotesContext";
 import { useUser } from "@/context/UserContext";
@@ -16,9 +15,8 @@ const isIOS = Platform.OS === 'ios';
 
 export default function QuoteActionsModal() {
   const { selectedQuoteId, selectedQuote: contextQuote, closeModal } = useQuoteActionsModal();
-  const { quotes, saveQuoteById, unsaveQuoteById, hideQuoteById, deleteQuoteById, removeQuotesInvolvingUser } = useQuotes();
+  const { quotes, saveQuoteById, unsaveQuoteById, hideQuoteById, deleteQuoteById } = useQuotes();
   const { user } = useUser();
-  const { blockUserById } = useBlockedUsers();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const shareRef = useRef<{ share: () => Promise<void> }>(null);
@@ -46,12 +44,6 @@ export default function QuoteActionsModal() {
     const isOwnQuote = selectedQuote.author.id === user?.id;
     const isQuotedUser = selectedQuote.quoted_user?.id === user?.id;
 
-    // Determine which user can be blocked (author if not own quote, or quoted_user if different from author)
-    const canBlockAuthor = !isOwnQuote && selectedQuote.author.id !== user?.id;
-    const canBlockQuotedUser = selectedQuote.quoted_user &&
-      selectedQuote.quoted_user.id !== user?.id &&
-      selectedQuote.quoted_user.id !== selectedQuote.author.id;
-
     return {
       quote: selectedQuote,
       isSavedQuote,
@@ -59,15 +51,13 @@ export default function QuoteActionsModal() {
       showQuotedUser,
       isOwnQuote,
       isQuotedUser,
-      canBlockAuthor,
-      canBlockQuotedUser,
     };
   }, [selectedQuote, user?.id]);
 
   // If no quote is selected, don't render anything
   if (!selectedQuote || !quoteData) return null;
 
-  const { quote, isSavedQuote, showAuthor, showQuotedUser, isOwnQuote, canBlockAuthor, canBlockQuotedUser } = quoteData;
+  const { quote, isSavedQuote, showAuthor, showQuotedUser, isOwnQuote } = quoteData;
 
   const goToProfile = (userId: number) => {
     if (!userId) return;
@@ -150,36 +140,6 @@ export default function QuoteActionsModal() {
     );
   };
 
-  const handleBlock = (userId: number, username: string) => {
-    Alert.alert(
-      "Block Account",
-      `Are you sure you want to block @${username}? You won't see quotes from them anymore. You can unblock them later in Settings.`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Block",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await blockUserById(userId);
-              removeQuotesInvolvingUser(userId);
-              Toast.show({ type: "info", text1: `@${username} blocked` });
-              closeModal();
-              // Navigate back if on detail screen
-              if (router.canGoBack()) {
-                router.back();
-              }
-            } catch (error) {
-              Toast.show({ type: "error", text1: "Failed to block user" });
-            }
-          },
-        },
-      ]
-    );
-  };
 
   return (
     <View style={styles.root} pointerEvents="box-none">
@@ -247,29 +207,6 @@ export default function QuoteActionsModal() {
             </View>
           )}
 
-          {(canBlockAuthor || canBlockQuotedUser) && (
-            <View style={styles.group}>
-              {canBlockAuthor && (
-                <>
-                  <ActionRow
-                    icon="nosign"
-                    label={`Block @${quote.author.username}`}
-                    onPress={() => handleBlock(quote.author.id, quote.author.username)}
-                    destructive
-                  />
-                  {canBlockQuotedUser && <Divider />}
-                </>
-              )}
-              {canBlockQuotedUser && quote.quoted_user && (
-                <ActionRow
-                  icon="nosign"
-                  label={`Block @${quote.quoted_user.username}`}
-                  onPress={() => handleBlock(quote.quoted_user.id, quote.quoted_user.username)}
-                  destructive
-                />
-              )}
-            </View>
-          )}
         </View>
       </View>
       {/* Hidden component for share-as-image */}
