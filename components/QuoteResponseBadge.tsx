@@ -32,10 +32,9 @@ const QuoteResponseBadge: React.FC<QuoteResponseBadgeProps> = ({
   const scale = useSharedValue(1);
 
   React.useEffect(() => {
-    // Subtle pop-in animation
     scale.value = withSequence(
-      withTiming(0.8, { duration: 0 }),
-      withSpring(1, { damping: 12, stiffness: 150 })
+      withTiming(0.92, { duration: 0 }),
+      withTiming(1, { duration: 200 })
     );
   }, [response]);
 

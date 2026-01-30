@@ -1,14 +1,15 @@
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   Pressable,
-  Animated as RNAnimated,
 } from 'react-native';
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useSharedValue,
+  interpolate,
   interpolateColor,
   withTiming,
 } from 'react-native-reanimated';
@@ -24,46 +25,35 @@ interface QuoteResponseActionProps {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
+const GAP = 10;
+const TIMING_CONFIG = { duration: 300, easing: Easing.out(Easing.cubic) };
+
 /**
- * Clean, modern toggle-style control for quoted users to confirm/deny a quote.
- * Inspired by iOS segmented controls with smooth animations.
+ * Toggle-style control for quoted users to confirm/deny a quote.
+ * The selected button expands to fill the row, covering the other option.
  */
 const QuoteResponseAction: React.FC<QuoteResponseActionProps> = ({
   currentResponse,
   onRespond,
 }) => {
   const styles = useThemedStyles(getStyles);
+  const [rowWidth, setRowWidth] = useState(0);
 
-  // Animation values for each button
-  const confirmScale = useRef(new RNAnimated.Value(1)).current;
-  const denyScale = useRef(new RNAnimated.Value(1)).current;
+  // -1 = denied selected, 0 = neutral, 1 = confirmed selected
+  const selection = useSharedValue(
+    currentResponse === 'confirmed' ? 1 : currentResponse === 'denied' ? -1 : 0
+  );
 
-  // Shared values for color animations
+  // Color progress for each button (0 = inactive, 1 = active)
   const confirmProgress = useSharedValue(currentResponse === 'confirmed' ? 1 : 0);
   const denyProgress = useSharedValue(currentResponse === 'denied' ? 1 : 0);
 
   React.useEffect(() => {
+    const target = currentResponse === 'confirmed' ? 1 : currentResponse === 'denied' ? -1 : 0;
+    selection.value = withTiming(target, TIMING_CONFIG);
     confirmProgress.value = withTiming(currentResponse === 'confirmed' ? 1 : 0, { duration: 200 });
     denyProgress.value = withTiming(currentResponse === 'denied' ? 1 : 0, { duration: 200 });
   }, [currentResponse]);
-
-  const handlePressIn = (scale: RNAnimated.Value) => {
-    RNAnimated.spring(scale, {
-      toValue: 0.95,
-      useNativeDriver: true,
-      speed: 50,
-      bounciness: 4,
-    }).start();
-  };
-
-  const handlePressOut = (scale: RNAnimated.Value) => {
-    RNAnimated.spring(scale, {
-      toValue: 1,
-      useNativeDriver: true,
-      speed: 50,
-      bounciness: 4,
-    }).start();
-  };
 
   const handleConfirm = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -75,7 +65,33 @@ const QuoteResponseAction: React.FC<QuoteResponseActionProps> = ({
     onRespond(currentResponse === 'denied' ? null : 'denied');
   };
 
-  const confirmAnimatedStyle = useAnimatedStyle(() => ({
+  const halfWidth = (rowWidth - GAP) / 2;
+
+  // Confirm button: full width when selected, half at rest, 0 when other selected
+  const confirmWrapperStyle = useAnimatedStyle(() => {
+    const w = interpolate(selection.value, [-1, 0, 1], [0, halfWidth, rowWidth]);
+    return {
+      width: w,
+      opacity: interpolate(selection.value, [-1, -0.5, 0], [0, 0.5, 1]),
+    };
+  });
+
+  // Animated gap: collapses when either button takes full width
+  const gapStyle = useAnimatedStyle(() => {
+    const g = interpolate(Math.abs(selection.value), [0, 0.8, 1], [GAP, GAP * 0.3, 0]);
+    return { width: g };
+  });
+
+  // Deny button: full width when selected, half at rest, 0 when other selected
+  const denyWrapperStyle = useAnimatedStyle(() => {
+    const w = interpolate(selection.value, [-1, 0, 1], [rowWidth, halfWidth, 0]);
+    return {
+      width: w,
+      opacity: interpolate(selection.value, [0, 0.5, 1], [1, 0.5, 0]),
+    };
+  });
+
+  const confirmButtonStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
       confirmProgress.value,
       [0, 1],
@@ -88,7 +104,7 @@ const QuoteResponseAction: React.FC<QuoteResponseActionProps> = ({
     ),
   }));
 
-  const denyAnimatedStyle = useAnimatedStyle(() => ({
+  const denyButtonStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
       denyProgress.value,
       [0, 1],
@@ -107,42 +123,47 @@ const QuoteResponseAction: React.FC<QuoteResponseActionProps> = ({
   return (
     <View style={styles.container}>
       <Text style={styles.prompt}>Did you say this?</Text>
-      <View style={styles.buttonRow}>
-        <RNAnimated.View style={{ transform: [{ scale: confirmScale }], flex: 1 }}>
-          <AnimatedPressable
-            onPressIn={() => handlePressIn(confirmScale)}
-            onPressOut={() => handlePressOut(confirmScale)}
-            onPress={handleConfirm}
-            style={[styles.button, confirmAnimatedStyle]}
-          >
-            <IconSymbol
-              name={isConfirmed ? 'checkmark.circle.fill' : 'checkmark.circle'}
-              size={18}
-              color={isConfirmed ? '#fff' : '#34C759'}
-            />
-            <Text style={[styles.buttonText, isConfirmed && styles.buttonTextActive]}>
-              Yes
-            </Text>
-          </AnimatedPressable>
-        </RNAnimated.View>
+      <View
+        style={styles.buttonRow}
+        onLayout={(e) => setRowWidth(e.nativeEvent.layout.width)}
+      >
+        {rowWidth > 0 && (
+          <>
+            <Animated.View style={[styles.buttonWrapper, confirmWrapperStyle]}>
+              <AnimatedPressable
+                onPress={handleConfirm}
+                style={[styles.button, confirmButtonStyle]}
+              >
+                <IconSymbol
+                  name={isConfirmed ? 'checkmark.circle.fill' : 'checkmark.circle'}
+                  size={18}
+                  color={isConfirmed ? '#fff' : '#34C759'}
+                />
+                <Text numberOfLines={1} style={[styles.buttonText, isConfirmed && styles.buttonTextActive]}>
+                  Yes
+                </Text>
+              </AnimatedPressable>
+            </Animated.View>
 
-        <RNAnimated.View style={{ transform: [{ scale: denyScale }], flex: 1 }}>
-          <AnimatedPressable
-            onPressIn={() => handlePressIn(denyScale)}
-            onPressOut={() => handlePressOut(denyScale)}
-            onPress={handleDeny}
-            style={[styles.button, denyAnimatedStyle]}
-          >
-            <IconSymbol
-              name={isDenied ? 'xmark.circle.fill' : 'xmark.circle'}
-              size={18}
-              color={isDenied ? '#fff' : '#FF6B6B'}
-            />
-            <Text style={[styles.buttonText, styles.buttonTextDeny, isDenied && styles.buttonTextActive]}>
-              No
-            </Text>
-          </AnimatedPressable>
-        </RNAnimated.View>
+            <Animated.View style={gapStyle} />
+
+            <Animated.View style={[styles.buttonWrapper, denyWrapperStyle]}>
+              <AnimatedPressable
+                onPress={handleDeny}
+                style={[styles.button, denyButtonStyle]}
+              >
+                <IconSymbol
+                  name={isDenied ? 'xmark.circle.fill' : 'xmark.circle'}
+                  size={18}
+                  color={isDenied ? '#fff' : '#FF6B6B'}
+                />
+                <Text numberOfLines={1} style={[styles.buttonText, styles.buttonTextDeny, isDenied && styles.buttonTextActive]}>
+                  No
+                </Text>
+              </AnimatedPressable>
+            </Animated.View>
+          </>
+        )}
       </View>
     </View>
   );
@@ -162,14 +183,17 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     buttonRow: {
       flexDirection: 'row',
-      gap: 10,
+    },
+    buttonWrapper: {
+      overflow: 'hidden',
+      minWidth: 0,
     },
     button: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       gap: 6,
-      paddingVertical: 12,
+      height: 46,
       paddingHorizontal: 16,
       borderRadius: 12,
       borderWidth: 1.5,
