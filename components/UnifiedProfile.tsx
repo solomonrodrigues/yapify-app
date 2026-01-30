@@ -114,9 +114,13 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
 
   // Update navigation header based on scroll and profile type
   useEffect(() => {
-    navigation.setOptions({
+    const options: { headerTitle: string; headerRight?: () => React.ReactElement } = {
       headerTitle: showHeaderTitle && user ? user.display_name : '',
-      headerRight: !isOwnProfile && user ? () => (
+    };
+    // Only override headerRight for other users' profiles (block button).
+    // For own profile, leave it untouched so the tab layout's menu button persists.
+    if (!isOwnProfile && user) {
+      options.headerRight = () => (
         <TouchableOpacity
           onPress={handleBlockUser}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -124,8 +128,9 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
         >
           <IconSymbol name="ellipsis" size={22} color={theme.text} />
         </TouchableOpacity>
-      ) : undefined,
-    });
+      );
+    }
+    navigation.setOptions(options);
   }, [showHeaderTitle, user, navigation, isOwnProfile, theme.text]);
 
   // Reset scroll state when switching tabs
