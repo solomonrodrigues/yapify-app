@@ -1,4 +1,6 @@
-import { Quote } from '@/types/api';
+import { ProfileColorHexMap } from '@/constants/Colors';
+import { getInitials } from '@/lib/utils/user';
+import { MinimalUser, ProfileColorEnum, Quote } from '@/types/api';
 import * as Sharing from 'expo-sharing';
 import React, { useCallback, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -8,6 +10,26 @@ import ViewShot from 'react-native-view-shot';
 interface ShareableQuoteProps {
   quote: Quote;
   onCapture?: () => void;
+}
+
+const AVATAR_SIZE = 36;
+
+function Avatar({ user }: { user: MinimalUser }) {
+  const bg = ProfileColorHexMap[user.profile_color as ProfileColorEnum] ?? '#9E9E9E';
+  return (
+    <View style={[styles.avatar, { backgroundColor: bg }]}>
+      <Text style={styles.avatarText}>{getInitials(user)}</Text>
+    </View>
+  );
+}
+
+/** Darken a hex colour by mixing it toward black. amt 0-1. */
+function darken(hex: string, amt: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const f = 1 - amt;
+  return `rgb(${Math.round(r * f)}, ${Math.round(g * f)}, ${Math.round(b * f)})`;
 }
 
 /**
@@ -37,8 +59,9 @@ const ShareableQuoteInner: React.ForwardRefRenderFunction<{ share: () => Promise
 
     React.useImperativeHandle(ref, () => ({ share }));
 
-    const authorName = quote.quoted_user?.display_name || quote.quoted_name || 'Unknown';
+    const quotedName = quote.quoted_user?.display_name || quote.quoted_name || 'Unknown';
     const posterName = quote.author?.display_name || 'Someone';
+    const profileColor = ProfileColorHexMap[quote.quoted_user?.profile_color as ProfileColorEnum] ?? '#9E9E9E';
 
     return (
       <View style={styles.offscreen} collapsable={false}>
@@ -46,37 +69,25 @@ const ShareableQuoteInner: React.ForwardRefRenderFunction<{ share: () => Promise
           ref={viewShotRef}
           options={{ format: 'png', quality: 1, result: 'tmpfile' }}
         >
-          <View style={styles.card}>
-            {/* Background gradient effect using overlapping views */}
-            <View style={styles.gradientTop} />
-            <View style={styles.gradientBottom} />
-
-            {/* Content */}
-            <View style={styles.content}>
-              {/* Open quote mark */}
-              <Text style={styles.quoteMark}>&ldquo;</Text>
-
+          {/* Outer coloured background */}
+          <View style={[styles.outer, { backgroundColor: darken(profileColor, 0.45) }]}>
+            {/* Inner frosted card */}
+            <View style={styles.card}>
               {/* Quote text */}
               <Text style={styles.quoteText}>{quote.text}</Text>
 
-              {/* Close quote mark */}
-              <Text style={[styles.quoteMark, styles.quoteMarkClose]}>&rdquo;</Text>
-
               {/* Attribution */}
               <View style={styles.attribution}>
-                <Text style={styles.attributionText}>
-                  &mdash; {authorName}
-                </Text>
-                <Text style={styles.postedBy}>
-                  posted by {posterName}
-                </Text>
+                {quote.quoted_user && <Avatar user={quote.quoted_user} />}
+                <View>
+                  <Text style={styles.quotedName}>{quotedName}</Text>
+                  <Text style={styles.postedByText}>posted by {posterName}</Text>
+                </View>
               </View>
             </View>
 
             {/* Branding */}
-            <View style={styles.branding}>
-              <Text style={styles.brandText}>yapify</Text>
-            </View>
+            <Text style={styles.brandText}>yapify</Text>
           </View>
         </ViewShot>
       </View>
@@ -91,78 +102,63 @@ const styles = StyleSheet.create({
     left: -500,
     top: 0,
   },
-  card: {
+  outer: {
     width: 400,
-    minHeight: 300,
-    backgroundColor: '#0e1113',
-    borderRadius: 24,
+    minHeight: 320,
+    padding: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
     overflow: 'hidden',
     position: 'relative',
   },
-  gradientTop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 120,
-    backgroundColor: 'rgba(161, 53, 210, 0.15)',
-  },
-  gradientBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 80,
-    backgroundColor: 'rgba(161, 53, 210, 0.08)',
-  },
-  content: {
-    padding: 32,
-    paddingBottom: 16,
-  },
-  quoteMark: {
-    fontSize: 48,
-    color: '#a135d2',
-    fontWeight: '700',
-    lineHeight: 48,
-    marginBottom: -8,
-  },
-  quoteMarkClose: {
-    textAlign: 'right',
-    marginTop: -8,
-    marginBottom: 16,
+  card: {
+    width: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    borderRadius: 16,
+    padding: 28,
   },
   quoteText: {
-    fontSize: 22,
-    lineHeight: 32,
-    color: '#ECEDEE',
-    fontWeight: '300',
-    letterSpacing: 0.3,
-    paddingHorizontal: 8,
-    paddingVertical: 12,
+    fontSize: 20,
+    lineHeight: 30,
+    color: '#fff',
+    fontWeight: '500',
+    letterSpacing: 0.2,
+    marginBottom: 24,
   },
   attribution: {
-    marginTop: 8,
-    paddingLeft: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  attributionText: {
-    fontSize: 16,
-    color: '#ECEDEE',
+  avatar: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  avatarText: {
+    fontFamily: 'Sansation',
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: AVATAR_SIZE * 0.45,
+  },
+  quotedName: {
+    fontSize: 15,
+    color: '#fff',
     fontWeight: '600',
   },
-  postedBy: {
-    fontSize: 13,
+  postedByText: {
+    fontSize: 12,
     color: 'rgba(255,255,255,0.5)',
-    marginTop: 4,
-  },
-  branding: {
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    alignItems: 'flex-end',
+    marginTop: 2,
   },
   brandText: {
-    fontSize: 14,
-    color: 'rgba(161, 53, 210, 0.6)',
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.35)',
     fontWeight: '700',
-    letterSpacing: 2,
+    letterSpacing: 3,
+    textTransform: 'uppercase',
+    marginTop: 16,
   },
 });
