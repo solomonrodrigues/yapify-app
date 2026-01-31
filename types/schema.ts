@@ -511,9 +511,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Report or unreport a quote. */
+        /**
+         * Report a quote
+         * @description Report or unreport a quote.
+         */
         post: operations["quotes_report_create"];
-        /** @description Report or unreport a quote. */
+        /**
+         * Cancel a quote report
+         * @description Report or unreport a quote.
+         */
         delete: operations["quotes_report_destroy"];
         options?: never;
         head?: never;
@@ -822,9 +828,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Report or unreport a user. */
+        /**
+         * Report a user
+         * @description Report or unreport a user.
+         */
         post: operations["users_report_create"];
-        /** @description Report or unreport a user. */
+        /**
+         * Cancel a user report
+         * @description Report or unreport a user.
+         */
         delete: operations["users_report_destroy"];
         options?: never;
         head?: never;
@@ -1184,6 +1196,15 @@ export interface components {
          * @enum {string}
          */
         QuotedUserResponseEnum: "confirmed" | "denied";
+        /**
+         * @description * `inappropriate` - Inappropriate Content
+         *     * `spam` - Spam
+         *     * `harassment` - Harassment
+         *     * `false_attribution` - False Attribution
+         *     * `other` - Other
+         * @enum {string}
+         */
+        ReasonEnum: "inappropriate" | "spam" | "harassment" | "false_attribution" | "other";
         RecentSearchCreate: {
             kind: components["schemas"]["KindEnum"];
             target_id: string;
@@ -1196,6 +1217,17 @@ export interface components {
             touched_at?: string;
             last_query?: string | null;
             readonly data: string;
+        };
+        ReportRequest: {
+            reason: components["schemas"]["ReasonEnum"];
+            description?: string | null;
+        };
+        ReportResponse: {
+            readonly id: number;
+            readonly reason: components["schemas"]["ReasonEnum"];
+            readonly description: string | null;
+            /** Format: date-time */
+            readonly created_at: string;
         };
         /**
          * @description * `pending` - Pending
@@ -2047,14 +2079,29 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReportRequest"];
+                "multipart/form-data": components["schemas"]["ReportRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ReportResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -2069,12 +2116,20 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
+            /** @description Report cancelled */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -2541,14 +2596,29 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReportRequest"];
+                "multipart/form-data": components["schemas"]["ReportRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ReportResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -2563,12 +2633,20 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
+            /** @description Report cancelled */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
