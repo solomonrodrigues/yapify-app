@@ -502,6 +502,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/quotes/{quote_id}/report/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Report or unreport a quote. */
+        post: operations["quotes_report_create"];
+        /** @description Report or unreport a quote. */
+        delete: operations["quotes_report_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/quotes/{quote_id}/respond/": {
         parameters: {
             query?: never;
@@ -790,6 +808,24 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users/{user_id}/report/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Report or unreport a user. */
+        post: operations["users_report_create"];
+        /** @description Report or unreport a user. */
+        delete: operations["users_report_destroy"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2002,6 +2038,46 @@ export interface operations {
             };
         };
     };
+    quotes_report_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quote_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    quotes_report_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quote_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     quotes_respond_create: {
         parameters: {
             query?: never;
@@ -2453,6 +2529,46 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PaginatedQuoteList"];
                 };
+            };
+        };
+    };
+    users_report_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    users_report_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
