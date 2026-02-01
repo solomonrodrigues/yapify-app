@@ -1,4 +1,4 @@
-import { Quote, PaginatedQuoteList } from '../../types/api';
+import { Quote, PaginatedQuoteList, ReportReasonEnum } from '../../types/api';
 import api from './client';
 
 export type FeedScope =
@@ -198,6 +198,17 @@ export const getQuoteGuesses = async (
 
   const res = await api.get<{ results: import('@/types/api').QuoteGuessListItem[]; next: string | null }>(endpoint);
   return res.data;
+};
+
+export const reportQuote = async (
+  quoteId: number,
+  body: { reason: ReportReasonEnum; description?: string | null }
+): Promise<void> => {
+  await api.post(`/quotes/${quoteId}/report/`, body);
+};
+
+export const unreportQuote = async (quoteId: number): Promise<void> => {
+  await api.delete(`/quotes/${quoteId}/report/`);
 };
 
 export const getGuessableQuotes = async (

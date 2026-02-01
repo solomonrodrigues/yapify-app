@@ -11,7 +11,9 @@ import { useQuotes } from '@/context/QuotesContext';
 import { useQuotesFeed } from '@/hooks/useQuotesFeed';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getUser, getUserFriends } from '@/lib/api/friends';
-import type { User as CurrentUser, Friendship, PublicUser, Quote, ProfileColorEnum } from '@/types/api';
+import { reportUser, unreportUser } from '@/lib/api/users';
+import { getErrorMessage } from '@/lib/utils/error';
+import type { User as CurrentUser, Friendship, PublicUser, Quote, ProfileColorEnum, ReportReasonEnum } from '@/types/api';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -122,7 +124,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     if (!isOwnProfile && user) {
       options.headerRight = () => (
         <TouchableOpacity
-          onPress={handleBlockUser}
+          onPress={handleUserMenu}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           style={{ minWidth: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}
         >
@@ -263,6 +265,63 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Block Account', style: 'destructive', onPress: performBlock },
+      ]
+    );
+  };
+
+  const submitUserReport = async (reason: ReportReasonEnum) => {
+    if (!user) return;
+    try {
+      await reportUser(user.id, { reason });
+      const reportedUserId = user.id;
+      const reportedUsername = user.username;
+      Toast.show({
+        type: 'success',
+        text1: `@${reportedUsername} reported`,
+        text2: 'Tap to undo',
+        onPress: async () => {
+          Toast.hide();
+          try {
+            await unreportUser(reportedUserId);
+            Toast.show({ type: 'info', text1: 'Report withdrawn' });
+          } catch (undoError) {
+            Toast.show({ type: 'error', text1: 'Failed to undo report', text2: getErrorMessage(undoError) });
+          }
+        },
+      });
+    } catch (error) {
+      const detail = getErrorMessage(error);
+      console.error('Report user failed:', detail);
+      Toast.show({ type: 'error', text1: 'Failed to report user', text2: detail });
+    }
+  };
+
+  const handleReportUser = () => {
+    if (!user) return;
+
+    Alert.alert(
+      `Report @${user.username}`,
+      "Why are you reporting this user?",
+      [
+        { text: 'Inappropriate', onPress: () => submitUserReport('inappropriate') },
+        { text: 'Spam', onPress: () => submitUserReport('spam') },
+        { text: 'Harassment', onPress: () => submitUserReport('harassment') },
+        { text: 'Other', onPress: () => submitUserReport('other') },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
+
+  const handleUserMenu = () => {
+    if (!user) return;
+
+    Alert.alert(
+      '',
+      undefined,
+      [
+        { text: 'Report User', style: 'destructive', onPress: handleReportUser },
+        { text: 'Block User', style: 'destructive', onPress: handleBlockUser },
+        { text: 'Cancel', style: 'cancel' },
       ]
     );
   };

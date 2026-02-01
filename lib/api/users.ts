@@ -1,4 +1,4 @@
-import { PaginatedPublicUserList } from '../../types/api';
+import { PaginatedPublicUserList, ReportReasonEnum } from '../../types/api';
 import api from './client';
 
 /**
@@ -13,6 +13,23 @@ export const blockUser = async (userId: number): Promise<void> => {
  */
 export const unblockUser = async (userId: number): Promise<void> => {
   await api.delete(`/users/${userId}/block/`);
+};
+
+/**
+ * Report a user.
+ */
+export const reportUser = async (
+  userId: number,
+  body: { reason: ReportReasonEnum; description?: string | null }
+): Promise<void> => {
+  await api.post(`/users/${userId}/report/`, body);
+};
+
+/**
+ * Unreport a user.
+ */
+export const unreportUser = async (userId: number): Promise<void> => {
+  await api.delete(`/users/${userId}/report/`);
 };
 
 /**

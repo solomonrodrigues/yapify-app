@@ -31,6 +31,9 @@ export type QuoteGuessListItem = components["schemas"]["QuoteGuessListItem"];
 export type PasswordResetRequest = components["schemas"]["PasswordResetRequest"];
 export type PasswordResetConfirm = components["schemas"]["PasswordResetConfirm"];
 export type DetailResponse = components["schemas"]["DetailResponse"];
+export type ReportReasonEnum = components["schemas"]["ReasonEnum"];
+export type ReportRequest = components["schemas"]["ReportRequest"];
+export type ReportResponse = components["schemas"]["ReportResponse"];
 
 // Response obj
 // type SuccessResponse =

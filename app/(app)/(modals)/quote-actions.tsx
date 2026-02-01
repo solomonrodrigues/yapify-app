@@ -4,6 +4,9 @@ import { ShareableQuote } from "@/components/ShareableQuote";
 import { useQuoteActionsModal } from "@/context/QuoteActionsModalContext";
 import { useQuotes } from "@/context/QuotesContext";
 import { useUser } from "@/context/UserContext";
+import { reportQuote, unreportQuote } from "@/lib/api/quotes";
+import { getErrorMessage } from "@/lib/utils/error";
+import { ReportReasonEnum } from "@/types/api";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import React, { useMemo, useRef } from "react";
@@ -108,6 +111,49 @@ export default function QuoteActionsModal() {
     closeModal();
   };
 
+  const submitReport = async (reason: ReportReasonEnum) => {
+    try {
+      await reportQuote(quote.id, { reason });
+      const reportedQuoteId = quote.id;
+      Toast.show({
+        type: "success",
+        text1: "Quote reported",
+        text2: "Tap to undo",
+        onPress: async () => {
+          Toast.hide();
+          try {
+            await unreportQuote(reportedQuoteId);
+            Toast.show({ type: "info", text1: "Report withdrawn" });
+          } catch (undoError) {
+            Toast.show({ type: "error", text1: "Failed to undo report", text2: getErrorMessage(undoError) });
+          }
+        },
+      });
+    } catch (error: any) {
+      const detail = getErrorMessage(error);
+      console.error("Report quote failed:", error?.response?.status, detail);
+      Toast.show({ type: "error", text1: "Failed to report quote", text2: detail });
+    }
+    closeModal();
+  };
+
+  const handleReport = () => {
+    if (!quote.id) return;
+
+    Alert.alert(
+      "Report Quote",
+      "Why are you reporting this quote?",
+      [
+        { text: "Inappropriate", onPress: () => submitReport("inappropriate") },
+        { text: "Spam", onPress: () => submitReport("spam") },
+        { text: "Harassment", onPress: () => submitReport("harassment") },
+        { text: "False Attribution", onPress: () => submitReport("false_attribution") },
+        { text: "Other", onPress: () => submitReport("other") },
+        { text: "Cancel", style: "cancel" },
+      ]
+    );
+  };
+
   const handleDelete = () => {
     if (!quote.id) return;
 
@@ -169,6 +215,17 @@ export default function QuoteActionsModal() {
               onPress={handleHide}
               destructive
             />
+            {!isOwnQuote && (
+              <>
+                <Divider />
+                <ActionRow
+                  icon="exclamationmark.triangle"
+                  label="Report quote"
+                  onPress={handleReport}
+                  destructive
+                />
+              </>
+            )}
             {isOwnQuote && (
               <>
                 <Divider />
