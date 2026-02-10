@@ -7,10 +7,11 @@ import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { register } from "@/lib/api/auth";
 import LoginErrorHandler from "@/lib/utils/LoginErrorHandler";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Keyboard,
   ScrollView,
   StyleSheet,
@@ -22,6 +23,7 @@ import {
   View,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import Animated, { useSharedValue, useAnimatedStyle, withDelay, withTiming, Easing } from "react-native-reanimated";
 
 export default function AuthScreen() {
   const { login } = useAuth();
@@ -45,6 +47,39 @@ export default function AuthScreen() {
   const styles = useThemedStyles(getStyles);
   const colorScheme = useColorScheme() ?? 'dark';
 
+  // Entrance animations
+  const logoOpacity = useSharedValue(0);
+  const logoTranslateY = useSharedValue(20);
+  const titleOpacity = useSharedValue(0);
+  const titleTranslateY = useSharedValue(20);
+  const formOpacity = useSharedValue(0);
+  const formTranslateY = useSharedValue(20);
+
+  useEffect(() => {
+    const timingConfig = { duration: 400, easing: Easing.out(Easing.ease) };
+    logoOpacity.value = withTiming(1, timingConfig);
+    logoTranslateY.value = withTiming(0, timingConfig);
+    titleOpacity.value = withDelay(120, withTiming(1, timingConfig));
+    titleTranslateY.value = withDelay(120, withTiming(0, timingConfig));
+    formOpacity.value = withDelay(240, withTiming(1, timingConfig));
+    formTranslateY.value = withDelay(240, withTiming(0, timingConfig));
+  }, []);
+
+  const logoStyle = useAnimatedStyle(() => ({
+    opacity: logoOpacity.value,
+    transform: [{ translateY: logoTranslateY.value }],
+  }));
+
+  const titleStyle = useAnimatedStyle(() => ({
+    opacity: titleOpacity.value,
+    transform: [{ translateY: titleTranslateY.value }],
+  }));
+
+  const formStyle = useAnimatedStyle(() => ({
+    opacity: formOpacity.value,
+    transform: [{ translateY: formTranslateY.value }],
+  }));
+
   // Validation functions
   const validateUsername = (text: string): boolean => {
     const usernameRegex = /^[a-z._]+$/;
@@ -59,7 +94,7 @@ export default function AuthScreen() {
   const handleUsernameChange = (text: string) => {
     // Only allow valid characters as user types
     const filteredText = text.toLowerCase().replace(/[^a-z._]/g, '');
-    
+
     if (filteredText.length <= 30) {
       setUsername(filteredText);
     }
@@ -168,153 +203,164 @@ export default function AuthScreen() {
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
           >
-            <ThemedText type={"title"} style={styles.title}>
-              {isLogin ? "Login" : "Create an Account"}
-            </ThemedText>
+            <Animated.View style={[styles.logoContainer, logoStyle]}>
+              <Image
+                source={require('@/assets/images/icon.png')}
+                style={styles.logo}
+              />
+            </Animated.View>
 
-            {!isLogin && (
-              <>
-                <View>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Username"
-                    placeholderTextColor="#999"
-                    value={username}
-                    onChangeText={handleUsernameChange}
-                    maxLength={30}
-                    autoCapitalize="none"
-                    editable={!isSubmitting}
-                  />
-                </View>
+            <Animated.View style={titleStyle}>
+              <ThemedText type={"title"} style={styles.title}>
+                {isLogin ? "Login" : "Create an Account"}
+              </ThemedText>
+            </Animated.View>
 
-                <View>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Display Name"
-                    placeholderTextColor="#999"
-                    value={displayName}
-                    onChangeText={handleDisplayNameChange}
-                    maxLength={50}
-                    editable={!isSubmitting}
-                  />
-                </View>
-              </>
-            )}
+            <Animated.View style={formStyle}>
+              {!isLogin && (
+                <>
+                  <View>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Username"
+                      placeholderTextColor="#999"
+                      value={username}
+                      onChangeText={handleUsernameChange}
+                      maxLength={30}
+                      autoCapitalize="none"
+                      editable={!isSubmitting}
+                    />
+                  </View>
 
-            <TextInput
-              key={`login-email-${colorScheme}`}
-              style={[styles.input, { letterSpacing: 0 }]}
-              placeholder="Email"
-              placeholderTextColor="#999"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-              editable={!isSubmitting}
-            />
+                  <View>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Display Name"
+                      placeholderTextColor="#999"
+                      value={displayName}
+                      onChangeText={handleDisplayNameChange}
+                      maxLength={50}
+                      editable={!isSubmitting}
+                    />
+                  </View>
+                </>
+              )}
 
-            {/* Password field */}
-            <View style={styles.inputContainer}>
               <TextInput
-                style={styles.passwordInput}
-                placeholder="Password"
+                key={`login-email-${colorScheme}`}
+                style={[styles.input, { letterSpacing: 0 }]}
+                placeholder="Email"
                 placeholderTextColor="#999"
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
                 editable={!isSubmitting}
               />
-              <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
-                style={styles.iconWrapper}
-                disabled={isSubmitting}
-              >
-                <IconSymbol
-                  name={showPassword ? "eye.slash" : "eye"}
-                  size={24}
-                  color="gray"
-                />
-              </TouchableOpacity>
-            </View>
 
-            {/* Forgot Password link - only in login mode */}
-            {isLogin && (
-              <TouchableOpacity
-                onPress={() => router.push("/(auth)/reset-password")}
-                disabled={isSubmitting}
-                style={styles.forgotPasswordContainer}
-              >
-                <Text
-                  style={[
-                    styles.forgotPasswordText,
-                    isSubmitting && styles.toggleTextDisabled,
-                  ]}
-                >
-                  Forgot Password?
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {/* Confirm password field */}
-            {!isLogin && (
+              {/* Password field */}
               <View style={styles.inputContainer}>
                 <TextInput
                   style={styles.passwordInput}
-                  placeholder="Confirm Password"
+                  placeholder="Password"
                   placeholderTextColor="#999"
-                  secureTextEntry={!showPasswordConfirm}
-                  value={passwordConfirm}
-                  onChangeText={setPasswordConfirm}
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
                   editable={!isSubmitting}
                 />
                 <TouchableOpacity
-                  onPress={() =>
-                    setShowPasswordConfirm(!showPasswordConfirm)
-                  }
+                  onPress={() => setShowPassword(!showPassword)}
                   style={styles.iconWrapper}
                   disabled={isSubmitting}
                 >
                   <IconSymbol
-                    name={showPasswordConfirm ? "eye.slash" : "eye"}
+                    name={showPassword ? "eye.slash" : "eye"}
                     size={24}
                     color="gray"
                   />
                 </TouchableOpacity>
               </View>
-            )}
 
-            <TouchableOpacity
-              style={[
-                styles.button,
-                isSubmitting && styles.buttonDisabled,
-              ]}
-              onPress={isLogin ? handleLogin : handleRegister}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>
-                  {isLogin ? "Login" : "Sign Up"}
-                </Text>
+              {/* Forgot Password link - only in login mode */}
+              {isLogin && (
+                <TouchableOpacity
+                  onPress={() => router.push("/(auth)/reset-password")}
+                  disabled={isSubmitting}
+                  style={styles.forgotPasswordContainer}
+                >
+                  <Text
+                    style={[
+                      styles.forgotPasswordText,
+                      isSubmitting && styles.toggleTextDisabled,
+                    ]}
+                  >
+                    Forgot Password?
+                  </Text>
+                </TouchableOpacity>
               )}
-            </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => setIsLogin(!isLogin)}
-              disabled={isSubmitting}
-            >
-              <Text
+              {/* Confirm password field */}
+              {!isLogin && (
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Confirm Password"
+                    placeholderTextColor="#999"
+                    secureTextEntry={!showPasswordConfirm}
+                    value={passwordConfirm}
+                    onChangeText={setPasswordConfirm}
+                    editable={!isSubmitting}
+                  />
+                  <TouchableOpacity
+                    onPress={() =>
+                      setShowPasswordConfirm(!showPasswordConfirm)
+                    }
+                    style={styles.iconWrapper}
+                    disabled={isSubmitting}
+                  >
+                    <IconSymbol
+                      name={showPasswordConfirm ? "eye.slash" : "eye"}
+                      size={24}
+                      color="gray"
+                    />
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              <TouchableOpacity
                 style={[
-                  styles.toggleText,
-                  isSubmitting && styles.toggleTextDisabled,
+                  styles.button,
+                  isSubmitting && styles.buttonDisabled,
                 ]}
+                onPress={isLogin ? handleLogin : handleRegister}
+                disabled={isSubmitting}
               >
-                {isLogin
-                  ? "Don't have an account? Sign up"
-                  : "Already have an account? Login"}
-              </Text>
-            </TouchableOpacity>
+                {isSubmitting ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>
+                    {isLogin ? "Login" : "Sign Up"}
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setIsLogin(!isLogin)}
+                disabled={isSubmitting}
+              >
+                <Text
+                  style={[
+                    styles.toggleText,
+                    isSubmitting && styles.toggleTextDisabled,
+                  ]}
+                >
+                  {isLogin
+                    ? "Don't have an account? Sign up"
+                    : "Already have an account? Login"}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -329,33 +375,41 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     scrollContent: {
       flexGrow: 1,
-      justifyContent: "center", // center by default
+      justifyContent: "center",
       padding: 20,
+    },
+    logoContainer: {
+      alignItems: "center",
+      marginBottom: 20,
+    },
+    logo: {
+      width: 100,
+      height: 100,
+      borderRadius: 24,
     },
     title: {
       color: theme.text,
       fontSize: 28,
-      fontWeight: "bold",
-      marginBottom: 20,
+      fontFamily: "Lora",
+      fontWeight: "normal",
+      marginBottom: 24,
       textAlign: "center",
       alignSelf: "flex-start",
     },
     input: {
       color: theme.text,
-      borderWidth: 1,
-      borderColor: theme.inputBorder,
-      borderRadius: 8,
-      padding: 12,
+      backgroundColor: theme.inputBackground,
+      borderRadius: 14,
+      padding: 14,
       marginBottom: 12,
       fontSize: 16,
     },
     passwordInput: {
       color: theme.text,
-      borderWidth: 1,
-      borderColor: theme.inputBorder,
-      borderRadius: 8,
-      padding: 12,
-      paddingRight: 40, // extra space for icon
+      backgroundColor: theme.inputBackground,
+      borderRadius: 14,
+      padding: 14,
+      paddingRight: 44,
       marginBottom: 12,
       fontSize: 16,
     },
@@ -371,8 +425,8 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     button: {
       backgroundColor: theme.pastels.purple,
-      paddingVertical: 14,
-      borderRadius: 8,
+      paddingVertical: 16,
+      borderRadius: 14,
       marginTop: 4,
       alignItems: "center",
       justifyContent: "center",
