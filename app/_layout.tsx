@@ -22,6 +22,8 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     Sansation: require('../assets/fonts/Sansation-Bold.ttf'),
+    Lora: require('../assets/fonts/Lora-Regular.ttf'),
+    'Lora-Bold': require('../assets/fonts/Lora-Bold.ttf'),
   });
 
   if (!loaded) return null;
