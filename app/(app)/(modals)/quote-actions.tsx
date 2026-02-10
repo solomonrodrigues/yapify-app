@@ -10,7 +10,8 @@ import { ReportReasonEnum } from "@/types/api";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import React, { useMemo, useRef } from "react";
-import { Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
+import { Colors } from "@/constants/Colors";
 import Toast from "react-native-toast-message";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -23,6 +24,9 @@ export default function QuoteActionsModal() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const shareRef = useRef<{ share: () => Promise<void> }>(null);
+  const colorScheme = useColorScheme() ?? 'dark';
+  const theme = Colors[colorScheme];
+  const isDark = colorScheme === 'dark';
 
   // Get the quote from context first, or fall back to looking it up in the feed
   const selectedQuote = useMemo(() => {
@@ -187,6 +191,8 @@ export default function QuoteActionsModal() {
   };
 
 
+  const themedStyles = getThemedStyles(isDark, theme);
+
   return (
     <View style={styles.root} pointerEvents="box-none">
       {/* Backdrop for Android */}
@@ -195,52 +201,60 @@ export default function QuoteActionsModal() {
       )}
       {/* Sheet */}
       <View style={styles.bottom} pointerEvents="box-none">
-        <View style={[styles.sheet, !isIOS && styles.sheetAndroid, { paddingBottom: Math.max(insets.bottom, 12), paddingTop: 24 }]}>
-          <View style={styles.group}>
+        <View style={[styles.sheet, !isIOS && themedStyles.sheetAndroid, { paddingBottom: Math.max(insets.bottom, 12), paddingTop: 24 }]}>
+          <View style={themedStyles.group}>
             <ActionRow
               icon={isSavedQuote ? "bookmark.fill" : "bookmark"}
               label={isSavedQuote ? "Unsave" : "Save"}
               onPress={handleSave}
+              isDark={isDark}
+              theme={theme}
             />
-            <Divider />
-            <ActionRow icon="doc.on.doc" label="Copy text" onPress={handleCopy} />
-            <Divider />
-            <ActionRow icon="square.and.arrow.up" label="Share as image" onPress={handleShare} />
+            <Divider isDark={isDark} />
+            <ActionRow icon="doc.on.doc" label="Copy text" onPress={handleCopy} isDark={isDark} theme={theme} />
+            <Divider isDark={isDark} />
+            <ActionRow icon="square.and.arrow.up" label="Share as image" onPress={handleShare} isDark={isDark} theme={theme} />
           </View>
 
-          <View style={styles.group}>
+          <View style={themedStyles.group}>
             <ActionRow
               icon="eye.slash"
               label="Hide this quote"
               onPress={handleHide}
               destructive
+              isDark={isDark}
+              theme={theme}
             />
             {!isOwnQuote && (
               <>
-                <Divider />
+                <Divider isDark={isDark} />
                 <ActionRow
                   icon="exclamationmark.triangle"
                   label="Report quote"
                   onPress={handleReport}
                   destructive
+                  isDark={isDark}
+                  theme={theme}
                 />
               </>
             )}
             {isOwnQuote && (
               <>
-                <Divider />
+                <Divider isDark={isDark} />
                 <ActionRow
                   icon="trash"
                   label="Delete quote"
                   onPress={handleDelete}
                   destructive
+                  isDark={isDark}
+                  theme={theme}
                 />
               </>
             )}
           </View>
 
           {(showAuthor || showQuotedUser) && (
-            <View style={styles.group}>
+            <View style={themedStyles.group}>
               {showAuthor && (
                 <>
                   <ActionRow
@@ -248,8 +262,10 @@ export default function QuoteActionsModal() {
                     label={`@${quote.author.username}`}
                     subtitle="Posted this quote"
                     onPress={() => goToProfile(quote.author.id)}
+                    isDark={isDark}
+                    theme={theme}
                   />
-                  {showQuotedUser && <Divider />}
+                  {showQuotedUser && <Divider isDark={isDark} />}
                 </>
               )}
 
@@ -259,6 +275,8 @@ export default function QuoteActionsModal() {
                   label={`@${quote.quoted_user.username}`}
                   subtitle="Said this quote"
                   onPress={() => goToProfile(quote.quoted_user.id)}
+                  isDark={isDark}
+                  theme={theme}
                 />
               )}
             </View>
@@ -278,33 +296,55 @@ function ActionRow({
   subtitle,
   onPress,
   destructive,
+  isDark,
+  theme,
 }: {
   icon?: string;
   label: string;
   subtitle?: string;
   onPress: () => void;
   destructive?: boolean;
+  isDark: boolean;
+  theme: typeof Colors.light | typeof Colors.dark;
 }) {
+  const textColor = destructive ? theme.destructive : theme.text;
+  const subtitleColor = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)";
+  const pressedBg = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
+
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}>
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.row, pressed && { backgroundColor: pressedBg }]}>
       {icon && (
         <IconSymbol
           name={icon as any}
           size={20}
-          color={destructive ? styles.destructive.color : styles.rowText.color}
+          color={textColor}
           style={{ marginRight: 12 }}
         />
       )}
       <View style={{ flex: 1 }}>
-        <Text style={[styles.rowText, destructive && styles.destructive]}>{label}</Text>
-        {subtitle && <Text style={styles.rowSubtitle}>{subtitle}</Text>}
+        <Text style={[styles.rowText, { color: textColor }]}>{label}</Text>
+        {subtitle && <Text style={[styles.rowSubtitle, { color: subtitleColor }]}>{subtitle}</Text>}
       </View>
     </Pressable>
   );
 }
 
-function Divider() {
-  return <View style={styles.divider} />;
+function Divider({ isDark }: { isDark: boolean }) {
+  return <View style={[styles.divider, { backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)" }]} />;
+}
+
+function getThemedStyles(isDark: boolean, theme: typeof Colors.light | typeof Colors.dark) {
+  return {
+    sheetAndroid: {
+      backgroundColor: isDark ? "#1c1c1e" : "#fff",
+    },
+    group: {
+      backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+      borderRadius: 14,
+      overflow: "hidden" as const,
+      marginBottom: 12,
+    },
+  };
 }
 
 const styles = StyleSheet.create({
@@ -323,47 +363,22 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingHorizontal: 14,
   },
-  sheetAndroid: {
-    backgroundColor: "#1c1c1e",
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#fff",
-    marginBottom: 10,
-    paddingHorizontal: 6,
-  },
-  group: {
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderRadius: 14,
-    overflow: "hidden",
-    marginBottom: 12,
-  },
   row: {
     paddingVertical: 14,
     paddingHorizontal: 12,
     flexDirection: "row",
     alignItems: "center",
   },
-  rowPressed: {
-    backgroundColor: "rgba(255,255,255,0.08)",
-  },
   rowText: {
     fontSize: 16,
-    color: "#fff",
     fontWeight: "500",
   },
   rowSubtitle: {
     fontSize: 13,
-    color: "rgba(255,255,255,0.6)",
     marginTop: 2,
   },
   divider: {
     height: 1,
-    backgroundColor: "rgba(255,255,255,0.08)",
     marginLeft: 12,
-  },
-  destructive: {
-    color: "#ff4d4d",
   },
 });
