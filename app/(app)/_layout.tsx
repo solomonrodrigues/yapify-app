@@ -115,6 +115,21 @@ export default function AppLayout() {
         }}
       />
       <Stack.Screen
+        name="hidden-quotes"
+        options={{
+          headerShown: true,
+          headerTitle: 'Hidden Quotes',
+          headerLeft: (props) => (
+            <HeaderBackButton
+              {...props}
+              onPress={handleBackPress('/privacy-security')}
+              tintColor={theme.text}
+              label={"Back"}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
         name="help-support"
         options={{
           headerShown: true,

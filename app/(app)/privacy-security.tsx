@@ -74,6 +74,12 @@ export default function PrivacySecurityScreen() {
       icon: 'nosign',
       onPress: () => router.push('/blocked-users'),
     },
+    {
+      title: 'Hidden Quotes',
+      subtitle: 'Manage quotes hidden from your feed',
+      icon: 'eye.slash',
+      onPress: () => router.push('/hidden-quotes'),
+    },
   ];
 
   return (
