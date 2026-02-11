@@ -5,9 +5,17 @@ export function hexToRgba(hex: string, alpha = 1) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+function hashId(id: number): number {
+  let hash = 5381;
+  const str = String(id);
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
 export function getPastelFromId(id: number, theme: any) {
   const pastelKeys = Object.keys(theme.pastels) as (keyof typeof theme.pastels)[];
-  const index = id % pastelKeys.length;
-  const randomPastel = theme.pastels[pastelKeys[index]];
-  return randomPastel;
+  const index = hashId(id) % pastelKeys.length;
+  return theme.pastels[pastelKeys[index]];
 }

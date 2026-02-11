@@ -45,6 +45,11 @@ export const Colors = {
       green: '#63b045', // apple
       yellow: '#fba617', // sun
       purple: '#a135d2',  // purple heart
+      teal: '#2db5a0',   // persian green
+      coral: '#e8615a',  // terra cotta
+      amber: '#e09520',  // harvest gold
+      indigo: '#5c6bc0', // indigo
+      lime: '#8bc34a',   // yellow-green
     },
 
     // Feed-specific accents
@@ -87,6 +92,11 @@ export const Colors = {
       green: '#63b045', // apple
       yellow: '#fba617', // sun
       purple: '#a135d2',  // purple heart
+      teal: '#2db5a0',   // persian green
+      coral: '#e8615a',  // terra cotta
+      amber: '#e09520',  // harvest gold
+      indigo: '#5c6bc0', // indigo
+      lime: '#8bc34a',   // yellow-green
     },
 
     // Feed-specific accents

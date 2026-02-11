@@ -5,13 +5,14 @@ import QuoteResponseAction from '@/components/QuoteResponseAction';
 import QuoteResponseBadge from '@/components/QuoteResponseBadge';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { UserListModal } from '@/components/UserListModal';
-import { Colors } from '@/constants/Colors';
+import { Colors, ProfileColorHexMap } from '@/constants/Colors';
 import { Spacing } from '@/constants/Spacing';
 import { useQuoteActionsModal } from '@/context/QuoteActionsModalContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getQuoteLikes, getQuoteWitnesses } from '@/lib/api/quotes';
 import { getPastelFromId } from '@/lib/utils/style';
 import { PublicUser, Quote } from '@/types/api';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -138,7 +139,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   // If quote is hidden, show a collapsed version with undo option
   if (quote.is_hidden) {
     return (
-      <View style={[styles.quoteContainer, styles.hiddenContainer, { backgroundColor: theme.background }]}>
+      <View style={[styles.quoteContainer, styles.hiddenContainer]}>
         <View style={styles.hiddenContent}>
           <View style={styles.hiddenLeftSection}>
             <IconSymbol
@@ -153,13 +154,30 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
             <Text style={styles.undoText}>Undo</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.divider} />
       </View>
     );
   }
 
+  const profileColor = quote.quoted_user
+    ? ProfileColorHexMap[quote.quoted_user.profile_color]
+    : null;
+  const gradientColors: [string, string] = [
+    randomPastel,
+    profileColor ?? randomPastel,
+  ];
+
   return (
-    <Animated.View style={[styles.quoteContainer, { backgroundColor: theme.background }, entranceStyle]}>
+    <Animated.View style={[styles.quoteContainer, entranceStyle]}>
+      {/* Gradient left strip */}
+      <View style={styles.gradientStrip}>
+        <LinearGradient
+          colors={gradientColors}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </View>
+
       {/* Header */}
       <View
         style={[
@@ -243,7 +261,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
           highlightBgColor={theme.likeButton}
           onPress={() => onLike(quote.id)}
           onLongPress={() => setShowLikesModal(true)}
-          // highlighted={quote.is_liked}
+          highlighted={quote.is_liked}
           testID="like-button"
         />
 
@@ -258,7 +276,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
             highlightBgColor={theme.witnessButton}
             onPress={() => onWitness(quote.id)}
             onLongPress={() => setShowWitnessesModal(true)}
-            // highlighted={quote.is_witnessed}
+            highlighted={quote.is_witnessed}
             testID="witness-button"
           />
         )}
@@ -304,9 +322,6 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
           )
         )}
       </View>
-
-      {/* Divider */}
-      <View style={styles.divider} />
 
       <GuessGameModal
         quote={quote}
@@ -356,6 +371,21 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       paddingHorizontal: Spacing.md,
       paddingTop: Spacing.md,
       paddingBottom: Spacing.sm + Spacing.xs,
+      marginHorizontal: 10,
+      marginVertical: 6,
+      backgroundColor: theme.cardBackground,
+      borderRadius: 14,
+      overflow: 'hidden',
+    },
+    gradientStrip: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      bottom: 0,
+      width: 3,
+      borderTopLeftRadius: 14,
+      borderBottomLeftRadius: 14,
+      overflow: 'hidden',
     },
     header: {
       flexDirection: 'row',
@@ -388,10 +418,11 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       paddingVertical: Spacing.sm,
     },
     quoteContent: {
-      fontSize: 26,
-      lineHeight: 34,
+      fontSize: 27,
+      lineHeight: 36,
       color: theme.text,
-      fontWeight: '300',
+      fontFamily: 'Lora',
+      fontWeight: 'normal',
       letterSpacing: 0.3,
     },
     actionsBar: {
@@ -399,12 +430,6 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       alignItems: 'center',
       gap: Spacing.sm + 2,
       paddingVertical: Spacing.sm + 2,
-    },
-    divider: {
-      height: 1,
-      backgroundColor: theme.divider,
-      marginTop: Spacing.sm + 2,
-      marginHorizontal: -Spacing.md,
     },
     hiddenContainer: {
       opacity: 0.6,

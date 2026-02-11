@@ -77,8 +77,12 @@ const PillActionButton: React.FC<PillActionButtonProps> = ({
         style={({ pressed }) => [
           styles.actionPill,
           {
-            backgroundColor: highlighted || pressed ? `${highlightBgColor}10` : 'transparent',
-            borderColor: borderColor || color,
+            backgroundColor: highlighted
+              ? `${highlightBgColor}28`
+              : pressed
+                ? `${highlightBgColor}15`
+                : 'transparent',
+            borderColor: highlighted ? highlightBgColor : (borderColor || color),
           },
         ]}
       >
