@@ -9,18 +9,22 @@ import { vec } from "@shopify/react-native-skia";
 type Props = ViewProps & {
   children?: React.ReactNode;
   bottomBlur?: boolean;
+  edgeColors?: { top: string[]; bottom: string[] };
 };
 
-const BlurBox = ({ bottomBlur = true, children, style, ...props }: Props) => {
+const BlurBox = ({ bottomBlur = true, children, style, edgeColors, ...props }: Props) => {
   const insets = useSafeAreaInsets();
   const edgeHeight = useRef(60).current;
+
+  const topColors = edgeColors?.top ?? ["#FFFFFF90", "#FFFFFF00"];
+  const bottomColors = edgeColors?.bottom ?? ["#FFFFFF00", "#FFFFFF80"];
 
   return (
     <View style={[styles.wrapper, style]} {...props}>
       {/* Top fading edge */}
       <BlurEdge
         height={edgeHeight + insets.top}
-        colors={["#FFFFFF90", "#FFFFFF00"]}
+        colors={topColors}
         start={vec(0, 0 + insets.top)}
         end={vec(0, edgeHeight + insets.top)}
         style={[styles.blur, styles.top]}
@@ -33,7 +37,7 @@ const BlurBox = ({ bottomBlur = true, children, style, ...props }: Props) => {
       <BlurEdge
         enabled={bottomBlur}
         height={edgeHeight + insets.bottom}
-        colors={["#FFFFFF00", "#FFFFFF80"]}
+        colors={bottomColors}
         start={vec(0, 0)}
         end={vec(0, edgeHeight + insets.bottom)}
         style={[styles.blur, styles.bottom]}
