@@ -16,9 +16,34 @@ import { getErrorMessage } from "@/lib/utils/error";
 import { PaginatedQuoteList, Quote } from "@/types/api";
 import {
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react";
+
+// Simple global visibility bus so that hide/unhide actions
+// propagate across all active quote feeds (main feed, profile feeds, saved feed, etc).
+type QuoteVisibilityAction = "hide" | "unhide";
+type QuoteVisibilityListener = (id: number, action: QuoteVisibilityAction) => void;
+
+const quoteVisibilityListeners = new Set<QuoteVisibilityListener>();
+
+const registerQuoteVisibilityListener = (listener: QuoteVisibilityListener) => {
+  quoteVisibilityListeners.add(listener);
+  return () => {
+    quoteVisibilityListeners.delete(listener);
+  };
+};
+
+const notifyQuoteVisibilityChange = (id: number, action: QuoteVisibilityAction) => {
+  quoteVisibilityListeners.forEach((listener) => {
+    try {
+      listener(id, action);
+    } catch (e) {
+      console.error("Error in quote visibility listener", e);
+    }
+  });
+};
 
 type QuotesFetcher = (
   url?: string | null,
@@ -82,6 +107,26 @@ export function useQuotesFeed(
     () => fetcher ?? getQuotes,
     [fetcher]
   );
+
+  // Subscribe this feed instance to global hide/unhide events so that
+  // a quote hidden from any screen is reflected everywhere immediately.
+  useEffect(() => {
+    const listener: QuoteVisibilityListener = (id, action) => {
+      setQuotes((prev) =>
+        prev.map((q) =>
+          q.id === id
+            ? {
+                ...q,
+                is_hidden: action === "hide",
+              }
+            : q
+        )
+      );
+    };
+
+    const unregister = registerQuoteVisibilityListener(listener);
+    return unregister;
+  }, []);
 
   const loadQuotes = useCallback(
     async (isRefresh = false) => {
@@ -337,6 +382,9 @@ export function useQuotesFeed(
       })
     );
 
+    // Also propagate to all other feeds
+    notifyQuoteVisibilityChange(id, "hide");
+
     try {
       await hideQuote(id);
     } catch (e) {
@@ -366,6 +414,9 @@ export function useQuotesFeed(
         };
       })
     );
+
+    // Also propagate to all other feeds
+    notifyQuoteVisibilityChange(id, "unhide");
 
     try {
       await unhideQuote(id);
