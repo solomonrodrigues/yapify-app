@@ -178,31 +178,21 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
         />
       </View>
 
-      {/* Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          },
-        ]}
-      >
-        {/* Left side: "X quoted Y" with inline response badge */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1, flexWrap: 'wrap' }}>
+      {/* Header: "X quoted Y" */}
+      <View style={styles.header}>
+        <View style={styles.headerNames}>
           {guessable ? (
-            <Text style={[styles.quotedText, styles.mysteryText]}>???</Text>
+            <Text style={[styles.headerText, styles.mysteryText]}>???</Text>
           ) : (
             <TouchableOpacity onPress={() => navigateToProfile(quote.author.id)}>
-              <Text style={styles.authorName}>{guessable ? '???' : quote.author.display_name}</Text>
+              <Text style={styles.authorName}>{quote.author.display_name}</Text>
             </TouchableOpacity>
           )}
 
-          <Text style={styles.quotedText}> quoted </Text>
+          <Text style={styles.headerText}> quoted </Text>
 
           {guessable ? (
-            <Text style={[styles.quotedText, styles.mysteryText]}>???</Text>
+            <Text style={[styles.headerText, styles.mysteryText]}>???</Text>
           ) : quote.quoted_user ? (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <TouchableOpacity onPress={() => navigateToProfile(quote.quoted_user.id)}>
@@ -214,7 +204,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
               )}
             </View>
           ) : (
-            <Text style={styles.quotedNameLink}>{quote.quoted_name}</Text>
+            <Text style={styles.externalName}>{quote.quoted_name}</Text>
           )}
         </View>
 
@@ -390,24 +380,34 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     header: {
       flexDirection: 'row',
       alignItems: 'center',
-      flexWrap: 'wrap',
+      justifyContent: 'space-between',
       marginBottom: Spacing.md,
+    },
+    headerNames: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexShrink: 1,
+      flexWrap: 'wrap',
     },
     authorName: {
       fontSize: 14,
-      fontWeight: '700',
-      color: theme.text,
+      fontWeight: '500',
+      color: theme.secondaryText,
     },
-    quotedText: {
+    headerText: {
       fontSize: 14,
       color: theme.secondaryText,
-      flexDirection: 'row',
-      alignItems: 'center',
     },
     quotedNameLink: {
       fontSize: 14,
       fontWeight: '600',
       color: theme.text,
+    },
+    externalName: {
+      fontSize: 14,
+      fontWeight: '400',
+      fontStyle: 'italic',
+      color: theme.secondaryText,
     },
     mysteryText: {
       fontWeight: '600',

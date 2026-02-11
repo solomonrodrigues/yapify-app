@@ -125,6 +125,24 @@ The app uses a reusable feed hook pattern:
 **Android**:
 - Edge-to-edge display enabled (`android.edgeToEdgeEnabled: true`)
 
+## Design Principles
+
+### Feed Quote Card
+- The card is **content-first** — quote text (Lora, 27px) is the hero element
+- Header uses `[Author] quoted [Quoted Person]` pattern with three-dot menu in the top-right corner
+- The **author is de-emphasized** (medium weight, secondary text color) so the quoted person is the clear focal point. The author blends with the "quoted" verb as contextual text.
+- The **quoted person is prominent** (semibold, primary text color) — they said the interesting thing
+- Both names use **display_name** — never mix usernames and display names in the same line; consistency matters more than clever formatting
+- **No avatars in feed cards** — keeps cards content-focused, avoids clutter
+- **In-app users** have tappable names that navigate to profiles
+- **External/custom names** (not registered users) are rendered in *italic*, normal weight, secondary text color — signals "not a profile" without badges. The tappability difference + italic styling prevents "dead tap" frustration.
+- All names use the **same font size** (14px) — hierarchy comes from weight and color, not size differences
+
+### Color System
+- Each quote card has a **gradient left strip** blending the hash-based pastel color (top) with the quoted user's profile color (bottom)
+- Pastel colors use a **djb2 hash** on the quote ID for even distribution across a 10-color palette
+- When the quoted user is external (no profile), the strip falls back to a solid hash color
+
 ## Key Patterns to Follow
 
 ### API Calls
