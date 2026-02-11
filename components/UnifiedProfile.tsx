@@ -13,6 +13,7 @@ import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getUser, getUserFriends } from '@/lib/api/friends';
 import { reportUser, unreportUser } from '@/lib/api/users';
 import { getErrorMessage } from '@/lib/utils/error';
+import { hexToRgba } from '@/lib/utils/style';
 import type { User as CurrentUser, Friendship, PublicUser, Quote, ProfileColorEnum, ReportReasonEnum } from '@/types/api';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -457,7 +458,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
           {/* Stats Row */}
           <View style={styles.statsRow}>
             <TouchableOpacity
-              style={styles.statCard}
+              style={[styles.statCard, { backgroundColor: hexToRgba(userProfileColor, 0.08), borderColor: hexToRgba(userProfileColor, 0.15) }]}
               activeOpacity={0.7}
               onPress={() => handleTabChange('posted')}
             >
@@ -465,7 +466,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
               <ThemedText style={styles.statLabel}>Posted</ThemedText>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.statCard}
+              style={[styles.statCard, { backgroundColor: hexToRgba(userProfileColor, 0.08), borderColor: hexToRgba(userProfileColor, 0.15) }]}
               activeOpacity={0.7}
               onPress={() => handleTabChange('received')}
             >
@@ -473,7 +474,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
               <ThemedText style={styles.statLabel}>Received</ThemedText>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.statCard}
+              style={[styles.statCard, { backgroundColor: hexToRgba(userProfileColor, 0.08), borderColor: hexToRgba(userProfileColor, 0.15) }]}
               activeOpacity={0.7}
               onPress={handleOpenFriends}
             >
