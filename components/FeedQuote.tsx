@@ -141,17 +141,16 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
     return (
       <View style={[styles.quoteContainer, styles.hiddenContainer]}>
         <View style={styles.hiddenContent}>
-          <View style={styles.hiddenLeftSection}>
-            <IconSymbol
-              name="eye.slash"
-              size={16}
-              color={theme.secondaryText}
-              style={{ marginRight: 8 }}
-            />
-            <Text style={styles.hiddenText}>Quote hidden</Text>
-          </View>
-          <TouchableOpacity onPress={handleUnhide} style={styles.undoButton}>
-            <Text style={styles.undoText}>Undo</Text>
+          <IconSymbol
+            name="eye.slash"
+            size={14}
+            color={theme.secondaryText}
+            style={{ marginRight: 8 }}
+          />
+          <Text style={styles.hiddenText}>Quote hidden</Text>
+          <Text style={styles.hiddenDot}> · </Text>
+          <TouchableOpacity onPress={handleUnhide} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Text style={styles.undoLink}>Undo</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -442,35 +441,27 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       paddingVertical: Spacing.sm + 2,
     },
     hiddenContainer: {
-      opacity: 0.6,
-      paddingTop: Spacing.sm + Spacing.xs,
-      paddingBottom: Spacing.sm,
+      paddingTop: Spacing.md,
+      paddingBottom: Spacing.md,
     },
     hiddenContent: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingVertical: Spacing.sm,
-    },
-    hiddenLeftSection: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      justifyContent: 'center',
     },
     hiddenText: {
-      fontSize: 14,
+      fontSize: 13,
       color: theme.secondaryText,
-      fontStyle: 'italic',
     },
-    undoButton: {
-      paddingHorizontal: Spacing.md,
-      paddingVertical: Spacing.xs + 2,
-      backgroundColor: theme.accent,
-      borderRadius: 6,
+    hiddenDot: {
+      fontSize: 13,
+      color: theme.secondaryText,
+      opacity: 0.4,
     },
-    undoText: {
-      fontSize: 14,
+    undoLink: {
+      fontSize: 13,
       fontWeight: '600',
-      color: theme.background,
+      color: theme.accent,
     },
   }
 );
