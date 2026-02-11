@@ -221,6 +221,11 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
         </TouchableOpacity>
       </View>
 
+      {/* Context - scene-setting detail before the quote */}
+      {quote.context && !guessable ? (
+        <Text style={[styles.contextText, { color: randomPastel }]}>{quote.context}</Text>
+      ) : null}
+
       {/* Quote Content - Hero Element */}
       <View style={styles.contentContainer}>
         <Text style={styles.quoteContent}>&ldquo;{quote.text}&rdquo;</Text>
@@ -414,8 +419,13 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontStyle: 'italic',
     },
     contentContainer: {
-      marginBottom: Spacing.md + Spacing.xs,
+      marginBottom: Spacing.sm,
       paddingVertical: Spacing.sm,
+    },
+    contextText: {
+      fontSize: 13,
+      fontWeight: '500',
+      marginBottom: Spacing.xs,
     },
     quoteContent: {
       fontSize: 27,

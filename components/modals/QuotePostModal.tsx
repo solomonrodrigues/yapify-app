@@ -49,8 +49,10 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | { display_name: string; username: string; id: null } | null>(null);
   const [quoteText, setQuoteText] = useState("");
+  const [contextText, setContextText] = useState("");
   const [creatingQuote, setCreatingQuote] = useState(false);
   const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? "dark"];
   const styles = useThemedStyles(getStyles);
   const buttonScale = useSharedValue(1);
 
@@ -79,6 +81,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       setSearchResults([]);
       setSelectedUser(null);
       setQuoteText("");
+      setContextText("");
     }
   }, [visible]);
 
@@ -155,6 +158,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
 
       const quoteData: Partial<Quote> = {
         text: quoteText.trim(),
+        ...(contextText.trim() ? { context: contextText.trim() } : {}),
       };
 
       // Add quoted_user_id only if it's a real user
@@ -185,6 +189,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   const goBack = () => {
     setSelectedUser(null);
     setQuoteText("");
+    setContextText("");
   };
 
   const renderUserItem = ({ item }: { item: User }) => (
@@ -413,6 +418,30 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
           </Text>
         </View>
 
+        {/* Context (optional) */}
+        <View style={styles.contextContainer}>
+          <Text style={[styles.contextLabel, { color: colorScheme === 'dark' ? '#666' : '#999' }]}>
+            context <Text style={styles.optionalHint}>(optional)</Text>
+          </Text>
+          <TextInput
+            style={[
+              styles.contextInput,
+              {
+                color: colorScheme === 'dark' ? 'white' : 'black',
+                borderBottomColor: contextText.trim() ? theme.pastels.purple : (colorScheme === 'dark' ? '#222' : '#ddd'),
+              }
+            ]}
+            placeholder="What led to this quote?"
+            placeholderTextColor={colorScheme === 'dark' ? '#444' : '#bbb'}
+            value={contextText}
+            onChangeText={setContextText}
+            maxLength={150}
+          />
+          <Text style={[styles.contextHelp, { color: colorScheme === 'dark' ? '#555' : '#aaa' }]}>
+            Where it happened, what they were talking about, or anything that adds to the story
+          </Text>
+        </View>
+
         {/* Create Button */}
         <Animated.View style={animatedButtonStyle}>
           <TouchableOpacity
@@ -571,7 +600,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   },
   quoteContainer: {
     paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.xxl,
+    marginBottom: Spacing.md,
     flex: 1,
   },
   quotePrefix: {
@@ -594,7 +623,34 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   charCountContainer: {
     alignItems: 'flex-end',
     paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  contextContainer: {
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  contextLabel: {
+    fontSize: 14,
+    fontWeight: '300',
+    marginBottom: Spacing.xs,
+  },
+  optionalHint: {
+    fontSize: 12,
+    fontWeight: '300',
+    opacity: 0.5,
+  },
+  contextInput: {
+    fontSize: 16,
+    fontWeight: '300',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: 0,
+    borderBottomWidth: 1,
+  },
+  contextHelp: {
+    fontSize: 12,
+    fontWeight: '300',
+    marginTop: Spacing.xs + 2,
+    lineHeight: 16,
   },
   charCountText: {
     fontSize: 13,

@@ -49,4 +49,5 @@ export interface RegisterResponse {
 export interface CreateQuote {
   text: string;
   quoted_user_email: string;
+  context?: string | null;
 }
