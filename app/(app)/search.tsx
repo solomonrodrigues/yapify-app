@@ -7,7 +7,8 @@ import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { searchUsers } from "@/lib/api/friends";
 import { searchQuotes } from "@/lib/api/quotes";
-import { User, Quote } from "@/types/api";
+import { listRecentUsers, postRecentUserClick } from "@/lib/api/recents";
+import { User, Quote, MinimalUser } from "@/types/api";
 import { LegendList } from "@legendapp/list";
 import { useRouter } from "expo-router";
 import { debounce } from "lodash";
@@ -42,6 +43,7 @@ const SearchScreen = () => {
   const [loading, setLoading] = useState(false);
   const [yearFilter, setYearFilter] = useState<number | null>(null);
   const [monthFilter, setMonthFilter] = useState<number | null>(null);
+  const [recentUsers, setRecentUsers] = useState<MinimalUser[]>([]);
 
   // Modal states
   const [showYearPicker, setShowYearPicker] = useState(false);
@@ -80,10 +82,24 @@ const SearchScreen = () => {
   }, [debouncedSearch]);
 
   useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const users = await listRecentUsers(10);
+        if (!cancelled) setRecentUsers(users);
+      } catch (err) {
+        console.error("Failed to load recents", err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
     debouncedSearch(query, scope, yearFilter, monthFilter);
   }, [query, scope, yearFilter, monthFilter, debouncedSearch]);
 
-  const handlePressUser = (user: User) => {
+  const handlePressUser = (user: User | MinimalUser) => {
+    postRecentUserClick(user, query || undefined).catch(() => {});
     router.push({ pathname: "/user/[userID]", params: { userID: user.id } });
   };
 
@@ -107,7 +123,7 @@ const SearchScreen = () => {
   };
 
   /** Dedicated components for list items */
-  const UserItem = ({ user }: { user: User }) => (
+  const UserItem = ({ user }: { user: User | MinimalUser }) => (
     <TouchableOpacity style={styles.userCard} onPress={() => handlePressUser(user)}>
       <InitialsAvatar user={user} size={32} />
       <View style={{ marginLeft: 8 }}>
@@ -207,6 +223,15 @@ const SearchScreen = () => {
         {/* Results */}
         {loading ? (
           <ActivityIndicator size="large" style={{ marginTop: 40 }} />
+        ) : query.length === 0 && recentUsers.length > 0 ? (
+          <LegendList<MinimalUser>
+            data={recentUsers}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => <UserItem user={item} />}
+            ListHeaderComponent={() => (
+              <ThemedText style={styles.sectionHeader}>Recent</ThemedText>
+            )}
+          />
         ) : (
           <LegendList<User | Quote>
             data={scope === "users" ? userResults : quoteResults}
@@ -316,6 +341,14 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     mysteryText: {
       fontStyle: "italic",
       color: theme.secondaryText,
+    },
+    sectionHeader: {
+      fontSize: 13,
+      fontWeight: "600",
+      textTransform: "uppercase",
+      color: theme.secondaryText,
+      marginBottom: 8,
+      marginTop: 4,
     },
     emptyContainer: {
       alignItems: "center",
