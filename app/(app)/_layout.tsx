@@ -2,8 +2,10 @@
 import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
 import { Redirect, Stack, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { Platform, useColorScheme } from "react-native";
 import { HeaderBackButton } from "@react-navigation/elements";
+import { hasCompletedOnboarding } from "@/lib/utils/storage";
 
 export default function AppLayout() {
   const { isLoggedIn, isLoading } = useAuth();
@@ -11,6 +13,20 @@ export default function AppLayout() {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
   const router = useRouter();
+
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
+
+  // Check onboarding status once after auth is confirmed
+  useEffect(() => {
+    if (!isLoggedIn || isLoading) return;
+
+    hasCompletedOnboarding().then((completed) => {
+      if (!completed) {
+        router.replace('/onboarding');
+      }
+      setOnboardingChecked(true);
+    });
+  }, [isLoggedIn, isLoading]);
 
   // While auth state is being restored, don't render anything yet
   if (isLoading) return null;

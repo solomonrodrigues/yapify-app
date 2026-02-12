@@ -34,3 +34,19 @@ export const clearTokens = async () => {
   accessToken = null;
   await SecureStore.deleteItemAsync('refreshToken');
 };
+
+// Onboarding
+const ONBOARDING_KEY = 'onboardingComplete';
+
+export const markOnboardingComplete = async () => {
+  await SecureStore.setItemAsync(ONBOARDING_KEY, 'true');
+};
+
+export const hasCompletedOnboarding = async (): Promise<boolean> => {
+  try {
+    const value = await SecureStore.getItemAsync(ONBOARDING_KEY);
+    return value === 'true';
+  } catch {
+    return false;
+  }
+};
