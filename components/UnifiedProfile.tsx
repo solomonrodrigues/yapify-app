@@ -381,6 +381,8 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   const friendsCount = user?.friends_count ?? 0;
   const quotesPostedCount = user?.quotes_posted ?? 0;
   const quotesReceivedCount = user?.quotes_received ?? 0;
+  const currentStreak = user?.current_streak ?? 0;
+  const longestStreak = user?.longest_streak ?? 0;
 
   // Get user's profile color
   const userProfileColor = user?.profile_color
@@ -482,6 +484,26 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
               <ThemedText style={styles.statLabel}>Friends</ThemedText>
             </TouchableOpacity>
           </View>
+
+          {/* Streak Row */}
+          {(currentStreak > 0 || longestStreak > 0) && (
+            <View style={styles.streakRow}>
+              <View style={[styles.streakCard, { backgroundColor: hexToRgba(userProfileColor, 0.08), borderColor: hexToRgba(userProfileColor, 0.15) }]}>
+                <ThemedText style={styles.streakEmoji}>🔥</ThemedText>
+                <View>
+                  <ThemedText style={styles.streakValue}>{currentStreak}</ThemedText>
+                  <ThemedText style={styles.streakLabel}>Guess streak</ThemedText>
+                </View>
+              </View>
+              <View style={[styles.streakCard, { backgroundColor: hexToRgba(userProfileColor, 0.08), borderColor: hexToRgba(userProfileColor, 0.15) }]}>
+                <ThemedText style={styles.streakEmoji}>👑</ThemedText>
+                <View>
+                  <ThemedText style={styles.streakValue}>{longestStreak}</ThemedText>
+                  <ThemedText style={styles.streakLabel}>Best streak</ThemedText>
+                </View>
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Tabs */}
@@ -489,6 +511,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
       </View>
     );
   }, [user, isOwnProfile, friendship, quotesPostedCount, quotesReceivedCount, friendsCount,
+      currentStreak, longestStreak,
       styles, theme, avatarAnimatedStyle, handleHeaderLayout, handleAvatarPress,
       handleFriendshipChange, handleTabChange, handleOpenFriends, renderTabs]);
 
@@ -638,6 +661,34 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       marginTop: 4,
       color: theme.secondaryText,
       fontSize: 13,
+    },
+    streakRow: {
+      flexDirection: 'row',
+      paddingHorizontal: 16,
+      gap: 12,
+      marginBottom: 16,
+    },
+    streakCard: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 12,
+      borderRadius: 12,
+      borderWidth: 1,
+      gap: 10,
+    },
+    streakEmoji: {
+      fontSize: 20,
+    },
+    streakValue: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: theme.text,
+    },
+    streakLabel: {
+      fontSize: 12,
+      color: theme.secondaryText,
+      marginTop: 1,
     },
     tabsContainer: {
       flexDirection: 'row',
