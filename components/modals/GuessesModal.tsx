@@ -227,9 +227,6 @@ const GuessesModal: React.FC<GuessesModalProps> = ({
             <View style={styles.centerContainer}>
               <IconSymbol name="person.2" size={48} color={theme.secondaryText} />
               <ThemedText style={styles.emptyText}>No guesses yet</ThemedText>
-              <ThemedText style={styles.emptySubtext}>
-                Be the first to guess who said this!
-              </ThemedText>
             </View>
           ) : (
             <SectionList
@@ -413,12 +410,6 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontSize: 17,
       fontWeight: '600',
       color: theme.text,
-    },
-    emptySubtext: {
-      marginTop: 6,
-      fontSize: 14,
-      color: theme.secondaryText,
-      textAlign: 'center',
     },
     loadingFooter: {
       paddingVertical: 20,

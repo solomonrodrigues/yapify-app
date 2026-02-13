@@ -80,9 +80,11 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   const randomPastel = getPastelFromId(quote.id, theme);
   // Use can_guess (server determines if user can guess: not author, not quoted_user, hasn't guessed)
   const guessable = quote.can_guess && !guessMade;
-  // Show guess UI if user can guess or has already guessed (hides for author/quoted_user)
-  const showGuessButton = quote.can_guess || quote.has_guessed;
-  const hasGuessedAlready = guessMade || quote.has_guessed;
+  const hasGuessOptions = (quote.guess_options?.length ?? 0) > 1;
+  // Show guess UI if user can guess, has already guessed, or is the author viewing a guessable quote
+  const showGuessButton = quote.can_guess || quote.has_guessed || hasGuessOptions;
+  // Show "Guesses" list (not the game) if already guessed or can't guess but options exist (author)
+  const hasGuessedAlready = guessMade || quote.has_guessed || (!quote.can_guess && hasGuessOptions);
 
   const handleGuess = (userId?: number, skipped?: boolean) => {
     onGuess(quote.id, userId, skipped);
