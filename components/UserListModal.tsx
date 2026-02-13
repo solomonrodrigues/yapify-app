@@ -3,6 +3,7 @@ import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { SearchBar } from '@/components/SearchBar';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { PublicUser } from '@/types/api';
@@ -14,8 +15,10 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export type UserListFetcher = (params: {
@@ -46,6 +49,8 @@ export const UserListModal: React.FC<UserListModalProps> = ({
   emptyMessage = 'No users found',
 }) => {
   const styles = useThemedStyles(getStyles);
+  const colorScheme = useColorScheme() ?? 'dark';
+  const theme = Colors[colorScheme];
 
   const [users, setUsers] = useState<PublicUser[]>([]);
   const [nextUrl, setNextUrl] = useState<string | null>(null);
@@ -124,18 +129,21 @@ export const UserListModal: React.FC<UserListModalProps> = ({
     }
   };
 
-  const renderUserItem = ({ item }: { item: PublicUser }) => (
-    <TouchableOpacity
-      style={styles.userItem}
-      activeOpacity={0.7}
-      onPress={() => handleUserPress(item)}
-    >
-      <InitialsAvatar user={item} size={48} />
-      <View style={styles.userInfo}>
-        <ThemedText style={styles.userName}>{item.display_name}</ThemedText>
-        <ThemedText style={styles.userUsername}>@{item.username}</ThemedText>
-      </View>
-    </TouchableOpacity>
+  const renderUserItem = ({ item, index }: { item: PublicUser; index: number }) => (
+    <Animated.View entering={FadeInDown.delay(Math.min(index * 40, 300)).duration(300).springify()}>
+      <TouchableOpacity
+        style={styles.userItem}
+        activeOpacity={0.7}
+        onPress={() => handleUserPress(item)}
+      >
+        <InitialsAvatar user={item} size={44} />
+        <View style={styles.userInfo}>
+          <ThemedText style={styles.userName}>{item.display_name}</ThemedText>
+          <ThemedText style={styles.userUsername}>@{item.username}</ThemedText>
+        </View>
+        <IconSymbol name="chevron.right" size={14} color={theme.secondaryText} />
+      </TouchableOpacity>
+    </Animated.View>
   );
 
   const renderFooter = () => {
@@ -158,12 +166,28 @@ export const UserListModal: React.FC<UserListModalProps> = ({
     >
       <ThemedView style={styles.modalContainer}>
         <SafeAreaView edges={['top', 'bottom']} style={styles.modalSafeArea}>
+          {/* Header */}
           <View style={styles.modalHeader}>
-            <ThemedText type="title">{title}</ThemedText>
+            <View style={styles.headerCenter}>
+              <View style={styles.grabber} />
+              <ThemedText style={styles.headerTitle}>{title}</ThemedText>
+            </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <ThemedText style={styles.closeButtonText}>✕</ThemedText>
+              <View style={styles.closeButtonCircle}>
+                <IconSymbol name="xmark" size={12} color={theme.secondaryText} />
+              </View>
             </TouchableOpacity>
           </View>
+
+          {/* Count badge */}
+          {!loading && users.length > 0 && (
+            <View style={styles.countRow}>
+              <Text style={[styles.countText, { fontVariant: ['tabular-nums'] }]}>
+                {users.length}{hasMore ? '+' : ''} {title.toLowerCase()}
+              </Text>
+            </View>
+          )}
+
           {searchable && (
             <View style={styles.searchContainer}>
               <SearchBar
@@ -173,6 +197,7 @@ export const UserListModal: React.FC<UserListModalProps> = ({
               />
             </View>
           )}
+
           <LegendList
             data={users}
             keyExtractor={(item: PublicUser) => item.id.toString()}
@@ -191,6 +216,7 @@ export const UserListModal: React.FC<UserListModalProps> = ({
                 </View>
               ) : (
                 <View style={styles.emptyContainer}>
+                  <IconSymbol name="person.2" size={40} color={theme.border} />
                   <ThemedText style={styles.emptyText}>{emptyMessage}</ThemedText>
                 </View>
               )
@@ -211,58 +237,84 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       flex: 1,
     },
     modalHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: 18,
-      paddingLeft: 20,
-      paddingRight: 12,
-      borderBottomWidth: 1,
+      paddingTop: 10,
+      paddingBottom: 14,
+      paddingHorizontal: 20,
+      borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: theme.divider,
     },
-    closeButton: {
-      padding: 8,
-      marginLeft: 12,
+    headerCenter: {
+      alignItems: 'center',
     },
-    closeButtonText: {
-      fontSize: 28,
+    grabber: {
+      width: 36,
+      height: 5,
+      borderRadius: 3,
+      backgroundColor: theme.border,
+      marginBottom: 12,
+    },
+    headerTitle: {
+      fontSize: 17,
+      fontWeight: '600',
+      color: theme.text,
+    },
+    closeButton: {
+      position: 'absolute',
+      right: 16,
+      top: 28,
+    },
+    closeButtonCircle: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: theme.inputBackground,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    countRow: {
+      paddingHorizontal: 20,
+      paddingTop: 12,
+      paddingBottom: 4,
+    },
+    countText: {
+      fontSize: 13,
       color: theme.secondaryText,
-      fontWeight: '300',
-      lineHeight: 28,
     },
     searchContainer: {
       marginHorizontal: 16,
-      marginTop: 16,
-      marginBottom: 12,
+      marginTop: 12,
+      marginBottom: 4,
     },
     usersList: {
       paddingHorizontal: 16,
       paddingTop: 12,
       paddingBottom: 16,
+      gap: 6,
     },
     userItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: 14,
-      borderRadius: 12,
-      marginBottom: 10,
+      padding: 12,
+      borderRadius: 14,
       backgroundColor: theme.cardBackground,
+      borderCurve: 'continuous',
     },
     userInfo: {
-      marginLeft: 14,
+      marginLeft: 12,
       flex: 1,
     },
     userName: {
       fontSize: 16,
       fontWeight: '600',
       color: theme.text,
-      lineHeight: 22,
+      lineHeight: 21,
     },
     userUsername: {
-      fontSize: 14,
+      fontSize: 13,
       color: theme.secondaryText,
-      marginTop: 3,
-      lineHeight: 18,
+      marginTop: 2,
+      lineHeight: 17,
     },
     loadingFooter: {
       paddingVertical: 24,
@@ -277,11 +329,12 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       paddingVertical: 64,
       paddingHorizontal: 32,
       alignItems: 'center',
+      gap: 12,
     },
     emptyText: {
-      fontSize: 16,
+      fontSize: 15,
       color: theme.secondaryText,
       textAlign: 'center',
-      lineHeight: 24,
+      lineHeight: 22,
     },
   });

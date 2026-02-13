@@ -9,6 +9,7 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -116,18 +117,23 @@ const GuessesModal: React.FC<GuessesModalProps> = ({
     return result;
   }, [guesses]);
 
-  const renderGuessItem = ({ item }: { item: QuoteGuessListItem }) => {
+  const correctCount = guesses.filter((g) => g.correct === true).length;
+  const incorrectCount = guesses.filter((g) => g.correct === false).length;
+  const skippedCount = guesses.filter((g) => g.skipped).length;
+  const totalGuesses = guesses.length;
+
+  const renderGuessItem = ({ item, index }: { item: QuoteGuessListItem; index: number }) => {
     const isCorrect = item.correct === true;
     const isSkipped = item.skipped;
 
     return (
-      <TouchableOpacity
-        style={styles.guessItem}
-        activeOpacity={0.7}
-        onPress={() => onUserPress?.(item.user.id)}
-      >
-        <View style={styles.guessLeft}>
-          <InitialsAvatar user={item.user} size={44} />
+      <Animated.View entering={FadeInDown.delay(Math.min(index * 40, 300)).duration(300).springify()}>
+        <TouchableOpacity
+          style={styles.guessItem}
+          activeOpacity={0.7}
+          onPress={() => onUserPress?.(item.user.id)}
+        >
+          <InitialsAvatar user={item.user} size={42} />
           <View style={styles.guessInfo}>
             <ThemedText style={styles.guesserName}>{item.user.display_name}</ThemedText>
             <Text style={styles.guessDetail}>
@@ -141,23 +147,23 @@ const GuessesModal: React.FC<GuessesModalProps> = ({
               )}
             </Text>
           </View>
-        </View>
-        <View style={styles.guessRight}>
-          {isSkipped ? (
-            <View style={[styles.resultBadge, styles.resultBadgeSkipped]}>
-              <IconSymbol name="forward.fill" size={14} color={theme.secondaryText} />
-            </View>
-          ) : isCorrect ? (
-            <View style={[styles.resultBadge, styles.resultBadgeCorrect]}>
-              <IconSymbol name="checkmark" size={14} color="#fff" />
-            </View>
-          ) : (
-            <View style={[styles.resultBadge, styles.resultBadgeIncorrect]}>
-              <IconSymbol name="xmark" size={14} color="#fff" />
-            </View>
-          )}
-        </View>
-      </TouchableOpacity>
+          <View style={styles.guessRight}>
+            {isSkipped ? (
+              <View style={[styles.resultBadge, styles.resultBadgeSkipped]}>
+                <IconSymbol name="forward.fill" size={12} color={theme.secondaryText} />
+              </View>
+            ) : isCorrect ? (
+              <View style={[styles.resultBadge, styles.resultBadgeCorrect]}>
+                <IconSymbol name="checkmark" size={12} color="#fff" />
+              </View>
+            ) : (
+              <View style={[styles.resultBadge, styles.resultBadgeIncorrect]}>
+                <IconSymbol name="xmark" size={12} color="#fff" />
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
     );
   };
 
@@ -179,9 +185,6 @@ const GuessesModal: React.FC<GuessesModalProps> = ({
     );
   };
 
-  const correctCount = guesses.filter((g) => g.correct === true).length;
-  const totalGuesses = guesses.length;
-
   return (
     <Modal
       visible={visible}
@@ -193,28 +196,52 @@ const GuessesModal: React.FC<GuessesModalProps> = ({
         <SafeAreaView edges={['top', 'bottom']} style={styles.modalSafeArea}>
           {/* Header */}
           <View style={styles.modalHeader}>
-            <View style={styles.headerLeft}>
-              <ThemedText type="title">Guesses</ThemedText>
-              {totalGuesses > 0 && (
-                <Text style={styles.headerSubtitle}>
-                  {correctCount}/{totalGuesses} correct
-                </Text>
-              )}
+            <View style={styles.headerCenter}>
+              <View style={styles.grabber} />
+              <ThemedText style={styles.headerTitle}>Guesses</ThemedText>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <ThemedText style={styles.closeButtonText}>Done</ThemedText>
+              <View style={styles.closeButtonCircle}>
+                <IconSymbol name="xmark" size={12} color={theme.secondaryText} />
+              </View>
             </TouchableOpacity>
           </View>
 
           {/* Answer hint */}
           {quotedUser && (
-            <View style={styles.answerHint}>
-              <Text style={styles.answerHintLabel}>Answer:</Text>
-              <View style={styles.answerUser}>
-                <InitialsAvatar user={quotedUser} size={24} />
-                <Text style={styles.answerUserName}>{quotedUser.display_name}</Text>
+            <Animated.View entering={FadeIn.duration(300)}>
+              <View style={styles.answerHint}>
+                <InitialsAvatar user={quotedUser} size={28} />
+                <View style={styles.answerInfo}>
+                  <Text style={styles.answerHintLabel}>Answer</Text>
+                  <Text style={styles.answerUserName}>{quotedUser.display_name}</Text>
+                </View>
               </View>
-            </View>
+            </Animated.View>
+          )}
+
+          {/* Stats row */}
+          {totalGuesses > 0 && (
+            <Animated.View entering={FadeIn.delay(100).duration(300)}>
+              <View style={styles.statsRow}>
+                <View style={[styles.statPill, { backgroundColor: 'rgba(52, 199, 89, 0.12)' }]}>
+                  <IconSymbol name="checkmark" size={11} color="#34C759" />
+                  <Text style={[styles.statPillText, { color: '#34C759', fontVariant: ['tabular-nums'] }]}>{correctCount}</Text>
+                </View>
+                <View style={[styles.statPill, { backgroundColor: 'rgba(255, 107, 107, 0.12)' }]}>
+                  <IconSymbol name="xmark" size={11} color="#FF6B6B" />
+                  <Text style={[styles.statPillText, { color: '#FF6B6B', fontVariant: ['tabular-nums'] }]}>{incorrectCount}</Text>
+                </View>
+                {skippedCount > 0 && (
+                  <View style={[styles.statPill, { backgroundColor: theme.inputBackground }]}>
+                    <IconSymbol name="forward.fill" size={11} color={theme.secondaryText} />
+                    <Text style={[styles.statPillText, { color: theme.secondaryText, fontVariant: ['tabular-nums'] }]}>{skippedCount}</Text>
+                  </View>
+                )}
+                <View style={styles.statSpacer} />
+                <Text style={[styles.totalText, { fontVariant: ['tabular-nums'] }]}>{totalGuesses} total</Text>
+              </View>
+            </Animated.View>
           )}
 
           {/* Loading state */}
@@ -225,7 +252,7 @@ const GuessesModal: React.FC<GuessesModalProps> = ({
             </View>
           ) : guesses.length === 0 ? (
             <View style={styles.centerContainer}>
-              <IconSymbol name="person.2" size={48} color={theme.secondaryText} />
+              <IconSymbol name="person.2" size={40} color={theme.border} />
               <ThemedText style={styles.emptyText}>No guesses yet</ThemedText>
             </View>
           ) : (
@@ -259,64 +286,105 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       flex: 1,
     },
     modalHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: 16,
+      paddingTop: 10,
+      paddingBottom: 14,
       paddingHorizontal: 20,
-      borderBottomWidth: 1,
+      borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: theme.divider,
     },
-    headerLeft: {
-      flex: 1,
+    headerCenter: {
+      alignItems: 'center',
     },
-    headerSubtitle: {
-      fontSize: 13,
-      color: theme.secondaryText,
-      marginTop: 2,
+    grabber: {
+      width: 36,
+      height: 5,
+      borderRadius: 3,
+      backgroundColor: theme.border,
+      marginBottom: 12,
+    },
+    headerTitle: {
+      fontSize: 17,
+      fontWeight: '600',
+      color: theme.text,
     },
     closeButton: {
-      paddingVertical: 8,
-      paddingHorizontal: 4,
+      position: 'absolute',
+      right: 16,
+      top: 28,
     },
-    closeButtonText: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: theme.accent,
+    closeButtonCircle: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: theme.inputBackground,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     answerHint: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 20,
-      paddingVertical: 12,
+      marginHorizontal: 16,
+      marginTop: 14,
+      padding: 12,
+      borderRadius: 14,
       backgroundColor: theme.cardBackground,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.divider,
+      gap: 12,
+      borderCurve: 'continuous',
+    },
+    answerInfo: {
+      flex: 1,
     },
     answerHintLabel: {
-      fontSize: 14,
+      fontSize: 11,
+      fontWeight: '600',
       color: theme.secondaryText,
-      marginRight: 8,
-    },
-    answerUser: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
     answerUserName: {
-      fontSize: 14,
+      fontSize: 16,
       fontWeight: '600',
       color: theme.text,
+      marginTop: 1,
+    },
+    statsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      paddingBottom: 4,
+      gap: 8,
+    },
+    statPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 999,
+      gap: 4,
+    },
+    statPillText: {
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    statSpacer: {
+      flex: 1,
+    },
+    totalText: {
+      fontSize: 13,
+      color: theme.secondaryText,
     },
     listContent: {
       paddingHorizontal: 16,
       paddingBottom: 20,
+      gap: 6,
     },
     sectionHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingTop: 20,
-      paddingBottom: 12,
+      paddingTop: 16,
+      paddingBottom: 8,
       gap: 8,
     },
     sectionTitle: {
@@ -327,7 +395,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       letterSpacing: 0.5,
     },
     sectionCount: {
-      backgroundColor: theme.border,
+      backgroundColor: theme.inputBackground,
       paddingHorizontal: 8,
       paddingVertical: 2,
       borderRadius: 10,
@@ -340,16 +408,10 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     guessItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
       padding: 12,
-      borderRadius: 12,
-      marginBottom: 8,
+      borderRadius: 14,
       backgroundColor: theme.cardBackground,
-    },
-    guessLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flex: 1,
+      borderCurve: 'continuous',
     },
     guessInfo: {
       marginLeft: 12,
@@ -379,9 +441,9 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       marginLeft: 12,
     },
     resultBadge: {
-      width: 28,
-      height: 28,
-      borderRadius: 14,
+      width: 26,
+      height: 26,
+      borderRadius: 13,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -392,24 +454,23 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       backgroundColor: '#FF6B6B',
     },
     resultBadgeSkipped: {
-      backgroundColor: theme.border,
+      backgroundColor: theme.inputBackground,
     },
     centerContainer: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: 32,
+      gap: 12,
     },
     loadingText: {
-      marginTop: 16,
       fontSize: 15,
       color: theme.secondaryText,
     },
     emptyText: {
-      marginTop: 16,
-      fontSize: 17,
+      fontSize: 15,
       fontWeight: '600',
-      color: theme.text,
+      color: theme.secondaryText,
     },
     loadingFooter: {
       paddingVertical: 20,
