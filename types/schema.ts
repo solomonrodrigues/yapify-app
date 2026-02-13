@@ -708,7 +708,7 @@ export interface paths {
          */
         post: operations["recents_create"];
         /**
-         * Delete a recent search item
+         * Delete recent search items for a target
          * @description Get and create recent search items (users & quotes)
          */
         delete: operations["recents_destroy"];
@@ -2426,8 +2426,10 @@ export interface operations {
     recents_destroy: {
         parameters: {
             query: {
-                /** @description Item ID to delete */
-                id: number;
+                /** @description user | quote */
+                kind: string;
+                /** @description Target user or quote ID */
+                target_id: number;
             };
             header?: never;
             path?: never;
