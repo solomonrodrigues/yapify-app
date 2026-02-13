@@ -7,7 +7,7 @@ import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { searchUsers } from "@/lib/api/friends";
 import { searchQuotes } from "@/lib/api/quotes";
-import { listRecentUsers, postRecentUserClick } from "@/lib/api/recents";
+import { listRecentUsers, postRecentUserClick, deleteRecent } from "@/lib/api/recents";
 import { User, Quote, MinimalUser } from "@/types/api";
 import { LegendList } from "@legendapp/list";
 import { useRouter } from "expo-router";
@@ -100,11 +100,24 @@ const SearchScreen = () => {
 
   const handlePressUser = (user: User | MinimalUser) => {
     postRecentUserClick(user, query || undefined).catch(() => {});
+    // Optimistically upsert to top of recents
+    setRecentUsers((prev) => [
+      { id: user.id, username: user.username, display_name: user.display_name, profile_color: user.profile_color, quote_visibility: user.quote_visibility } as MinimalUser,
+      ...prev.filter((u) => u.id !== user.id),
+    ].slice(0, 10));
     router.push({ pathname: "/user/[userID]", params: { userID: user.id } });
   };
 
   const handlePressQuote = (quote: Quote) => {
     router.push({ pathname: "/[quoteID]", params: { quoteID: quote.id } });
+  };
+
+  const handleRemoveRecent = (user: MinimalUser) => {
+    setRecentUsers((prev) => prev.filter((u) => u.id !== user.id));
+    deleteRecent("user", user.id).catch(() => {
+      // Rollback on failure
+      setRecentUsers((prev) => [...prev, user]);
+    });
   };
 
   const highlightText = (text: string, term: string) => {
@@ -227,7 +240,22 @@ const SearchScreen = () => {
           <LegendList<MinimalUser>
             data={recentUsers}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => <UserItem user={item} />}
+            renderItem={({ item }) => (
+              <TouchableOpacity style={styles.userCard} onPress={() => handlePressUser(item)}>
+                <InitialsAvatar user={item} size={32} />
+                <View style={{ flex: 1, marginLeft: 8 }}>
+                  <ThemedText style={styles.displayName}>{item.display_name}</ThemedText>
+                  <ThemedText style={styles.username}>@{item.username}</ThemedText>
+                </View>
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => handleRemoveRecent(item)}
+                  hitSlop={8}
+                >
+                  <IconSymbol name="xmark" size={14} color={theme.secondaryText} />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            )}
             ListHeaderComponent={() => (
               <ThemedText style={styles.sectionHeader}>Recent</ThemedText>
             )}
@@ -341,6 +369,9 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     mysteryText: {
       fontStyle: "italic",
       color: theme.secondaryText,
+    },
+    removeButton: {
+      padding: 8,
     },
     sectionHeader: {
       fontSize: 13,

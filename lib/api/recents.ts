@@ -47,6 +47,11 @@ export const listRecentUsers = async (limit = 10): Promise<MinimalUser[]> => {
       .filter(Boolean);
 };
   
+/** Delete a recent search item by kind + target_id. */
+export const deleteRecent = async (kind: KindEnum, targetId: number): Promise<void> => {
+    await api.delete("/recents/", { params: { kind, target_id: targetId } });
+};
+
 /** Convenience: list only recent quotes. */
 export const listRecentQuotes = async (limit = 10) =>
     listRecents({ kind: "quote", limit });
