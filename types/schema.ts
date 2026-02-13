@@ -707,7 +707,11 @@ export interface paths {
          * @description Get and create recent search items (users & quotes)
          */
         post: operations["recents_create"];
-        delete?: never;
+        /**
+         * Delete a recent search item
+         * @description Get and create recent search items (users & quotes)
+         */
+        delete: operations["recents_destroy"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1084,6 +1088,8 @@ export interface components {
              *     * `extended` - Friends of Friends */
             quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
             profile_color?: components["schemas"]["ProfileColorEnum"];
+            current_streak?: number;
+            longest_streak?: number;
         };
         /**
          * @description * `RED` - Red
@@ -1116,6 +1122,8 @@ export interface components {
             readonly quotes_posted: number;
             /** @description Total quotes about this user */
             readonly quotes_received: number;
+            current_streak?: number;
+            longest_streak?: number;
             readonly recent_quotes_posted: components["schemas"]["Quote"][];
             readonly friendship: components["schemas"]["Friendship"] | null;
             readonly quotes_i_made_about_user: components["schemas"]["Quote"][];
@@ -1260,6 +1268,8 @@ export interface components {
              *     * `extended` - Friends of Friends */
             quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
             profile_color?: components["schemas"]["ProfileColorEnum"];
+            current_streak?: number;
+            longest_streak?: number;
         };
         /** @description Serializer for user registration */
         UserRegistration: {
@@ -2405,6 +2415,27 @@ export interface operations {
         };
         responses: {
             /** @description Updated */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    recents_destroy: {
+        parameters: {
+            query: {
+                /** @description Item ID to delete */
+                id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
             204: {
                 headers: {
                     [name: string]: unknown;
