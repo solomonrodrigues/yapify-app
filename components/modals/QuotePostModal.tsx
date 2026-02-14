@@ -9,19 +9,17 @@ import { getFriends, getRecentFriends, searchFriends } from "@/lib/api/friends";
 import { createQuote } from "@/lib/api/quotes";
 import { hexToRgba } from "@/lib/utils/style";
 import { Quote, User } from "@/types/api";
-import { LegendList } from "@legendapp/list";
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
 import {
-    Keyboard,
     KeyboardAvoidingView,
     Modal,
     Platform,
+    ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     useColorScheme,
     View,
 } from "react-native";
@@ -207,18 +205,17 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
 
   const renderSection = (title: string, data: User[]) => {
     if (data.length === 0) return null;
-    
+
     return (
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colorScheme === 'dark' ? '#666' : '#888' }]}>
           {title.toUpperCase()}
         </Text>
-        <LegendList
-          data={data}
-          keyExtractor={(item) => `${title}-${item.id}`}
-          renderItem={renderUserItem}
-          scrollEnabled={false}
-        />
+        {data.map((item) => (
+          <React.Fragment key={`${title}-${item.id}`}>
+            {renderUserItem({ item })}
+          </React.Fragment>
+        ))}
       </View>
     );
   };
@@ -232,7 +229,6 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
         presentationStyle="pageSheet"
         onRequestClose={onClose}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -274,8 +270,12 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
             </View>
         </View>
 
-        {/* Content */}
-        <View style={styles.content}>
+        {/* Content — ScrollView with keyboardShouldPersistTaps so user items are tappable through the keyboard */}
+        <ScrollView
+            style={styles.content}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+        >
             {loading ? (
             <View>
               {Array.from({ length: 3 }).map((_, i) => (
@@ -286,14 +286,15 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
             <View>
                 {/* Search Results */}
                 {searchResults.length > 0 && (
-                <LegendList
-                    data={searchResults}
-                    keyExtractor={(item) => `search-${item.id}`}
-                    renderItem={renderUserItem}
-                    style={styles.searchResults}
-                />
+                <View style={styles.searchResults}>
+                  {searchResults.map((item) => (
+                    <React.Fragment key={`search-${item.id}`}>
+                      {renderUserItem({ item })}
+                    </React.Fragment>
+                  ))}
+                </View>
                 )}
-                
+
                 {/* Custom Quote Option */}
                 {query.trim() && (
                 <TouchableOpacity
@@ -309,7 +310,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
                     </View>
                 </TouchableOpacity>
                 )}
-                
+
                 {searchResults.length === 0 && !query.trim() && (
                 <ThemedText style={styles.centerText}>No users found</ThemedText>
                 )}
@@ -326,7 +327,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
                 <>
                     {renderSection("Recent", recentUsers)}
                     {renderSection("Friends", friends)}
-                    
+
                     {recentUsers.length === 0 && friends.length === 0 && (
                     <ThemedText style={styles.centerText}>
                         Start typing to search for friends
@@ -336,9 +337,8 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
                 )}
             </View>
             )}
-        </View>
+        </ScrollView>
         </KeyboardAvoidingView>
-        </TouchableWithoutFeedback>
       </Modal>
     );
   }
@@ -350,7 +350,6 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       animationType="slide"
       presentationStyle="pageSheet"
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -368,97 +367,102 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Selected User */}
-        <View style={styles.selectedUserContainer}>
-          <View style={styles.selectedUser}>
-            {selectedUser.id ? (
-              <InitialsAvatar user={selectedUser as User} size={50} />
-            ) : (
-              <View style={styles.customUserIcon}>
-                <IconSymbol name="person" size={24} color="#fff" />
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentContainerStyle={styles.creationContent}
+        >
+          {/* Selected User */}
+          <View style={styles.selectedUserContainer}>
+            <View style={styles.selectedUser}>
+              {selectedUser.id ? (
+                <InitialsAvatar user={selectedUser as User} size={50} />
+              ) : (
+                <View style={styles.customUserIcon}>
+                  <IconSymbol name="person" size={24} color="#fff" />
+                </View>
+              )}
+              <View style={styles.userInfo}>
+                <ThemedText style={styles.selectedDisplayName}>{selectedUser.display_name}</ThemedText>
+                <ThemedText style={styles.selectedUsername}>
+                  {selectedUser.id ? `@${selectedUser.username}` : 'Custom name'}
+                </ThemedText>
               </View>
-            )}
-            <View style={styles.userInfo}>
-              <ThemedText style={styles.selectedDisplayName}>{selectedUser.display_name}</ThemedText>
-              <ThemedText style={styles.selectedUsername}>
-                {selectedUser.id ? `@${selectedUser.username}` : 'Custom name'}
-              </ThemedText>
             </View>
           </View>
-        </View>
 
-        {/* Quote Input */}
-        <View style={styles.quoteContainer}>
-          <Text style={[styles.quotePrefix, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-            &ldquo;{selectedUser.display_name}&rdquo; said...
-          </Text>
-          <View style={styles.quoteInputWrapper}>
+          {/* Quote Input */}
+          <View style={styles.quoteContainer}>
+            <Text style={[styles.quotePrefix, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+              &ldquo;{selectedUser.display_name}&rdquo; said...
+            </Text>
+            <View style={styles.quoteInputWrapper}>
+              <TextInput
+                style={[
+                  styles.quoteTextInput,
+                  {
+                    color: colorScheme === 'dark' ? 'white' : 'black',
+                    borderBottomColor: colorScheme === 'dark' ? '#333' : '#ccc',
+                  }
+                ]}
+                placeholder="What did they say?"
+                placeholderTextColor="#999"
+                value={quoteText}
+                onChangeText={setQuoteText}
+                multiline
+                autoFocus
+              />
+            </View>
+          </View>
+
+          {/* Character Count */}
+          <View style={styles.charCountContainer}>
+            <Text style={[styles.charCountText, { color: charCountColor }]}>
+              {quoteText.length}/{QUOTE_MAX_LENGTH}
+            </Text>
+          </View>
+
+          {/* Context (optional) */}
+          <View style={styles.contextContainer}>
+            <Text style={[styles.contextLabel, { color: colorScheme === 'dark' ? '#666' : '#999' }]}>
+              context <Text style={styles.optionalHint}>(optional)</Text>
+            </Text>
             <TextInput
               style={[
-                styles.quoteTextInput,
+                styles.contextInput,
                 {
                   color: colorScheme === 'dark' ? 'white' : 'black',
-                  borderBottomColor: colorScheme === 'dark' ? '#333' : '#ccc',
+                  borderBottomColor: contextText.trim() ? theme.pastels.purple : (colorScheme === 'dark' ? '#222' : '#ddd'),
                 }
               ]}
-              placeholder="What did they say?"
-              placeholderTextColor="#999"
-              value={quoteText}
-              onChangeText={setQuoteText}
-              multiline
-              autoFocus
+              placeholder="What led to this quote?"
+              placeholderTextColor={colorScheme === 'dark' ? '#444' : '#bbb'}
+              value={contextText}
+              onChangeText={setContextText}
+              maxLength={150}
             />
-          </View>
-        </View>
-
-        {/* Character Count */}
-        <View style={styles.charCountContainer}>
-          <Text style={[styles.charCountText, { color: charCountColor }]}>
-            {quoteText.length}/{QUOTE_MAX_LENGTH}
-          </Text>
-        </View>
-
-        {/* Context (optional) */}
-        <View style={styles.contextContainer}>
-          <Text style={[styles.contextLabel, { color: colorScheme === 'dark' ? '#666' : '#999' }]}>
-            context <Text style={styles.optionalHint}>(optional)</Text>
-          </Text>
-          <TextInput
-            style={[
-              styles.contextInput,
-              {
-                color: colorScheme === 'dark' ? 'white' : 'black',
-                borderBottomColor: contextText.trim() ? theme.pastels.purple : (colorScheme === 'dark' ? '#222' : '#ddd'),
-              }
-            ]}
-            placeholder="What led to this quote?"
-            placeholderTextColor={colorScheme === 'dark' ? '#444' : '#bbb'}
-            value={contextText}
-            onChangeText={setContextText}
-            maxLength={150}
-          />
-          <Text style={[styles.contextHelp, { color: colorScheme === 'dark' ? '#555' : '#aaa' }]}>
-            Where it happened, what they were talking about, or anything that adds to the story
-          </Text>
-        </View>
-
-        {/* Create Button */}
-        <Animated.View style={animatedButtonStyle}>
-          <TouchableOpacity
-            style={[styles.createButton, (!quoteText.trim() || creatingQuote || quoteText.length > QUOTE_MAX_LENGTH) && styles.createButtonDisabled]}
-            onPress={handleCreateQuote}
-            onPressIn={() => { buttonScale.value = withSpring(0.96, { damping: 15, stiffness: 300 }); }}
-            onPressOut={() => { buttonScale.value = withSpring(1, { damping: 12, stiffness: 200 }); }}
-            disabled={!quoteText.trim() || creatingQuote || quoteText.length > QUOTE_MAX_LENGTH}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.createButtonText}>
-              {creatingQuote ? 'Creating...' : 'Create Quote'}
+            <Text style={[styles.contextHelp, { color: colorScheme === 'dark' ? '#555' : '#aaa' }]}>
+              Where it happened, what they were talking about, or anything that adds to the story
             </Text>
-          </TouchableOpacity>
-        </Animated.View>
+          </View>
+
+          {/* Create Button */}
+          <Animated.View style={animatedButtonStyle}>
+            <TouchableOpacity
+              style={[styles.createButton, (!quoteText.trim() || creatingQuote || quoteText.length > QUOTE_MAX_LENGTH) && styles.createButtonDisabled]}
+              onPress={handleCreateQuote}
+              onPressIn={() => { buttonScale.value = withSpring(0.96, { damping: 15, stiffness: 300 }); }}
+              onPressOut={() => { buttonScale.value = withSpring(1, { damping: 12, stiffness: 200 }); }}
+              disabled={!quoteText.trim() || creatingQuote || quoteText.length > QUOTE_MAX_LENGTH}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.createButtonText}>
+                {creatingQuote ? 'Creating...' : 'Create Quote'}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </ScrollView>
       </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
     </Modal>
   );
 };
@@ -598,10 +602,12 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     fontSize: 14,
     opacity: 0.7,
   },
+  creationContent: {
+    flexGrow: 1,
+  },
   quoteContainer: {
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.md,
-    flex: 1,
   },
   quotePrefix: {
     fontSize: 20,
