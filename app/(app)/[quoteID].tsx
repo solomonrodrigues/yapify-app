@@ -431,7 +431,6 @@ const QuoteDetail: React.FC = () => {
                 borderColor={theme.accent}
                 highlightBgColor={theme.accent}
                 onPress={openGuessModal}
-                highlighted={true}
               />
             )
           )}

@@ -312,7 +312,6 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
               borderColor={theme.accent}
               highlightBgColor={theme.accent}
               onPress={openGuessModal}
-              highlighted={true}
               testID="guess-button"
             />
           )
