@@ -54,6 +54,7 @@ export default function QuoteActionsModal() {
     return {
       quote: selectedQuote,
       isSavedQuote,
+      isGuessable,
       showAuthor,
       showQuotedUser,
       isOwnQuote,
@@ -64,7 +65,7 @@ export default function QuoteActionsModal() {
   // If no quote is selected, don't render anything
   if (!selectedQuote || !quoteData) return null;
 
-  const { quote, isSavedQuote, showAuthor, showQuotedUser, isOwnQuote } = quoteData;
+  const { quote, isSavedQuote, isGuessable, showAuthor, showQuotedUser, isOwnQuote } = quoteData;
 
   const goToProfile = (userId: number) => {
     if (!userId) return;
@@ -285,7 +286,7 @@ export default function QuoteActionsModal() {
         </View>
       </View>
       {/* Hidden component for share-as-image */}
-      <ShareableQuote ref={shareRef} quote={quote} />
+      <ShareableQuote ref={shareRef} quote={quote} guessable={isGuessable} />
     </View>
   );
 }

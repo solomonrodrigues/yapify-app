@@ -1,7 +1,8 @@
-import { ProfileColorHexMap } from '@/constants/Colors';
-import { getInitials } from '@/lib/utils/user';
-import { MinimalUser, ProfileColorEnum, Quote } from '@/types/api';
+import { Colors, ProfileColorHexMap } from '@/constants/Colors';
+import { getPastelFromId } from '@/lib/utils/style';
+import { ProfileColorEnum, Quote } from '@/types/api';
 import * as Sharing from 'expo-sharing';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -9,18 +10,8 @@ import ViewShot from 'react-native-view-shot';
 
 interface ShareableQuoteProps {
   quote: Quote;
+  guessable?: boolean;
   onCapture?: () => void;
-}
-
-const AVATAR_SIZE = 36;
-
-function Avatar({ user }: { user: MinimalUser }) {
-  const bg = ProfileColorHexMap[user.profile_color as ProfileColorEnum] ?? '#9E9E9E';
-  return (
-    <View style={[styles.avatar, { backgroundColor: bg }]}>
-      <Text style={styles.avatarText}>{getInitials(user)}</Text>
-    </View>
-  );
 }
 
 /** Darken a hex colour by mixing it toward black. amt 0-1. */
@@ -36,7 +27,10 @@ function darken(hex: string, amt: number): string {
  * Hidden component that renders a styled quote card and captures it as an image for sharing.
  * Call the `share()` method via ref to trigger capture + share.
  */
-const ShareableQuoteInner: React.ForwardRefRenderFunction<{ share: () => Promise<void> }, ShareableQuoteProps> = ({ quote, onCapture }, ref) => {
+// Use dark theme for pastel colors in shareable images
+const SHARE_THEME = Colors.dark;
+
+const ShareableQuoteInner: React.ForwardRefRenderFunction<{ share: () => Promise<void> }, ShareableQuoteProps> = ({ quote, guessable, onCapture }, ref) => {
     const viewShotRef = useRef<ViewShot>(null);
 
     const share = useCallback(async () => {
@@ -59,9 +53,11 @@ const ShareableQuoteInner: React.ForwardRefRenderFunction<{ share: () => Promise
 
     React.useImperativeHandle(ref, () => ({ share }));
 
-    const quotedName = quote.quoted_user?.display_name || quote.quoted_name || 'Unknown';
-    const posterName = quote.author?.display_name || 'Someone';
-    const profileColor = ProfileColorHexMap[quote.quoted_user?.profile_color as ProfileColorEnum] ?? '#9E9E9E';
+    const quotedName = guessable ? '???' : (quote.quoted_user?.display_name || quote.quoted_name || 'Unknown');
+    const posterName = guessable ? '???' : (quote.author?.display_name || 'Someone');
+    const profileColor = guessable ? '#9E9E9E' : (ProfileColorHexMap[quote.quoted_user?.profile_color as ProfileColorEnum] ?? '#9E9E9E');
+    const pastel = getPastelFromId(quote.id, SHARE_THEME);
+    const gradientColors: [string, string] = [pastel, profileColor];
 
     return (
       <View style={styles.offscreen} collapsable={false}>
@@ -71,19 +67,32 @@ const ShareableQuoteInner: React.ForwardRefRenderFunction<{ share: () => Promise
         >
           {/* Outer coloured background */}
           <View style={[styles.outer, { backgroundColor: darken(profileColor, 0.45) }]}>
-            {/* Inner frosted card */}
+            {/* Card — mirrors FeedQuote structure */}
             <View style={styles.card}>
-              {/* Quote text */}
-              <Text style={styles.quoteText}>{quote.text}</Text>
-
-              {/* Attribution */}
-              <View style={styles.attribution}>
-                {quote.quoted_user && <Avatar user={quote.quoted_user} />}
-                <View>
-                  <Text style={styles.quotedName}>{quotedName}</Text>
-                  <Text style={styles.postedByText}>posted by {posterName}</Text>
-                </View>
+              {/* Gradient left strip */}
+              <View style={styles.gradientStrip}>
+                <LinearGradient
+                  colors={gradientColors}
+                  start={{ x: 0.5, y: 0 }}
+                  end={{ x: 0.5, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
               </View>
+
+              {/* Header: "X quoted Y" */}
+              <View style={styles.header}>
+                <Text style={styles.authorName}>{posterName}</Text>
+                <Text style={styles.headerText}> quoted </Text>
+                <Text style={styles.quotedName}>{quotedName}</Text>
+              </View>
+
+              {/* Context — hidden when guessable to avoid leaking clues */}
+              {quote.context && !guessable ? (
+                <Text style={[styles.contextText, { color: pastel }]}>{quote.context}</Text>
+              ) : null}
+
+              {/* Quote text */}
+              <Text style={styles.quoteText}>&ldquo;{quote.text}&rdquo;</Text>
             </View>
 
             {/* Branding */}
@@ -114,44 +123,53 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     backgroundColor: 'rgba(0, 0, 0, 0.45)',
-    borderRadius: 16,
-    padding: 28,
+    borderRadius: 14,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    overflow: 'hidden',
+  },
+  gradientStrip: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+    borderTopLeftRadius: 14,
+    borderBottomLeftRadius: 14,
+    overflow: 'hidden',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    marginBottom: 16,
+  },
+  authorName: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.5)',
+  },
+  headerText: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.5)',
+  },
+  quotedName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  contextText: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: 4,
   },
   quoteText: {
-    fontSize: 20,
-    lineHeight: 30,
+    fontSize: 22,
+    lineHeight: 32,
     color: '#fff',
     fontWeight: '500',
     letterSpacing: 0.2,
-    marginBottom: 24,
-  },
-  attribution: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  avatarText: {
-    fontFamily: 'Sansation',
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: AVATAR_SIZE * 0.45,
-  },
-  quotedName: {
-    fontSize: 15,
-    color: '#fff',
-    fontWeight: '600',
-  },
-  postedByText: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.5)',
-    marginTop: 2,
   },
   brandText: {
     fontSize: 12,
