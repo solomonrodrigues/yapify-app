@@ -159,8 +159,8 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
     );
   }
 
-  const profileColor = quote.quoted_user
-    ? ProfileColorHexMap[quote.quoted_user.profile_color]
+  const profileColor = guessable ? null
+    : quote.quoted_user ? ProfileColorHexMap[quote.quoted_user.profile_color]
     : null;
   const gradientColors: [string, string] = [
     randomPastel,

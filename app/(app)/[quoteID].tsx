@@ -235,8 +235,8 @@ const QuoteDetail: React.FC = () => {
   const showGuessButton = quote.can_guess || quote.has_guessed;
   const hasGuessedAlready = guessMade || quote.has_guessed;
 
-  const profileColor = quote.quoted_user
-    ? ProfileColorHexMap[quote.quoted_user.profile_color]
+  const profileColor = guessable ? null
+    : quote.quoted_user ? ProfileColorHexMap[quote.quoted_user.profile_color]
     : null;
   const gradientColors: [string, string, string] = [
     randomPastel,
