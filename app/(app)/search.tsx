@@ -240,6 +240,8 @@ const SearchScreen = () => {
           <LegendList<MinimalUser>
             data={recentUsers}
             keyExtractor={(item) => item.id.toString()}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
             renderItem={({ item }) => (
               <TouchableOpacity style={styles.userCard} onPress={() => handlePressUser(item)}>
                 <InitialsAvatar user={item} size={32} />
@@ -264,6 +266,8 @@ const SearchScreen = () => {
           <LegendList<User | Quote>
             data={scope === "users" ? userResults : quoteResults}
             keyExtractor={(item) => item.id.toString()}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
             renderItem={({ item }) => (scope === "users" ? <UserItem user={item as User} /> : <QuoteItem quote={item as Quote} />)}
             ListEmptyComponent={() => (
               <View style={styles.emptyContainer}>
