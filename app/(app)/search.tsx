@@ -156,24 +156,15 @@ const SearchScreen = () => {
     return (
       <TouchableOpacity style={styles.quoteCard} onPress={() => handlePressQuote(quote)}>
         <View style={styles.quoteHeader}>
-          {isGuessable ? (
-            <View style={styles.mysteryAuthor}>
-              <IconSymbol name="person.fill.questionmark" size={32} color={theme.secondaryText} />
-            </View>
-          ) : (
-            <InitialsAvatar user={quote.author} size={32} />
-          )}
+          <InitialsAvatar user={isGuessable ? { display_name: '?', profile_color: 'GREY' } : quote.author} size={32} />
           <View style={{ marginLeft: 8 }}>
-            <ThemedText style={[styles.displayName, isGuessable && styles.mysteryText]}>
-              {isGuessable ? "???" : quote.author.display_name}
+            <ThemedText style={styles.displayName}>
+              {isGuessable ? "??? quoted ???" : `${quote.author.display_name} quoted ${quote.quoted_user?.display_name ?? quote.quoted_name ?? 'someone'}`}
             </ThemedText>
-            <ThemedText style={[styles.username, isGuessable && styles.mysteryText]}>
-              {isGuessable ? "Mystery author" : `@${quote.author.username}`}
-            </ThemedText>
+            <ThemedText style={styles.quoteDate}>{timeAgo(quote.created_at)}</ThemedText>
           </View>
         </View>
         <ThemedText style={styles.quoteText}>{highlightText(quote.text, query)}</ThemedText>
-        <ThemedText style={styles.quoteDate}>{timeAgo(quote.created_at)}</ThemedText>
       </TouchableOpacity>
     );
   };
@@ -361,19 +352,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     quoteHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
     quoteText: { fontSize: 15, lineHeight: 22 },
-    quoteDate: { fontSize: 12, color: theme.secondaryText, marginTop: 6 },
-    mysteryAuthor: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      backgroundColor: theme.inputBackground,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    mysteryText: {
-      fontStyle: "italic",
-      color: theme.secondaryText,
-    },
+    quoteDate: { fontSize: 12, color: theme.secondaryText },
     removeButton: {
       padding: 8,
     },
