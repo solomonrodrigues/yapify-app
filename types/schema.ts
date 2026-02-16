@@ -679,7 +679,11 @@ export interface paths {
             cookie?: never;
         };
         /** @description Search quotes by text, quoted user username, display name, or quoted_name.
-         *     Supports optional filtering by year and month. */
+         *     Supports optional filtering by year and month.
+         *
+         *     For quotes that are guessable by the requesting user (not yet guessed,
+         *     user is not the author, and guess options exist), only text matches are
+         *     returned to avoid leaking attribution through search. */
         get: operations["quotes_search_list"];
         put?: never;
         post?: never;
@@ -920,11 +924,6 @@ export interface components {
             readonly id: number;
             readonly username: string;
             readonly display_name: string;
-            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
-             *
-             *     * `mutuals` - Mutual Friends Only
-             *     * `extended` - Friends of Friends */
-            readonly quote_visibility: components["schemas"]["QuoteVisibilityEnum"];
             readonly profile_color: components["schemas"]["ProfileColorEnum"];
         };
         /** @description Serializer for notifications */
@@ -981,7 +980,7 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["Notification"][];
         };
-        PaginatedPublicUserList: {
+        PaginatedPublicUserListList: {
             /** @example 123 */
             count: number;
             /**
@@ -994,7 +993,7 @@ export interface components {
              * @example http://api.example.org/accounts/?page=2
              */
             previous?: string | null;
-            results: components["schemas"]["PublicUser"][];
+            results: components["schemas"]["PublicUserList"][];
         };
         PaginatedQuoteGuessListItemList: {
             /** @example 123 */
@@ -1082,11 +1081,6 @@ export interface components {
             readonly friends_count?: string;
             readonly quotes_posted?: string;
             readonly quotes_received?: string;
-            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
-             *
-             *     * `mutuals` - Mutual Friends Only
-             *     * `extended` - Friends of Friends */
-            quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
             profile_color?: components["schemas"]["ProfileColorEnum"];
             current_streak?: number;
             longest_streak?: number;
@@ -1126,7 +1120,24 @@ export interface components {
             longest_streak?: number;
             readonly recent_quotes_posted: components["schemas"]["Quote"][];
             readonly friendship: components["schemas"]["Friendship"] | null;
-            readonly quotes_i_made_about_user: components["schemas"]["Quote"][];
+        };
+        /** @description Lighter serializer for user list views — excludes expensive nested quotes. */
+        PublicUserList: {
+            readonly id: number;
+            readonly username: string;
+            readonly display_name: string;
+            readonly profile_color: string;
+            /** Format: date-time */
+            readonly date_joined: string;
+            /** @description Total friends this user has */
+            readonly friends_count: number;
+            /** @description Total quotes this user has posted */
+            readonly quotes_posted: number;
+            /** @description Total quotes about this user */
+            readonly quotes_received: number;
+            current_streak?: number;
+            longest_streak?: number;
+            readonly friendship: components["schemas"]["Friendship"] | null;
         };
         /** @description Serializer for quotes */
         Quote: {
@@ -1185,12 +1196,6 @@ export interface components {
             /** @description Return friendship status between requesting user and the guesser */
             readonly friendship_status: string | null;
         };
-        /**
-         * @description * `mutuals` - Mutual Friends Only
-         *     * `extended` - Friends of Friends
-         * @enum {string}
-         */
-        QuoteVisibilityEnum: "mutuals" | "extended";
         /** @description Serializer for quote witnesses */
         QuoteWitness: {
             readonly id: number;
@@ -1262,11 +1267,6 @@ export interface components {
             readonly friends_count: string;
             readonly quotes_posted: string;
             readonly quotes_received: string;
-            /** @description Controls who can see your identity when you are quoted by someone else. Mutual Friends Only = only people who are friends with both you and the poster. Friends of Friends = also visible to the poster’s friends who may not know you.
-             *
-             *     * `mutuals` - Mutual Friends Only
-             *     * `extended` - Friends of Friends */
-            quote_visibility?: components["schemas"]["QuoteVisibilityEnum"];
             profile_color?: components["schemas"]["ProfileColorEnum"];
             current_streak?: number;
             longest_streak?: number;
@@ -1480,7 +1480,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
                 };
             };
         };
@@ -1562,7 +1562,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
                 };
             };
         };
@@ -2075,7 +2075,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
                 };
             };
         };
@@ -2244,7 +2244,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
                 };
             };
         };
@@ -2354,8 +2354,6 @@ export interface operations {
                 page?: number;
                 /** @description Number of results to return per page. */
                 page_size?: number;
-                /** @description A search term. */
-                search?: string;
                 /** @description Optional filter by creation year. */
                 year?: number;
             };
@@ -2563,7 +2561,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
                 };
             };
         };
@@ -2702,7 +2700,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
                 };
             };
         };
@@ -2728,7 +2726,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
                 };
             };
         };
