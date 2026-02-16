@@ -17,7 +17,6 @@ export type ProfileColorEnum = components["schemas"]["ProfileColorEnum"];
 export type PublicUser = components["schemas"]["PublicUser"];
 export type Quote = components["schemas"]["Quote"];
 export type QuoteGuess = components["schemas"]["QuoteGuess"];
-export type QuoteVisibilityEnum = components["schemas"]["QuoteVisibilityEnum"];
 export type QuoteWitness = components["schemas"]["QuoteWitness"];
 export type StatusEnum = components["schemas"]["StatusEnum"];
 export type TokenRefresh = components["schemas"]["TokenRefresh"];

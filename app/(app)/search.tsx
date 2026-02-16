@@ -102,7 +102,7 @@ const SearchScreen = () => {
     postRecentUserClick(user, query || undefined).catch(() => {});
     // Optimistically upsert to top of recents
     setRecentUsers((prev) => [
-      { id: user.id, username: user.username, display_name: user.display_name, profile_color: user.profile_color, quote_visibility: user.quote_visibility } as MinimalUser,
+      { id: user.id, username: user.username, display_name: user.display_name, profile_color: user.profile_color } as MinimalUser,
       ...prev.filter((u) => u.id !== user.id),
     ].slice(0, 10));
     router.push({ pathname: "/user/[userID]", params: { userID: user.id } });
