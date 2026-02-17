@@ -66,7 +66,7 @@ export default function EmailVerificationScreen() {
         [
           {
             text: "OK",
-            onPress: () => router.replace("/auth")
+            onPress: () => router.replace("/(auth)")
           }
         ]
       );

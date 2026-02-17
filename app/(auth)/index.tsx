@@ -180,7 +180,7 @@ export default function AuthScreen() {
         password_confirm: passwordConfirm,
       });
       router.push(
-        `/auth/email-verification?email=${encodeURIComponent(email)}`
+        `/(auth)/email-verification?email=${encodeURIComponent(email)}`
       );
     } catch (err: any) {
       Alert.alert(
