@@ -1,9 +1,19 @@
-import { PaginatedPublicUserList, PublicUser, User } from '../../types/api';
+import { PaginatedPublicUserList, PaginatedPublicUserListList, PublicUser, User } from '../../types/api';
 import api from './client';
 
-export const searchUsers = async (query: string): Promise<User[]> => {
-    const res = await api.get<{ results: User[] }>(`/users/search/?search=${encodeURIComponent(query)}`);
-    return res.data.results || [];
+export const searchUsers = async (
+    query: string,
+    url?: string | null,
+): Promise<PaginatedPublicUserListList> => {
+    if (!query.trim()) return { count: 0, results: [] };
+
+    if (url) {
+        const res = await api.get<PaginatedPublicUserListList>(url);
+        return res.data;
+    }
+
+    const res = await api.get<PaginatedPublicUserListList>(`/users/search/?search=${encodeURIComponent(query)}`);
+    return res.data;
 };
 
 export const getUser = async (userId: number): Promise<PublicUser> => {

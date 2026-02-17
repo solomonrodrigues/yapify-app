@@ -37,16 +37,22 @@ export const getQuotes = async (
 export const searchQuotes = async (
   query: string,
   year?: number,
-  month?: number
-): Promise<Quote[]> => {
-  if (!query.trim()) return [];
+  month?: number,
+  url?: string | null,
+): Promise<PaginatedQuoteList> => {
+  if (!query.trim()) return { count: 0, results: [] };
+
+  if (url) {
+    const res = await api.get<PaginatedQuoteList>(url);
+    return res.data;
+  }
 
   const params: Record<string, any> = { search: query };
   if (year) params.year = year;
   if (month) params.month = month;
 
-  const res = await api.get<{ results: Quote[] }>("/quotes/search/", { params });
-  return res.data.results || [];
+  const res = await api.get<PaginatedQuoteList>("/quotes/search/", { params });
+  return res.data;
 };
 
 export const createQuote = async (quoteData: Partial<Quote>): Promise<Quote> => {

@@ -8,11 +8,11 @@ import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { searchUsers } from "@/lib/api/friends";
 import { searchQuotes } from "@/lib/api/quotes";
 import { listRecentUsers, postRecentUserClick, deleteRecent } from "@/lib/api/recents";
-import { User, Quote, MinimalUser } from "@/types/api";
+import { Quote, MinimalUser, PublicUserList } from "@/types/api";
 import { LegendList } from "@legendapp/list";
 import { useRouter } from "expo-router";
 import { debounce } from "lodash";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -38,12 +38,17 @@ const SearchScreen = () => {
 
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState<SearchScope>("quotes");
-  const [userResults, setUserResults] = useState<User[]>([]);
+  const [userResults, setUserResults] = useState<PublicUserList[]>([]);
   const [quoteResults, setQuoteResults] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(false);
   const [yearFilter, setYearFilter] = useState<number | null>(null);
   const [monthFilter, setMonthFilter] = useState<number | null>(null);
   const [recentUsers, setRecentUsers] = useState<MinimalUser[]>([]);
+
+  // Pagination state
+  const [quoteNextPage, setQuoteNextPage] = useState<string | null>(null);
+  const [userNextPage, setUserNextPage] = useState<string | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Modal states
   const [showYearPicker, setShowYearPicker] = useState(false);
@@ -55,27 +60,55 @@ const SearchScreen = () => {
       if (text.length === 0) {
         setUserResults([]);
         setQuoteResults([]);
+        setQuoteNextPage(null);
+        setUserNextPage(null);
         return;
       }
 
       setLoading(true);
       try {
         if (scope === "users") {
-          const users = await searchUsers(text);
-          setUserResults(users);
+          const response = await searchUsers(text);
+          setUserResults(response.results);
+          setUserNextPage(response.next ?? null);
         } else {
-          const quotes = await searchQuotes(text, year ?? undefined, month ?? undefined);
-          setQuoteResults(quotes);
+          const response = await searchQuotes(text, year ?? undefined, month ?? undefined);
+          setQuoteResults(response.results);
+          setQuoteNextPage(response.next ?? null);
         }
       } catch (err) {
         console.error("Search error", err);
         setUserResults([]);
         setQuoteResults([]);
+        setQuoteNextPage(null);
+        setUserNextPage(null);
       } finally {
         setLoading(false);
       }
     }, 300)
   ).current;
+
+  const loadMore = useCallback(async () => {
+    const nextPage = scope === "quotes" ? quoteNextPage : userNextPage;
+    if (!nextPage || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      if (scope === "quotes") {
+        const response = await searchQuotes(query, yearFilter ?? undefined, monthFilter ?? undefined, nextPage);
+        setQuoteResults((prev) => [...prev, ...response.results]);
+        setQuoteNextPage(response.next ?? null);
+      } else {
+        const response = await searchUsers(query, nextPage);
+        setUserResults((prev) => [...prev, ...response.results]);
+        setUserNextPage(response.next ?? null);
+      }
+    } catch (err) {
+      console.error("Load more error", err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [scope, quoteNextPage, userNextPage, isLoadingMore, query, yearFilter, monthFilter]);
 
   useEffect(() => {
     return () => debouncedSearch.cancel();
@@ -98,7 +131,7 @@ const SearchScreen = () => {
     debouncedSearch(query, scope, yearFilter, monthFilter);
   }, [query, scope, yearFilter, monthFilter, debouncedSearch]);
 
-  const handlePressUser = (user: User | MinimalUser) => {
+  const handlePressUser = (user: PublicUserList | MinimalUser) => {
     postRecentUserClick(user, query || undefined).catch(() => {});
     // Optimistically upsert to top of recents
     setRecentUsers((prev) => [
@@ -136,7 +169,7 @@ const SearchScreen = () => {
   };
 
   /** Dedicated components for list items */
-  const UserItem = ({ user }: { user: User | MinimalUser }) => (
+  const UserItem = ({ user }: { user: PublicUserList | MinimalUser }) => (
     <TouchableOpacity style={styles.userCard} onPress={() => handlePressUser(user)}>
       <InitialsAvatar user={user} size={32} />
       <View style={{ marginLeft: 8 }}>
@@ -254,12 +287,19 @@ const SearchScreen = () => {
             )}
           />
         ) : (
-          <LegendList<User | Quote>
+          <LegendList<PublicUserList | Quote>
             data={scope === "users" ? userResults : quoteResults}
             keyExtractor={(item) => item.id.toString()}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
-            renderItem={({ item }) => (scope === "users" ? <UserItem user={item as User} /> : <QuoteItem quote={item as Quote} />)}
+            renderItem={({ item }) => (scope === "users" ? <UserItem user={item as PublicUserList} /> : <QuoteItem quote={item as Quote} />)}
+            onEndReached={loadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isLoadingMore ? (
+                <ActivityIndicator size="small" style={{ paddingVertical: 16 }} />
+              ) : null
+            }
             ListEmptyComponent={() => (
               <View style={styles.emptyContainer}>
                 <ThemedText style={styles.emptyText}>
