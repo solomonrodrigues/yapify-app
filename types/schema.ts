@@ -422,6 +422,24 @@ export interface paths {
         patch: operations["quotes_partial_update"];
         trace?: never;
     };
+    "/api/quotes/{quote_id}/assign-user/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Allow the author of a quote to replace a quoted_name with a quoted_user.
+         *     The quoted_user must be a friend of the author. */
+        post: operations["quotes_assign_user_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/quotes/{quote_id}/guesses/": {
         parameters: {
             query?: never;
@@ -1572,6 +1590,8 @@ export interface operations {
             query?: {
                 /** @description A page number within the paginated result set. */
                 page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
             };
             header?: never;
             path?: never;
@@ -1644,6 +1664,8 @@ export interface operations {
             query?: {
                 /** @description A page number within the paginated result set. */
                 page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
             };
             header?: never;
             path?: never;
@@ -1831,6 +1853,8 @@ export interface operations {
             query?: {
                 /** @description A page number within the paginated result set. */
                 page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
             };
             header?: never;
             path?: never;
@@ -1965,6 +1989,26 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Quote"];
                 };
+            };
+        };
+    };
+    quotes_assign_user_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quote_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
