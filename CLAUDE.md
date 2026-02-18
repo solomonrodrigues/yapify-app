@@ -2,6 +2,26 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Product Vision
+
+Yapify is an inside jokes and funny quotes tracker for friend groups. Users capture memorable things their friends say before they forget them, and a quote attribution guessing game adds engagement on top. Think of it as a shared memory bank for your friend group's best moments.
+
+**Target audience:** Close friend groups who want to preserve and relive their funniest moments together.
+
+**Design philosophy:** Minimal and clean with touches of playfulness and polish. Content-first — the quotes are the star, everything else stays out of the way.
+
+## Project Status
+
+- **Stage:** MVP complete — actively adding features, polishing UI, fixing bugs, and reassessing before beta/launch
+- **Developer:** Solo dev
+- **Backend:** Custom Django REST Framework API (separate repo)
+- **Frontend:** React Native with Expo (this repo)
+
+### Known Areas for Improvement
+- Auth flow needs refinement
+- API error handling could be more consistent and user-friendly
+- Optimistic updates should be applied more broadly to make everything feel responsive
+
 ## Project Overview
 
 Yapify is a React Native mobile app built with Expo that allows users to share, discover, and interact with quotes. The app features authentication, social interactions (likes, witnesses, guessing who said the quote), and a feed-based UI.
@@ -143,6 +163,20 @@ The app uses a reusable feed hook pattern:
 - Pastel colors use a **djb2 hash** on the quote ID for even distribution across a 10-color palette
 - When the quoted user is external (no profile), the strip falls back to a solid hash color
 
+## Workflow Preferences
+
+### How to Work
+- **Bias toward action** — move fast, make decisions, implement. Don't over-ask.
+- **Plan before big changes** — use plan mode for anything architectural or multi-file. For smaller tasks, just do it.
+- **Never auto-commit** — only commit when explicitly asked.
+- **Don't add new dependencies** without confirming first.
+
+### Code Style
+- **Strict TypeScript** — no `any`, proper typing everywhere. Leverage the auto-generated types from `types/schema.ts`.
+- **Follow existing patterns** — don't introduce new patterns or abstractions without good reason. Look at how similar things are already done in the codebase.
+- **DRY** — extract shared logic into reusable hooks/utilities. Don't duplicate code across components.
+- **Optimistic updates** — any user-facing action that hits the API should feel instant. Use optimistic updates with rollback on error.
+
 ## Key Patterns to Follow
 
 ### API Calls
@@ -154,6 +188,12 @@ Types are auto-generated from OpenAPI spec in `types/schema.ts`. Additional manu
 ### Error Handling
 Use `getErrorMessage()` from `lib/utils/error.ts` to safely extract error messages from unknown error types (Axios errors, Error objects, strings, etc.).
 
+**Feed/list screen load errors** follow a two-tier pattern:
+1. **First load failure** (`!hasLoadedOnce && error`): Show a centered error message with a Retry button. Never show a misleading empty state (e.g. "No saved quotes yet") when the real problem is a network error.
+2. **Subsequent failures** (refresh or pagination, `hasLoadedOnce && error`): Show a toast (`react-native-toast-message`) and keep existing data visible. Use a `prevErrorRef` to avoid duplicate toasts. Never render inline error banners over content.
+
+Reference implementations: `saved-quotes.tsx`, `hidden-quotes.tsx`. This pattern is not yet applied consistently across all screens — when touching a screen that loads data, check and align it.
+
 ### Quote Actions
 When modifying quote state (like, witness, save, etc.), always use optimistic updates in the feed hook with rollback logic on API failure. This ensures instant UI feedback.
 
@@ -162,6 +202,8 @@ The app uses Expo Router's modal presentation for overlays. The `QuoteActionsMod
 
 ### Navigation
 Use `useRouter()` from `expo-router` for programmatic navigation. Use typed routes from `expo-router/types` for type-safe navigation.
+
+**Quote detail screen** (`[quoteID].tsx`) is only reached via search results or quote-related notifications — tapping a feed card does NOT navigate to the detail screen. All quote interactions (like, witness, guess, etc.) happen directly on the feed card.
 
 ## Important Files
 

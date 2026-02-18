@@ -1,6 +1,6 @@
 // app/(app)/saved-quotes.tsx
 import { LegendList } from "@legendapp/list";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -10,6 +10,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 import FeedQuote from "@/components/FeedQuote";
 import { ThemedText } from "@/components/ThemedText";
@@ -26,6 +27,7 @@ const SavedQuotesScreen = () => {
     refreshing,
     isLoadingMore,
     hasMore,
+    hasLoadedOnce,
     loadMore,
     loadQuotes,
     refreshQuotes,
@@ -48,6 +50,14 @@ const SavedQuotesScreen = () => {
     loadQuotes();
   }, [loadQuotes]);
 
+  // Show toast for errors that occur after initial load (refresh/loadMore failures)
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current && hasLoadedOnce) {
+      Toast.show({ type: "error", text1: "Couldn't load saved quotes" });
+    }
+    prevErrorRef.current = error;
+  }, [error, hasLoadedOnce]);
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;
@@ -70,9 +80,19 @@ const SavedQuotesScreen = () => {
     return (
       <ThemedView style={styles.centerContainer}>
         <ActivityIndicator size="large" />
-        <ThemedText style={styles.loadingText}>
-          {error ? "Unable to load saved quotes" : "Loading saved quotes..."}
-        </ThemedText>
+        <ThemedText style={styles.loadingText}>Loading saved quotes...</ThemedText>
+      </ThemedView>
+    );
+  }
+
+  // Failed to load on first attempt — show error with retry
+  if (!hasLoadedOnce && error) {
+    return (
+      <ThemedView style={styles.centerContainer}>
+        <ThemedText style={styles.emptyText}>Unable to load saved quotes</ThemedText>
+        <TouchableOpacity style={styles.retryButton} onPress={() => loadQuotes()}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
       </ThemedView>
     );
   }
@@ -96,8 +116,6 @@ const SavedQuotesScreen = () => {
           paddingBottom: insets.bottom,
         }}
       >
-        {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
-
         <LegendList
           data={quotes}
           keyExtractor={(item: Quote) => item.id.toString()}
@@ -166,11 +184,6 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       marginTop: 8,
       fontSize: 14,
       color: theme.secondaryText,
-    },
-    errorText: {
-      paddingHorizontal: 16,
-      paddingTop: 12,
-      color: theme.destructive,
     },
   });
 

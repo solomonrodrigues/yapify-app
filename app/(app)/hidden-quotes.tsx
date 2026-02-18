@@ -1,6 +1,6 @@
 // app/(app)/hidden-quotes.tsx
 import { LegendList } from "@legendapp/list";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -10,6 +10,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 import HiddenQuote from "@/components/HiddenQuote";
 import { ThemedText } from "@/components/ThemedText";
@@ -26,6 +27,7 @@ const HiddenQuotesScreen = () => {
     refreshing,
     isLoadingMore,
     hasMore,
+    hasLoadedOnce,
     loadMore,
     loadQuotes,
     refreshQuotes,
@@ -42,6 +44,15 @@ const HiddenQuotesScreen = () => {
   useEffect(() => {
     loadQuotes();
   }, [loadQuotes]);
+
+  // Show toast for errors that occur after initial load (refresh/loadMore failures)
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current && hasLoadedOnce) {
+      Toast.show({ type: "error", text1: "Couldn't load hidden quotes" });
+    }
+    prevErrorRef.current = error;
+  }, [error, hasLoadedOnce]);
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;
@@ -64,9 +75,19 @@ const HiddenQuotesScreen = () => {
     return (
       <ThemedView style={styles.centerContainer}>
         <ActivityIndicator size="large" />
-        <ThemedText style={styles.loadingText}>
-          {error ? "Unable to load hidden quotes" : "Loading hidden quotes..."}
-        </ThemedText>
+        <ThemedText style={styles.loadingText}>Loading hidden quotes...</ThemedText>
+      </ThemedView>
+    );
+  }
+
+  // Failed to load on first attempt — show error with retry
+  if (!hasLoadedOnce && error) {
+    return (
+      <ThemedView style={styles.centerContainer}>
+        <ThemedText style={styles.emptyText}>Unable to load hidden quotes</ThemedText>
+        <TouchableOpacity style={styles.retryButton} onPress={() => loadQuotes()}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
       </ThemedView>
     );
   }
@@ -79,8 +100,6 @@ const HiddenQuotesScreen = () => {
           paddingBottom: insets.bottom,
         }}
       >
-        {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
-
         <LegendList
           data={quotes}
           keyExtractor={(item: Quote) => item.id.toString()}
@@ -158,11 +177,6 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       marginTop: 8,
       fontSize: 14,
       color: theme.secondaryText,
-    },
-    errorText: {
-      paddingHorizontal: 16,
-      paddingTop: 12,
-      color: theme.destructive,
     },
   });
 
