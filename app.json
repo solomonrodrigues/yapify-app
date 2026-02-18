@@ -42,6 +42,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "76efb247-c153-41d7-86c5-71075e1ab415"
+      }
+    },
+    "owner": "yapify"
   }
 }
