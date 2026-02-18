@@ -11,6 +11,7 @@ import {
   saveQuote,
   unhideQuote,
   unsaveQuote,
+  updateQuote,
   witnessQuote,
 } from "@/lib/api/quotes";
 import { getErrorMessage } from "@/lib/utils/error";
@@ -79,6 +80,7 @@ export interface QuotesFeedValue {
   unhideQuoteById: (id: number) => Promise<void>;
   deleteQuoteById: (id: number) => Promise<void>;
   respondToQuoteById: (id: number, response: 'confirmed' | 'denied' | null) => Promise<void>;
+  updateQuoteById: (id: number, updates: { text?: string; context?: string | null }) => Promise<void>;
   assignUserToQuoteById: (id: number, user: MinimalUser) => Promise<void>;
   removeQuotesInvolvingUser: (userId: number) => void;
 }
@@ -469,6 +471,48 @@ export function useQuotesFeed(
     []
   );
 
+  const updateQuoteById = useCallback(
+    async (id: number, updates: { text?: string; context?: string | null }) => {
+      let previousText: string | undefined;
+      let previousContext: string | null | undefined;
+
+      setQuotes((prev) =>
+        prev.map((q) => {
+          if (q.id !== id) return q;
+          previousText = q.text;
+          previousContext = q.context;
+          return {
+            ...q,
+            ...(updates.text !== undefined ? { text: updates.text } : {}),
+            ...(updates.context !== undefined ? { context: updates.context } : {}),
+          };
+        })
+      );
+
+      try {
+        const updated = await updateQuote(id, updates);
+        setQuotes((prev) =>
+          prev.map((q) => (q.id === id ? { ...q, ...updated } : q))
+        );
+      } catch (e) {
+        console.error("Failed to update quote", e);
+        setQuotes((prev) =>
+          prev.map((q) =>
+            q.id === id
+              ? {
+                  ...q,
+                  text: previousText!,
+                  context: previousContext,
+                }
+              : q
+          )
+        );
+        throw e;
+      }
+    },
+    []
+  );
+
   const assignUserToQuoteById = useCallback(
     async (id: number, user: MinimalUser) => {
       let previousQuotedUser: Quote["quoted_user"] | undefined;
@@ -543,6 +587,7 @@ export function useQuotesFeed(
     unhideQuoteById,
     deleteQuoteById,
     respondToQuoteById,
+    updateQuoteById,
     assignUserToQuoteById,
     removeQuotesInvolvingUser,
   };

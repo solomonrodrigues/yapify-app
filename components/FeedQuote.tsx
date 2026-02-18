@@ -207,6 +207,10 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
           ) : (
             <Text style={styles.externalName}>{quote.quoted_name}</Text>
           )}
+          {!guessable && quote.updated_at && quote.created_at &&
+            Math.abs(new Date(quote.updated_at).getTime() - new Date(quote.created_at).getTime()) > 5000 && (
+              <Text style={styles.editedIndicator}> (edited)</Text>
+          )}
         </View>
 
         {/* Right side: three-dots menu */}
@@ -417,6 +421,12 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     mysteryText: {
       fontWeight: '600',
       fontStyle: 'italic',
+    },
+    editedIndicator: {
+      fontSize: 12,
+      fontStyle: 'italic',
+      color: theme.secondaryText,
+      opacity: 0.6,
     },
     contentContainer: {
       marginBottom: Spacing.sm,

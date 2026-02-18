@@ -65,8 +65,8 @@ export const getQuote = async (quoteId: number): Promise<Quote> => {
   return res.data;
 };
 
-export const updateQuote = async (quoteId: number, updates: Partial<Quote>): Promise<Quote> => {
-  const res = await api.put<Quote>(`/quotes/${quoteId}/`, updates);
+export const updateQuote = async (quoteId: number, updates: { text?: string; context?: string | null }): Promise<Quote> => {
+  const res = await api.patch<Quote>(`/quotes/${quoteId}/`, updates);
   return res.data;
 };
 

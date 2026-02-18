@@ -318,6 +318,10 @@ const QuoteDetail: React.FC = () => {
                   </Text>
                   {'  '}
                   <Text style={styles.timestampText}>{timeAgo(quote.created_at)}</Text>
+                  {quote.updated_at && quote.created_at &&
+                    Math.abs(new Date(quote.updated_at).getTime() - new Date(quote.created_at).getTime()) > 5000 && (
+                      <Text style={styles.editedText}> (edited)</Text>
+                  )}
                 </Text>
               </>
             )}
@@ -581,6 +585,12 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     timestampText: {
       fontSize: 13,
+      color: theme.secondaryText,
+      opacity: 0.6,
+    },
+    editedText: {
+      fontSize: 12,
+      fontStyle: 'italic',
       color: theme.secondaryText,
       opacity: 0.6,
     },

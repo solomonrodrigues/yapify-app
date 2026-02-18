@@ -1,6 +1,7 @@
 // app/(app)/(modals)/quote-actions.tsx
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import AssignUserModal from "@/components/modals/AssignUserModal";
+import QuoteEditModal from "@/components/modals/QuoteEditModal";
 import { ShareableQuote } from "@/components/ShareableQuote";
 import { useQuoteActionsModal } from "@/context/QuoteActionsModalContext";
 import { useQuotes } from "@/context/QuotesContext";
@@ -20,12 +21,13 @@ const isIOS = Platform.OS === 'ios';
 
 export default function QuoteActionsModal() {
   const { selectedQuoteId, selectedQuote: contextQuote, closeModal } = useQuoteActionsModal();
-  const { quotes, saveQuoteById, unsaveQuoteById, hideQuoteById, deleteQuoteById, assignUserToQuoteById } = useQuotes();
+  const { quotes, saveQuoteById, unsaveQuoteById, hideQuoteById, deleteQuoteById, assignUserToQuoteById, updateQuoteById } = useQuotes();
   const { user } = useUser();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const shareRef = useRef<{ share: () => Promise<void> }>(null);
   const [assignModalVisible, setAssignModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
   const isDark = colorScheme === 'dark';
@@ -53,6 +55,10 @@ export default function QuoteActionsModal() {
     const isOwnQuote = selectedQuote.author.id === user?.id;
     const isQuotedUser = selectedQuote.quoted_user?.id === user?.id;
     const isAssignable = isOwnQuote && !!selectedQuote.quoted_name && !selectedQuote.quoted_user?.id;
+    const withinEditWindow = selectedQuote.created_at
+      ? Date.now() - new Date(selectedQuote.created_at).getTime() < 15 * 60 * 1000
+      : false;
+    const isEditable = isOwnQuote && withinEditWindow;
 
     return {
       quote: selectedQuote,
@@ -63,13 +69,14 @@ export default function QuoteActionsModal() {
       isOwnQuote,
       isQuotedUser,
       isAssignable,
+      isEditable,
     };
   }, [selectedQuote, user?.id]);
 
   // If no quote is selected, don't render anything
   if (!selectedQuote || !quoteData) return null;
 
-  const { quote, isSavedQuote, isGuessable, showAuthor, showQuotedUser, isOwnQuote, isAssignable } = quoteData;
+  const { quote, isSavedQuote, isGuessable, showAuthor, showQuotedUser, isOwnQuote, isAssignable, isEditable } = quoteData;
 
   const goToProfile = (userId: number) => {
     if (!userId) return;
@@ -212,6 +219,16 @@ export default function QuoteActionsModal() {
     }
   };
 
+  const handleEditSave = async (updates: { text: string; context: string | null }) => {
+    setEditModalVisible(false);
+    try {
+      await updateQuoteById(quote.id, updates);
+      closeModal();
+    } catch (error) {
+      Toast.show({ type: "error", text1: "Failed to update quote", text2: getErrorMessage(error) });
+    }
+  };
+
   const themedStyles = getThemedStyles(isDark, theme);
 
   return (
@@ -243,6 +260,18 @@ export default function QuoteActionsModal() {
                   label="Assign to friend"
                   subtitle={quote.quoted_name ?? undefined}
                   onPress={() => setAssignModalVisible(true)}
+                  isDark={isDark}
+                  theme={theme}
+                />
+              </>
+            )}
+            {isEditable && (
+              <>
+                <Divider isDark={isDark} />
+                <ActionRow
+                  icon="pencil"
+                  label="Edit quote"
+                  onPress={() => setEditModalVisible(true)}
                   isDark={isDark}
                   theme={theme}
                 />
@@ -324,6 +353,16 @@ export default function QuoteActionsModal() {
           onClose={() => setAssignModalVisible(false)}
           onAssign={handleAssign}
           currentQuotedName={quote.quoted_name}
+        />
+      )}
+      {/* Edit quote modal */}
+      {isEditable && (
+        <QuoteEditModal
+          visible={editModalVisible}
+          onClose={() => setEditModalVisible(false)}
+          onSave={handleEditSave}
+          initialText={quote.text}
+          initialContext={quote.context ?? null}
         />
       )}
     </View>
