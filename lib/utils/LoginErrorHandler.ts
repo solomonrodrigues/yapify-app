@@ -22,7 +22,7 @@ export default class LoginErrorHandler {
     // Get the first non_field_error message
     const errorMessage = this.getErrorMessage(errorData);
 
-    // Check for specific backend error messages from your Django serializer
+    // Check for specific backend error messages from DRF serializer
     if (errorMessage === 'Email not verified') {
       this.showEmailVerificationDialog();
     } else if (errorMessage === 'User account is disabled') {
@@ -49,7 +49,6 @@ export default class LoginErrorHandler {
   }
 
   private isRateLimitError(errorData: LoginError, status?: number): boolean {
-    // Keep status code check for rate limiting as it's typically handled at server/nginx level
     return status === 429;
   }
 

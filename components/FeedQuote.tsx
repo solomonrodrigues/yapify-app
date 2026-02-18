@@ -77,7 +77,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   const { openModal } = useQuoteActionsModal();
 
   // Random but deterministic pastel for the background (based on ID)
-  const randomPastel = getPastelFromId(quote.id, theme);
+  const pastelColor = getPastelFromId(quote.id, theme);
   // Use can_guess (server determines if user can guess: not author, not quoted_user, hasn't guessed)
   const guessable = quote.can_guess && !guessMade;
   const hasGuessOptions = (quote.guess_options?.length ?? 0) > 1;
@@ -163,8 +163,8 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
     : quote.quoted_user ? ProfileColorHexMap[quote.quoted_user.profile_color]
     : null;
   const gradientColors: [string, string] = [
-    randomPastel,
-    profileColor ?? randomPastel,
+    pastelColor,
+    profileColor ?? pastelColor,
   ];
 
   return (
@@ -224,7 +224,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
 
       {/* Context - scene-setting detail before the quote */}
       {quote.context && !guessable ? (
-        <Text style={[styles.contextText, { color: randomPastel }]}>{quote.context}</Text>
+        <Text style={[styles.contextText, { color: pastelColor }]}>{quote.context}</Text>
       ) : null}
 
       {/* Quote Content - Hero Element */}
@@ -324,7 +324,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
         onClose={() => setShowGuessModal(false)}
         onGuess={handleGuess}
         theme={theme}
-        accent={randomPastel}
+        accent={pastelColor}
       />
 
       <UserListModal

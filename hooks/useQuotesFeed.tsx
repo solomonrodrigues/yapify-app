@@ -139,7 +139,6 @@ export function useQuotesFeed(
       }
 
       try {
-        // IMPORTANT: pass scope here
         const data: PaginatedQuoteList = await fetchQuotes(null, scope ?? null);
 
         setQuotes(data.results || []);
@@ -183,7 +182,6 @@ export function useQuotesFeed(
   }, [hasMore, initialLoading, isLoadingMore, nextPage, refreshing, scope, fetchQuotes]);
 
   const likeQuoteById = useCallback(async (id: number) => {
-    // optimistic update
     setQuotes((prev) =>
       prev.map((q) => {
         if (q.id !== id) return q;
@@ -203,7 +201,6 @@ export function useQuotesFeed(
       await likeQuote(id);
     } catch (e) {
       console.error(e);
-      // rollback on failure
       setQuotes((prev) =>
         prev.map((q) =>
           q.id === id
@@ -219,7 +216,6 @@ export function useQuotesFeed(
   }, []);
 
   const witnessQuoteById = useCallback(async (id: number) => {
-    // optimistic update
     setQuotes((prev) =>
       prev.map((q) => {
         if (q.id !== id) return q;
@@ -239,7 +235,6 @@ export function useQuotesFeed(
       await witnessQuote(id);
     } catch (e) {
       console.error(e);
-      // rollback on failure
       setQuotes((prev) =>
         prev.map((q) =>
           q.id === id
@@ -257,7 +252,6 @@ export function useQuotesFeed(
 
   const guessQuoteById = useCallback(
     async (id: number, guessedUserId?: number, skipped = false) => {
-      // optimistic: mark as guessed immediately
       setQuotes((prev) =>
         prev.map((q) =>
           q.id !== id
@@ -310,7 +304,6 @@ export function useQuotesFeed(
   );
 
   const saveQuoteById = useCallback(async (id: number) => {
-    // optimistic update: mark quote as saved
     setQuotes((prev) =>
       prev.map((q) => {
         if (q.id !== id) return q;
@@ -325,7 +318,6 @@ export function useQuotesFeed(
       await saveQuote(id);
     } catch (e) {
       console.error(e);
-      // rollback on failure
       setQuotes((prev) =>
         prev.map((q) =>
           q.id === id
@@ -341,7 +333,6 @@ export function useQuotesFeed(
 
   const unsaveQuoteById = useCallback(
     async (id: number) => {
-      // optimistic update: mark quote as unsaved
       setQuotes((prev) =>
         prev.map((q) => {
           if (q.id !== id) return q;
@@ -356,7 +347,6 @@ export function useQuotesFeed(
         await unsaveQuote(id);
       } catch (e) {
         console.error(e);
-        // rollback on failure
         setQuotes((prev) =>
           prev.map((q) =>
             q.id === id
@@ -373,7 +363,6 @@ export function useQuotesFeed(
   );
 
   const hideQuoteById = useCallback(async (id: number) => {
-    // optimistic update: mark quote as hidden
     setQuotes((prev) =>
       prev.map((q) => {
         if (q.id !== id) return q;
@@ -391,7 +380,6 @@ export function useQuotesFeed(
       await hideQuote(id);
     } catch (e) {
       console.error(e);
-      // rollback on failure
       setQuotes((prev) =>
         prev.map((q) =>
           q.id === id
@@ -406,7 +394,6 @@ export function useQuotesFeed(
   }, []);
 
   const unhideQuoteById = useCallback(async (id: number) => {
-    // optimistic update: mark quote as not hidden
     setQuotes((prev) =>
       prev.map((q) => {
         if (q.id !== id) return q;
@@ -424,7 +411,6 @@ export function useQuotesFeed(
       await unhideQuote(id);
     } catch (e) {
       console.error(e);
-      // rollback on failure
       setQuotes((prev) =>
         prev.map((q) =>
           q.id === id
@@ -441,20 +427,17 @@ export function useQuotesFeed(
   const deleteQuoteById = useCallback(async (id: number) => {
     try {
       await deleteQuote(id);
-      // Remove the quote from the list after successful deletion
       setQuotes((prev) => prev.filter((q) => q.id !== id));
     } catch (e) {
       console.error(e);
-      throw e; // Re-throw to allow caller to handle error
+      throw e;
     }
   }, []);
 
   const respondToQuoteById = useCallback(
     async (id: number, response: 'confirmed' | 'denied' | null) => {
-      // Store previous state for rollback
       let previousResponse: 'confirmed' | 'denied' | null = null;
 
-      // optimistic update
       setQuotes((prev) =>
         prev.map((q) => {
           if (q.id !== id) return q;
@@ -471,7 +454,6 @@ export function useQuotesFeed(
         await respondToQuote(id, response);
       } catch (e) {
         console.error(e);
-        // rollback on failure
         setQuotes((prev) =>
           prev.map((q) =>
             q.id === id
@@ -489,11 +471,9 @@ export function useQuotesFeed(
 
   const assignUserToQuoteById = useCallback(
     async (id: number, user: MinimalUser) => {
-      // Store previous state for rollback
       let previousQuotedUser: Quote["quoted_user"] | undefined;
       let previousQuotedName: Quote["quoted_name"] | undefined;
 
-      // Optimistic update: set quoted_user and clear quoted_name
       setQuotes((prev) =>
         prev.map((q) => {
           if (q.id !== id) return q;
@@ -509,13 +489,11 @@ export function useQuotesFeed(
 
       try {
         const updated = await assignUserToQuote(id, user.id);
-        // Replace with full server response for accuracy
         setQuotes((prev) =>
           prev.map((q) => (q.id === id ? { ...q, ...updated } : q))
         );
       } catch (e) {
         console.error("Failed to assign user to quote", e);
-        // Rollback
         setQuotes((prev) =>
           prev.map((q) =>
             q.id === id

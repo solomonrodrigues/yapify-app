@@ -56,10 +56,7 @@ function TabContent() {
   const { user } = useUser();
   const { markAllAsRead, unreadCount } = useNotifications();
 
-  const handleQuoteCreated = (newQuote: Quote) => {
-    console.log('New quote created:', newQuote);
-    // Refresh your quotes list, show success message, etc.
-  };
+  const handleQuoteCreated = (_newQuote: Quote) => {};
 
   const tabBarIconSize = Platform.OS === 'ios' ? 28 : 20
   const headerIconSize = Platform.OS === 'ios' ? 28 : 20
@@ -218,7 +215,7 @@ function TabContent() {
       <QuotePostModal
         visible={showQuoteModal}
         onClose={() => setShowQuoteModal(false)}
-        onQuoteCreated={handleQuoteCreated} // Optional callback
+        onQuoteCreated={handleQuoteCreated}
       />
     </>
   );

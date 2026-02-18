@@ -22,15 +22,12 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
   const { fetchNotifications, hasLoadedOnce: notificationsLoaded } = useNotifications();
   const [loadingMessage, setLoadingMessage] = useState('');
 
-  // Preload data immediately
   useEffect(() => {
     if (!quotesLoaded) {
-      console.log('Loading quotes...');
       loadQuotes(false);
     }
 
     if (!userLoaded) {
-      console.log('Loading user...');
       loadUser();
     }
 
@@ -55,7 +52,7 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
     }
   }, [quotesInitialLoading, userLoading, userLoaded, user]);
 
-  // CRITICAL: Don't render children until we have essential data
+  // Don't render children until we have essential data
   const showInitialLoading = (
     quotesInitialLoading ||           // Still loading quotes initially
     userLoading ||                    // Still loading user
@@ -64,7 +61,6 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
   );
   
   if (showInitialLoading) {
-    console.log('Blocking render - showing loading screen');
     return (
       <ThemedView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
@@ -73,9 +69,7 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Additional safety check - if somehow we get here without user data, show loading
   if (!user) {
-    console.warn('No user data available, showing loading screen');
     return (
       <ThemedView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />

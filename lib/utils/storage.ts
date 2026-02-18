@@ -1,7 +1,7 @@
 // lib/utils/storage.ts
 import * as SecureStore from 'expo-secure-store';
 
-// Refresh token
+// Refresh token (persisted in SecureStore)
 export const setRefresh = async (refresh: string) => {
   await SecureStore.setItemAsync('refreshToken', refresh);
 };
@@ -15,7 +15,7 @@ export const getRefresh = async (): Promise<string | null> => {
   }
 };
 
-// Access token
+// Access token (in-memory only)
 let accessToken: string | null = null;
 
 export const setAccess = (token: string | null) => {
