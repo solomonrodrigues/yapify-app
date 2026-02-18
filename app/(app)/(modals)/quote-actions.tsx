@@ -1,15 +1,16 @@
 // app/(app)/(modals)/quote-actions.tsx
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import AssignUserModal from "@/components/modals/AssignUserModal";
 import { ShareableQuote } from "@/components/ShareableQuote";
 import { useQuoteActionsModal } from "@/context/QuoteActionsModalContext";
 import { useQuotes } from "@/context/QuotesContext";
 import { useUser } from "@/context/UserContext";
 import { reportQuote, unreportQuote } from "@/lib/api/quotes";
 import { getErrorMessage } from "@/lib/utils/error";
-import { ReportReasonEnum } from "@/types/api";
+import { ReportReasonEnum, User } from "@/types/api";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Alert, Platform, Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { Colors } from "@/constants/Colors";
 import Toast from "react-native-toast-message";
@@ -19,11 +20,12 @@ const isIOS = Platform.OS === 'ios';
 
 export default function QuoteActionsModal() {
   const { selectedQuoteId, selectedQuote: contextQuote, closeModal } = useQuoteActionsModal();
-  const { quotes, saveQuoteById, unsaveQuoteById, hideQuoteById, deleteQuoteById } = useQuotes();
+  const { quotes, saveQuoteById, unsaveQuoteById, hideQuoteById, deleteQuoteById, assignUserToQuoteById } = useQuotes();
   const { user } = useUser();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const shareRef = useRef<{ share: () => Promise<void> }>(null);
+  const [assignModalVisible, setAssignModalVisible] = useState(false);
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
   const isDark = colorScheme === 'dark';
@@ -50,6 +52,7 @@ export default function QuoteActionsModal() {
     const showQuotedUser = !!selectedQuote.quoted_user && !isGuessable;
     const isOwnQuote = selectedQuote.author.id === user?.id;
     const isQuotedUser = selectedQuote.quoted_user?.id === user?.id;
+    const isAssignable = isOwnQuote && !!selectedQuote.quoted_name && !selectedQuote.quoted_user?.id;
 
     return {
       quote: selectedQuote,
@@ -59,13 +62,14 @@ export default function QuoteActionsModal() {
       showQuotedUser,
       isOwnQuote,
       isQuotedUser,
+      isAssignable,
     };
   }, [selectedQuote, user?.id]);
 
   // If no quote is selected, don't render anything
   if (!selectedQuote || !quoteData) return null;
 
-  const { quote, isSavedQuote, isGuessable, showAuthor, showQuotedUser, isOwnQuote } = quoteData;
+  const { quote, isSavedQuote, isGuessable, showAuthor, showQuotedUser, isOwnQuote, isAssignable } = quoteData;
 
   const goToProfile = (userId: number) => {
     if (!userId) return;
@@ -192,6 +196,22 @@ export default function QuoteActionsModal() {
   };
 
 
+  const handleAssign = async (selectedUser: User) => {
+    setAssignModalVisible(false);
+    try {
+      await assignUserToQuoteById(quote.id, {
+        id: selectedUser.id,
+        username: selectedUser.username,
+        display_name: selectedUser.display_name,
+        profile_color: selectedUser.profile_color ?? "GREY",
+      });
+      Toast.show({ type: "success", text1: `Assigned to ${selectedUser.display_name}` });
+      closeModal();
+    } catch (error) {
+      Toast.show({ type: "error", text1: "Failed to assign user", text2: getErrorMessage(error) });
+    }
+  };
+
   const themedStyles = getThemedStyles(isDark, theme);
 
   return (
@@ -215,19 +235,32 @@ export default function QuoteActionsModal() {
             <ActionRow icon="doc.on.doc" label="Copy text" onPress={handleCopy} isDark={isDark} theme={theme} />
             <Divider isDark={isDark} />
             <ActionRow icon="square.and.arrow.up" label="Share as image" onPress={handleShare} isDark={isDark} theme={theme} />
+            {isOwnQuote && isAssignable && (
+              <>
+                <Divider isDark={isDark} />
+                <ActionRow
+                  icon="person.badge.plus"
+                  label="Assign to friend"
+                  subtitle={quote.quoted_name ?? undefined}
+                  onPress={() => setAssignModalVisible(true)}
+                  isDark={isDark}
+                  theme={theme}
+                />
+              </>
+            )}
           </View>
 
           <View style={themedStyles.group}>
-            <ActionRow
-              icon="eye.slash"
-              label="Hide this quote"
-              onPress={handleHide}
-              destructive
-              isDark={isDark}
-              theme={theme}
-            />
             {!isOwnQuote && (
               <>
+                <ActionRow
+                  icon="eye.slash"
+                  label="Hide this quote"
+                  onPress={handleHide}
+                  destructive
+                  isDark={isDark}
+                  theme={theme}
+                />
                 <Divider isDark={isDark} />
                 <ActionRow
                   icon="exclamationmark.triangle"
@@ -240,17 +273,14 @@ export default function QuoteActionsModal() {
               </>
             )}
             {isOwnQuote && (
-              <>
-                <Divider isDark={isDark} />
-                <ActionRow
-                  icon="trash"
-                  label="Delete quote"
-                  onPress={handleDelete}
-                  destructive
-                  isDark={isDark}
-                  theme={theme}
-                />
-              </>
+              <ActionRow
+                icon="trash"
+                label="Delete quote"
+                onPress={handleDelete}
+                destructive
+                isDark={isDark}
+                theme={theme}
+              />
             )}
           </View>
 
@@ -287,6 +317,15 @@ export default function QuoteActionsModal() {
       </View>
       {/* Hidden component for share-as-image */}
       <ShareableQuote ref={shareRef} quote={quote} guessable={isGuessable} />
+      {/* Assign user modal */}
+      {isAssignable && (
+        <AssignUserModal
+          visible={assignModalVisible}
+          onClose={() => setAssignModalVisible(false)}
+          onAssign={handleAssign}
+          currentQuotedName={quote.quoted_name}
+        />
+      )}
     </View>
   );
 }

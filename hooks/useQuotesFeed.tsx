@@ -1,6 +1,7 @@
 // hooks/useQuotesFeed.tsx
 import type { FeedScope } from "@/lib/api/quotes";
 import {
+  assignUserToQuote,
   deleteQuote,
   getQuotes,
   guessQuote,
@@ -13,7 +14,7 @@ import {
   witnessQuote,
 } from "@/lib/api/quotes";
 import { getErrorMessage } from "@/lib/utils/error";
-import { PaginatedQuoteList, Quote } from "@/types/api";
+import { MinimalUser, PaginatedQuoteList, Quote } from "@/types/api";
 import {
   useCallback,
   useEffect,
@@ -78,6 +79,7 @@ export interface QuotesFeedValue {
   unhideQuoteById: (id: number) => Promise<void>;
   deleteQuoteById: (id: number) => Promise<void>;
   respondToQuoteById: (id: number, response: 'confirmed' | 'denied' | null) => Promise<void>;
+  assignUserToQuoteById: (id: number, user: MinimalUser) => Promise<void>;
   removeQuotesInvolvingUser: (userId: number) => void;
 }
 
@@ -485,6 +487,52 @@ export function useQuotesFeed(
     []
   );
 
+  const assignUserToQuoteById = useCallback(
+    async (id: number, user: MinimalUser) => {
+      // Store previous state for rollback
+      let previousQuotedUser: Quote["quoted_user"] | undefined;
+      let previousQuotedName: Quote["quoted_name"] | undefined;
+
+      // Optimistic update: set quoted_user and clear quoted_name
+      setQuotes((prev) =>
+        prev.map((q) => {
+          if (q.id !== id) return q;
+          previousQuotedUser = q.quoted_user;
+          previousQuotedName = q.quoted_name;
+          return {
+            ...q,
+            quoted_user: user as Quote["quoted_user"],
+            quoted_name: null,
+          };
+        })
+      );
+
+      try {
+        const updated = await assignUserToQuote(id, user.id);
+        // Replace with full server response for accuracy
+        setQuotes((prev) =>
+          prev.map((q) => (q.id === id ? { ...q, ...updated } : q))
+        );
+      } catch (e) {
+        console.error("Failed to assign user to quote", e);
+        // Rollback
+        setQuotes((prev) =>
+          prev.map((q) =>
+            q.id === id
+              ? {
+                  ...q,
+                  quoted_user: previousQuotedUser as Quote["quoted_user"],
+                  quoted_name: previousQuotedName,
+                }
+              : q
+          )
+        );
+        throw e;
+      }
+    },
+    []
+  );
+
   const refreshQuotes = useCallback(async () => {
     await loadQuotes(true);
   }, [loadQuotes]);
@@ -517,6 +565,7 @@ export function useQuotesFeed(
     unhideQuoteById,
     deleteQuoteById,
     respondToQuoteById,
+    assignUserToQuoteById,
     removeQuotesInvolvingUser,
   };
 }

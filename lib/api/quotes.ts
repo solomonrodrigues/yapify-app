@@ -217,6 +217,11 @@ export const unreportQuote = async (quoteId: number): Promise<void> => {
   await api.delete(`/quotes/${quoteId}/report/`);
 };
 
+export const assignUserToQuote = async (quoteId: number, userId: number): Promise<Quote> => {
+  const res = await api.post<Quote>(`/quotes/${quoteId}/assign-user/`, { quoted_user_id: userId });
+  return res.data;
+};
+
 export const getGuessableQuotes = async (
   url?: string | null,
 ): Promise<PaginatedQuoteList> => {
