@@ -45,21 +45,25 @@ api.interceptors.request.use(async (config) => {
 //  Refresh Lock + Queue System
 let isRefreshing = false;
 let refreshPromise: Promise<TokenRefresh> | null = null;
-let requestQueue: ((token: string) => void)[] = [];
+type QueueEntry = {
+  resolve: (token: string) => void;
+  reject: (error: unknown) => void;
+};
+let requestQueue: QueueEntry[] = [];
 
 // Add request to waiting queue
-function queueRequest(callback: (token: string) => void) {
-  requestQueue.push(callback);
+function queueRequest(resolve: (token: string) => void, reject: (error: unknown) => void) {
+  requestQueue.push({ resolve, reject });
 }
 
 // Resolve all queued requests with the new token
 function resolveQueue(newToken: string) {
-  requestQueue.forEach((cb) => cb(newToken));
+  requestQueue.forEach(({ resolve }) => resolve(newToken));
   requestQueue = [];
 }
 
-function rejectQueue(error: any) {
-  requestQueue.forEach(cb => cb(error));
+function rejectQueue(error: unknown) {
+  requestQueue.forEach(({ reject }) => reject(error));
   requestQueue = [];
 }
 
@@ -90,11 +94,14 @@ api.interceptors.response.use(
 
       // Already refreshing → queue the request
       if (isRefreshing) {
-        return new Promise((resolve) => {
-          queueRequest((newAccessToken) => {
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-            resolve(api(originalRequest));
-          });
+        return new Promise((resolve, reject) => {
+          queueRequest(
+            (newAccessToken) => {
+              originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+              resolve(api(originalRequest));
+            },
+            reject
+          );
         });
       }
 
