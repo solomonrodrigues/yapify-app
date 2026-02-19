@@ -3,7 +3,7 @@ import { useNotifications } from '@/context/NotificationsContext';
 import { useQuotes } from '@/context/QuotesContext';
 import { useUser } from '@/context/UserContext';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, TouchableOpacity } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from './ThemedText';
 
@@ -18,7 +18,7 @@ const loadingMessages = [
 
 export function DataPreloader({ children }: { children: React.ReactNode }) {
   const { loadQuotes, initialLoading: quotesInitialLoading, hasLoadedOnce: quotesLoaded, error: quotesError } = useQuotes();
-  const { loadUser, loading: userLoading, hasLoadedOnce: userLoaded, user } = useUser();
+  const { loadUser, loading: userLoading, hasLoadedOnce: userLoaded, user, error: userError } = useUser();
   const { fetchNotifications, hasLoadedOnce: notificationsLoaded } = useNotifications();
   const [loadingMessage, setLoadingMessage] = useState('');
 
@@ -53,12 +53,12 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
   }, [quotesInitialLoading, userLoading, userLoaded, user]);
 
   // Don't render children until we have essential data.
-  // Exclude the error case — if quotes failed, pass through so the feed can show its own error UI.
+  // Exclude error cases — screens handle their own error UI.
   const showInitialLoading = (
-    quotesInitialLoading ||                               // Still loading quotes initially
-    userLoading ||                                        // Still loading user
-    (!user && !userLoaded) ||                             // No user data and haven't finished loading attempt
-    (!quotesLoaded && !quotesInitialLoading && !quotesError) // Haven't triggered load yet
+    quotesInitialLoading ||                                    // Still loading quotes initially
+    userLoading ||                                             // Still loading user
+    (!user && !userLoaded && !userError) ||                    // User load in-flight or not yet triggered
+    (!quotesLoaded && !quotesInitialLoading && !quotesError)   // Quotes load in-flight or not yet triggered
   );
 
   if (showInitialLoading) {
@@ -70,11 +70,25 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Children need a valid user — if user load failed, surface a retry rather than crashing
   if (!user) {
     return (
-      <ThemedView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-        <ThemedText style={{ padding: 10 }}>Loading user data...</ThemedText>
+      <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+        {userError ? (
+          <>
+            <ThemedText style={{ fontSize: 16, marginBottom: 20, textAlign: 'center' }}>
+              {"Couldn't load your profile"}
+            </ThemedText>
+            <TouchableOpacity
+              onPress={loadUser}
+              style={{ borderWidth: 1, borderRadius: 8, paddingVertical: 12, paddingHorizontal: 24, borderColor: '#888' }}
+            >
+              <ThemedText style={{ fontSize: 16, fontWeight: '600' }}>Retry</ThemedText>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <ActivityIndicator size="large" />
+        )}
       </ThemedView>
     );
   }
