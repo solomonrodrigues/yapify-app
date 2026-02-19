@@ -22,6 +22,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { Alert } from "react-native";
 
 // Simple global visibility bus so that hide/unhide actions
 // propagate across all active quote feeds (main feed, profile feeds, saved feed, etc).
@@ -282,8 +283,7 @@ export function useQuotesFeed(
             q.id === id ? { ...q, guess: result, has_guessed: true } : q
           )
         );
-      } catch (e: any) {
-        console.error("Failed to submit guess", e);
+      } catch (e) {
         setQuotes((prev) =>
           prev.map((q) =>
             q.id === id
@@ -297,9 +297,7 @@ export function useQuotesFeed(
               : q
           )
         );
-        if (e.response?.data?.detail) {
-          alert(e.response.data.detail);
-        }
+        Alert.alert('Error', getErrorMessage(e));
       }
     },
     []
