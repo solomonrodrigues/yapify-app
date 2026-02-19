@@ -70,6 +70,13 @@ api.interceptors.response.use(
     const originalRequest = error.config as any; // Cast to any to add custom property
 
     // Only handle 401 & ensure no double refresh attempt
+    if (error.response?.status === 401 && originalRequest._retry) {
+      // Retry also got 401 — token is invalid, log the user out
+      await clearTokens();
+      onLogoutHandler?.();
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
