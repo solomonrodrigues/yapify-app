@@ -75,6 +75,7 @@ export default function ResetPasswordConfirmScreen() {
 
     try {
       await confirmPasswordReset({
+        email: email as string,
         code,
         new_password: newPassword,
         new_password_confirm: confirmPassword,
