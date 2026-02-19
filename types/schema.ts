@@ -1044,6 +1044,8 @@ export interface components {
             results: components["schemas"]["Quote"][];
         };
         PasswordResetConfirm: {
+            /** Format: email */
+            email: string;
             code: string;
             new_password: string;
             new_password_confirm: string;
