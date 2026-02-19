@@ -49,15 +49,20 @@ const QuoteDetail: React.FC = () => {
   const { quoteID } = params;
 
   const fetchQuote = useCallback(async () => {
+    const id = Number(quoteID);
+    if (isNaN(id)) {
+      setError('Invalid quote ID');
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
-      const data = await getQuote(Number(quoteID));
+      const data = await getQuote(id);
       setQuote(data);
       setGuessMade(!!data.has_guessed);
     } catch (err) {
       setError('Failed to load quote');
-      console.error('Error fetching quote:', err);
     } finally {
       setLoading(false);
     }

@@ -7,11 +7,13 @@ export default function UserScreen() {
   const { userID } = params;
   const { user } = useUser();
 
-  if (!user) return null;
+  const userId = parseInt(userID as string, 10);
+
+  if (!user || isNaN(userId)) return null;
 
   return (
-    <UnifiedProfile 
-      userId={parseInt(userID as string)}
+    <UnifiedProfile
+      userId={userId}
       currentUser={user}
     />
   );
