@@ -6,6 +6,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { getErrorMessage } from '@/lib/utils/error';
 import type { PublicUser } from '@/types/api';
 import { LegendList } from '@legendapp/list';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -58,6 +59,7 @@ export const UserListModal: React.FC<UserListModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const loadUsers = useCallback(
     async ({
@@ -91,8 +93,9 @@ export const UserListModal: React.FC<UserListModalProps> = ({
 
         setNextUrl(data.next ?? null);
         setHasMore(Boolean(data.next));
-      } catch (error) {
-        console.error('Failed to load users:', error);
+        setError(null);
+      } catch (err) {
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -213,6 +216,16 @@ export const UserListModal: React.FC<UserListModalProps> = ({
               loading ? (
                 <View style={styles.emptyContainer}>
                   <ActivityIndicator size="large" />
+                </View>
+              ) : error ? (
+                <View style={styles.emptyContainer}>
+                  <ThemedText style={styles.emptyText}>{"Couldn't load users"}</ThemedText>
+                  <TouchableOpacity
+                    onPress={() => loadUsers({ search: searchQuery || undefined })}
+                    style={styles.retryButton}
+                  >
+                    <ThemedText style={styles.retryText}>Retry</ThemedText>
+                  </TouchableOpacity>
                 </View>
               ) : (
                 <View style={styles.emptyContainer}>
@@ -336,5 +349,16 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       color: theme.secondaryText,
       textAlign: 'center',
       lineHeight: 22,
+    },
+    retryButton: {
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderColor: theme.border,
+    },
+    retryText: {
+      fontSize: 15,
+      fontWeight: '600',
     },
   });

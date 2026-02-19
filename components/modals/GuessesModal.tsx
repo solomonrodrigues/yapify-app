@@ -18,6 +18,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getQuoteGuesses } from '@/lib/api/quotes';
+import { getErrorMessage } from '@/lib/utils/error';
 import type { QuoteGuessListItem, MinimalUser } from '@/types/api';
 
 interface GuessesModalProps {
@@ -48,6 +49,7 @@ const GuessesModal: React.FC<GuessesModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const loadGuesses = useCallback(
     async ({ url, refresh = false }: { url?: string | null; refresh?: boolean } = {}) => {
@@ -67,8 +69,9 @@ const GuessesModal: React.FC<GuessesModalProps> = ({
         }
 
         setNextUrl(data.next ?? null);
-      } catch (error) {
-        console.error('Failed to load guesses:', error);
+        setError(null);
+      } catch (err) {
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -249,6 +252,13 @@ const GuessesModal: React.FC<GuessesModalProps> = ({
             <View style={styles.centerContainer}>
               <ActivityIndicator size="large" />
               <ThemedText style={styles.loadingText}>Loading guesses...</ThemedText>
+            </View>
+          ) : error && guesses.length === 0 ? (
+            <View style={styles.centerContainer}>
+              <ThemedText style={styles.emptyText}>{"Couldn't load guesses"}</ThemedText>
+              <TouchableOpacity onPress={() => loadGuesses({ refresh: true })} style={styles.retryButton}>
+                <ThemedText style={styles.retryText}>Retry</ThemedText>
+              </TouchableOpacity>
             </View>
           ) : guesses.length === 0 ? (
             <View style={styles.centerContainer}>
@@ -471,6 +481,18 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontSize: 15,
       fontWeight: '600',
       color: theme.secondaryText,
+    },
+    retryButton: {
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderColor: theme.border,
+      marginTop: 4,
+    },
+    retryText: {
+      fontSize: 15,
+      fontWeight: '600',
     },
     loadingFooter: {
       paddingVertical: 20,
