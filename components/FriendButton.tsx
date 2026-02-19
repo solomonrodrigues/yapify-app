@@ -4,7 +4,7 @@ import { Colors } from '@/constants/Colors';
 import { respondToFriendRequest, cancelFriendRequest, sendFriendRequest, unfriend } from '@/lib/api/friends';
 import type { Friendship } from '@/types/api';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, useColorScheme, View, type StyleProp, type ViewStyle, type TextStyle } from 'react-native';
 
 type FriendAction = 'add' | 'cancel' | 'unfriend' | 'accept' | 'reject';
 
@@ -67,8 +67,8 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
 
   const getButtonConfig = (): {
     text: string;
-    style: any;
-    textStyle: any;
+    style: StyleProp<ViewStyle>;
+    textStyle: StyleProp<TextStyle>;
     action?: FriendAction;
   } => {
     if (!currentFriendship) {
@@ -198,7 +198,7 @@ interface AcceptRejectButtonsProps {
   onAccept: () => void;
   onReject: () => void;
   loading: boolean;
-  theme: any;
+  theme: typeof Colors.light | typeof Colors.dark;
 }
 
 const AcceptRejectButtons: React.FC<AcceptRejectButtonsProps> = ({

@@ -5,7 +5,7 @@ export const getNotifications = async (url?: string | null): Promise<PaginatedNo
   // Convert absolute URLs to relative paths to work around the API returning http:// URLs
   // instead of https://. By using relative paths, we rely on api.baseURL which is properly configured.
   const toRelative = (u: string) => {
-    const base = new URL(String((api.defaults as any).baseURL || 'https://localhost'));
+    const base = new URL(String(api.defaults.baseURL || 'https://localhost'));
     const abs = new URL(u, base);
     let result = abs.pathname + abs.search + abs.hash;
     if (result.startsWith('/api/')) {

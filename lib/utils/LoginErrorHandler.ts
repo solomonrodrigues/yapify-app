@@ -1,3 +1,4 @@
+import type { Router } from 'expo-router';
 import { Alert } from "react-native";
 
 export interface LoginError {
@@ -7,17 +8,18 @@ export interface LoginError {
 }
 
 export default class LoginErrorHandler {
-  private router: any;
-  private email: string
+  private router: Router;
+  private email: string;
 
-  constructor(router: any, email: string) {
+  constructor(router: Router, email: string) {
     this.router = router;
     this.email = email;
   }
 
-  handle(error: any): void {
-    const errorData: LoginError = error.response?.data || {};
-    const status = error.response?.status;
+  handle(error: unknown): void {
+    const axiosError = error as { response?: { data?: LoginError; status?: number } };
+    const errorData: LoginError = axiosError.response?.data || {};
+    const status = axiosError.response?.status;
 
     // Get the first non_field_error message
     const errorMessage = this.getErrorMessage(errorData);

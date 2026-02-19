@@ -1,4 +1,5 @@
-import { IconSymbol } from "./ui/IconSymbol";
+import { Colors } from '@/constants/Colors';
+import { IconSymbol, type IconSymbolName } from "./ui/IconSymbol";
 import { FriendButton } from "./FriendButton";
 import { Friendship, MinimalUser, Notification } from '@/types/api';
 import React, { useRef } from 'react';
@@ -17,7 +18,7 @@ import { formatNotificationParts } from "@/lib/utils/notifications";
 // Individual Notification Component
 interface NotificationItemProps {
   notification: Notification;
-  theme: any;
+  theme: typeof Colors.light | typeof Colors.dark;
   onPress: (id: number) => void;
   onFriendshipChange: (notificationId: number, friendship: Friendship | null) => void;
   onMarkUnread?: (id: number) => void;
@@ -26,13 +27,13 @@ interface NotificationItemProps {
 }
 
 // Map types to a small leading glyph
-const typeIconMap: Record<string, string | undefined> = {
+const typeIconMap: Record<string, IconSymbolName | undefined> = {
   new_quote: 'quote.bubble',
-  quote_liked: 'hand.thumbsup',
-  quote_witnessed: 'eye',
-  friend_request: 'person.badge.plus',
-  friend_accepted: 'checkmark.circle',
-  system: 'bell',
+  quote_liked: 'heart.fill',
+  quote_witnessed: 'eye.fill',
+  friend_request: 'person',
+  friend_accepted: 'checkmark.circle.fill',
+  system: 'bell.fill',
 };
 
 const ACTION_WIDTH = 72;
@@ -122,7 +123,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
             activeOpacity={0.7}
           >
             <IconSymbol
-              name={'trash' as any}
+              name='trash'
               size={22}
               color="#fff"
             />
@@ -169,7 +170,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
                 ]}
               >
                 <IconSymbol
-                  name={iconName as any}
+                  name={iconName}
                   size={12}
                   color={theme.secondaryText}
                 />

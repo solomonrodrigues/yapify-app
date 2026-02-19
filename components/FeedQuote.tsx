@@ -26,7 +26,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming, Easi
 
 interface FeedQuoteProps {
   quote: Quote;
-  theme: any;
+  theme: typeof Colors.light | typeof Colors.dark;
   index?: number;
   onLike: (quoteId: number) => void;
   onWitness: (quoteId: number) => void;

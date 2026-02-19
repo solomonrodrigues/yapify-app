@@ -51,7 +51,7 @@ export default function GuessButton({
     Haptics.selectionAsync().catch(() => {});
     try {
       const maybePromise = onPress();
-      if (maybePromise && typeof (maybePromise as any).then === "function" && loading === undefined) {
+      if (maybePromise && typeof (maybePromise as { then?: unknown }).then === "function" && loading === undefined) {
         setInternalLoading(true);
         await maybePromise;
       }

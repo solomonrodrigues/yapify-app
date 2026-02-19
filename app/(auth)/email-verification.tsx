@@ -4,6 +4,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { resendVerificationCode, verifyEmail } from "@/lib/api/auth";
+import { getErrorMessage } from "@/lib/utils/error";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -70,8 +71,8 @@ export default function EmailVerificationScreen() {
           }
         ]
       );
-    } catch (err: any) {
-      Alert.alert("Verification Failed", err.response?.data?.detail || err.message);
+    } catch (err) {
+      Alert.alert("Verification Failed", getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -85,8 +86,8 @@ export default function EmailVerificationScreen() {
       Alert.alert("Code Sent", "A new verification code has been sent to your email.");
       setResendCooldown(5); // 5 second cooldown to prevent spam
       setCode(""); // Clear current code
-    } catch (err: any) {
-      Alert.alert("Resend Failed", err.response?.data?.detail || err.message);
+    } catch (err) {
+      Alert.alert("Resend Failed", getErrorMessage(err));
     }
   };
 

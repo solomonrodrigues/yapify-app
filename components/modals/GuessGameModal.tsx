@@ -32,7 +32,7 @@ interface GuessGameModalProps {
   visible: boolean;
   onClose: () => void;
   onGuess: (guessedUserId?: number, skipped?: boolean) => void;
-  theme: any;
+  theme: typeof Colors.light | typeof Colors.dark;
   accent: string;
 }
 

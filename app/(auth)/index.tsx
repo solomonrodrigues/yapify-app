@@ -5,6 +5,7 @@ import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { register } from "@/lib/api/auth";
+import { getErrorMessage } from "@/lib/utils/error";
 import LoginErrorHandler from "@/lib/utils/LoginErrorHandler";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -123,7 +124,7 @@ export default function AuthScreen() {
       setIsSubmitting(true);
       await login(email, password);
       router.replace("/(app)/(tabs)");
-    } catch (err: any) {
+    } catch (err) {
       const errorHandler = new LoginErrorHandler(router, email);
       errorHandler.handle(err);
     } finally {
@@ -182,11 +183,8 @@ export default function AuthScreen() {
       router.push(
         `/(auth)/email-verification?email=${encodeURIComponent(email)}`
       );
-    } catch (err: any) {
-      Alert.alert(
-        "Signup Failed",
-        err.response?.data?.detail || err.message || "Something went wrong."
-      );
+    } catch (err) {
+      Alert.alert("Signup Failed", getErrorMessage(err) || "Something went wrong.");
     } finally {
       setIsSubmitting(false);
     }

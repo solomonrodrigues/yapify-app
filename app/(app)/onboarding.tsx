@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import React, { useEffect } from 'react';
 import {
   Pressable,
+  type PressableProps,
   Text,
   useColorScheme,
   View,
@@ -279,7 +280,7 @@ export default function OnboardingScreen() {
     </Pressable>
   );
 
-  const NextButton = ({ ...props }: any) => (
+  const NextButton = ({ ...props }: PressableProps) => (
     <Pressable
       {...props}
       style={({ pressed }) => [

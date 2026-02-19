@@ -1,5 +1,5 @@
 import QuoteResponseBadge from "@/components/QuoteResponseBadge";
-import { ProfileColorHexMap } from "@/constants/Colors";
+import { Colors, ProfileColorHexMap } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { getStyles as getFeedQuoteStyles } from "@/components/FeedQuote";
 import { getPastelFromId } from "@/lib/utils/style";
@@ -11,7 +11,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 interface HiddenQuoteProps {
   quote: Quote;
-  theme: any;
+  theme: typeof Colors.light | typeof Colors.dark;
   onUnhide: (quoteId: number) => void;
 }
 

@@ -89,6 +89,18 @@ const MAPPING = {
   'trash':                             { name: 'trash' },             // delete
   'person.circle':                     { name: 'user-circle' },       // user profile
   'square.and.arrow.up':               { name: 'share-from-square' }, // share
+  // Actions
+  'pencil':                            { name: 'pen' },               // edit
+  'exclamationmark.triangle':          { name: 'triangle-exclamation' }, // warning/report
+  'person.badge.plus':                 { name: 'user-plus' },         // add friend
+  // Feed filters
+  'clock.fill':                        { name: 'clock' },             // latest
+  'bubble.left.fill':                  { name: 'comment' },           // respond/message
+  // Notifications
+  'hand.thumbsup':                     { name: 'thumbs-up' },         // liked
+  'checkmark.circle':                  { name: 'circle-check' },      // accepted (non-filled variant)
+  'bell':                              { name: 'bell' },              // notification (non-filled)
+  'person.2':                          { name: 'users' },             // people
 } as const satisfies Record<string, IconMappingEntry>;
 
 // Component props for FontAwesome 7

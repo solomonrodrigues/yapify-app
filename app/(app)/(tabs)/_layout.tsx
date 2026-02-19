@@ -1,7 +1,7 @@
 // app/(app)/(tabs)/_layout.tsx
 import { router, Tabs } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Platform, Pressable, StyleSheet, useColorScheme, View } from 'react-native';
+import { Alert, GestureResponderEvent, Platform, Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
@@ -78,7 +78,7 @@ function TabContent() {
 
   const openNotificationsMenu = () => {
     Alert.alert(
-      "",
+      "Notifications",
       undefined,
       [
         {
@@ -138,7 +138,7 @@ function TabContent() {
             tabBarButton: (props) => (
               <HapticTab
                 {...props}
-                onPress={(e: any) => {
+                onPress={(e: GestureResponderEvent) => {
                   e?.preventDefault?.();
                   setShowQuoteModal(true);
                 }}

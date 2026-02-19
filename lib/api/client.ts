@@ -1,7 +1,11 @@
 // api/client.ts
 import { clearTokens, getAccess, getRefresh, setTokens } from '@/lib/utils/storage';
 import { TokenRefresh } from '@/types/api';
-import axios, { AxiosError, AxiosInstance, isAxiosError } from 'axios';
+import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, isAxiosError } from 'axios';
+
+interface RetryableRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
 
 const API_BASE_URL = 'https://yapify.net/api';
 
@@ -71,7 +75,7 @@ function rejectQueue(error: unknown) {
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as any; // Cast to any to add custom property
+    const originalRequest = error.config as RetryableRequestConfig;
 
     // Only handle 401 & ensure no double refresh attempt
     if (error.response?.status === 401 && originalRequest._retry) {

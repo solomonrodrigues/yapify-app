@@ -9,13 +9,13 @@ import {
   Animated,
   useColorScheme,
 } from 'react-native';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import { IconSymbol, type IconSymbolName } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useFeedFilter, FeedFilterType, FEED_FILTER_LABELS } from '@/context/FeedFilterContext';
 import * as Haptics from 'expo-haptics';
 
-const FILTER_OPTIONS: { type: FeedFilterType; icon: string; description: string }[] = [
+const FILTER_OPTIONS: { type: FeedFilterType; icon: IconSymbolName; description: string }[] = [
   { type: 'latest', icon: 'clock.fill', description: 'All recent quotes' },
   { type: 'guessable', icon: 'person.fill.viewfinder', description: 'Quotes you can guess' },
   { type: 'respondable', icon: 'bubble.left.fill', description: 'Quotes you can respond to' },
@@ -98,7 +98,7 @@ const FeedFilterDropdown: React.FC = () => {
               >
                 <View style={styles.optionLeft}>
                   <IconSymbol
-                    name={option.icon as any}
+                    name={option.icon}
                     size={18}
                     color={option.type === filter ? theme.accent : theme.text}
                     style={{ marginRight: 12 }}

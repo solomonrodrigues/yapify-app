@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LegendList } from '@legendapp/list';
 import FeedQuote from '@/components/FeedQuote';
 import { useFeedFilter } from '@/context/FeedFilterContext';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import { IconSymbol, type IconSymbolName } from '@/components/ui/IconSymbol';
 
 
 // Main Feed Component
@@ -59,7 +59,7 @@ const QuotesFeed: React.FC = () => {
     }
   };
 
-  const getEmptyIcon = () => {
+  const getEmptyIcon = (): IconSymbolName => {
     switch (filter) {
       case 'guessable':
         return 'person.fill.viewfinder';
@@ -85,7 +85,7 @@ const QuotesFeed: React.FC = () => {
     return (
       <ThemedView style={styles.centerContainer}>
         <IconSymbol
-          name={getEmptyIcon() as any}
+          name={getEmptyIcon()}
           size={48}
           color={theme.secondaryText}
           style={{ marginBottom: 16 }}

@@ -3,7 +3,7 @@ import { MinimalUser } from "@/types/api";
 export const formatNotificationParts = (
     type: string,
     sender: MinimalUser,
-    metadata: any
+    metadata: { fallbackText?: string }
 ) => {
     const name = sender.display_name || sender.username || "Someone";
   

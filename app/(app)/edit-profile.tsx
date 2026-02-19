@@ -4,7 +4,6 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors, ProfileColorHexMap } from '@/constants/Colors';
 import { useUser } from '@/context/UserContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import { updateProfile } from '@/lib/api/profile';
 import { getErrorMessage } from '@/lib/utils/error';
 import { ProfileColorEnum } from '@/types/api';
 import React, { useState } from 'react';

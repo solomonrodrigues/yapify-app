@@ -1,5 +1,5 @@
 // app/(app)/(modals)/quote-actions.tsx
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { IconSymbol, type IconSymbolName } from "@/components/ui/IconSymbol";
 import AssignUserModal from "@/components/modals/AssignUserModal";
 import QuoteEditModal from "@/components/modals/QuoteEditModal";
 import { ShareableQuote } from "@/components/ShareableQuote";
@@ -145,9 +145,9 @@ export default function QuoteActionsModal() {
           }
         },
       });
-    } catch (error: any) {
+    } catch (error) {
       const detail = getErrorMessage(error);
-      console.error("Report quote failed:", error?.response?.status, detail);
+      console.error("Report quote failed:", detail);
       Toast.show({ type: "error", text1: "Failed to report quote", text2: detail });
     }
     closeModal();
@@ -378,7 +378,7 @@ function ActionRow({
   isDark,
   theme,
 }: {
-  icon?: string;
+  icon?: IconSymbolName;
   label: string;
   subtitle?: string;
   onPress: () => void;
@@ -394,7 +394,7 @@ function ActionRow({
     <Pressable onPress={onPress} style={({ pressed }) => [styles.row, pressed && { backgroundColor: pressedBg }]}>
       {icon && (
         <IconSymbol
-          name={icon as any}
+          name={icon}
           size={20}
           color={textColor}
           style={{ marginRight: 12 }}
