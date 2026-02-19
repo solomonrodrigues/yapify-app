@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
+  Alert,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
@@ -20,6 +21,7 @@ import QuoteResponseAction from '@/components/QuoteResponseAction';
 import QuoteResponseBadge from '@/components/QuoteResponseBadge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getQuote, likeQuote, witnessQuote, guessQuote, respondToQuote } from '@/lib/api/quotes';
+import { getErrorMessage } from '@/lib/utils/error';
 import { useNavigation } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import PillActionButton from '@/components/PillActionButton';
@@ -146,7 +148,7 @@ const QuoteDetail: React.FC = () => {
         },
       });
     } catch (err) {
-      console.error('Error submitting guess:', err);
+      Alert.alert('Error', getErrorMessage(err));
     }
   };
 

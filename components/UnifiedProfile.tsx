@@ -69,6 +69,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   // State
   const [user, setUser] = useState<ProfileUser | null>(isOwnProfile ? currentUser : null);
   const [loading, setLoading] = useState(!isOwnProfile);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('posted');
   const [friendship, setFriendship] = useState<Friendship | null>(null);
 
@@ -153,7 +154,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
         setUser(userData);
         setFriendship(userData.friendship || null);
       } catch (error) {
-        console.error('Failed to load user:', error);
+        setLoadError(getErrorMessage(error));
       } finally {
         setLoading(false);
       }
@@ -525,6 +526,26 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   }
 
   if (!user) {
+    if (loadError) {
+      return (
+        <ThemedView style={styles.centerContainer}>
+          <ThemedText style={styles.centerText}>{"Couldn't load profile"}</ThemedText>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => {
+              setLoadError(null);
+              setLoading(true);
+              getUser(userId!).then((userData) => {
+                setUser(userData);
+                setFriendship(userData.friendship || null);
+              }).catch((e) => setLoadError(getErrorMessage(e))).finally(() => setLoading(false));
+            }}
+          >
+            <ThemedText style={styles.retryText}>Retry</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+      );
+    }
     return (
       <ThemedView style={styles.centerContainer}>
         <ThemedText style={styles.centerText}>User not found</ThemedText>
@@ -615,6 +636,19 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       marginTop: 16,
       fontSize: 16,
       color: theme.secondaryText,
+    },
+    retryButton: {
+      marginTop: 16,
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderColor: theme.border,
+    },
+    retryText: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: theme.text,
     },
     header: {
       flexDirection: 'row',

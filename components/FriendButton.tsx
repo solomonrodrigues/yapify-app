@@ -2,6 +2,7 @@
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 import { respondToFriendRequest, cancelFriendRequest, sendFriendRequest, unfriend } from '@/lib/api/friends';
+import { getErrorMessage } from '@/lib/utils/error';
 import type { Friendship } from '@/types/api';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, useColorScheme, View, type StyleProp, type ViewStyle, type TextStyle } from 'react-native';
@@ -59,7 +60,7 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
       setLocalFriendship(result);
       onFriendshipChange?.(result);
     } catch (err) {
-      console.error(`Failed to ${action} friend:`, err);
+      Alert.alert('Error', getErrorMessage(err));
     } finally {
       setLoading(false);
     }
