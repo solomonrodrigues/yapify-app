@@ -1,6 +1,7 @@
 import { apiLogin } from "@/lib/api/auth";
 import { refreshAuthTokens, setOnLogoutHandler } from "@/lib/api/client";
 import { clearTokens, getRefresh, setTokens } from "@/lib/utils/storage";
+import { isAxiosError } from "axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { View } from "react-native";
 
@@ -38,10 +39,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 3. If we got here, we’re authenticated
       setIsLoggedIn(true);
     } catch (e) {
-      // Refresh failed (expired, revoked, etc.)
-      console.warn(e);
-      await clearTokens();
-      setIsLoggedIn(false);
+      const isAuthError = isAxiosError(e) && (e.response?.status === 400 || e.response?.status === 401);
+      if (isAuthError) {
+        // Token is genuinely invalid — clear the session
+        await clearTokens();
+        setIsLoggedIn(false);
+      } else {
+        // Network or server error — the token may still be valid, don't nuke the session.
+        // Treat as logged in and let DataPreloader surface the failure with a retry option.
+        setIsLoggedIn(true);
+      }
     } finally {
       setIsLoading(false);
     }
