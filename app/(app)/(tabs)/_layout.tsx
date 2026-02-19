@@ -7,7 +7,6 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import QuotePostModal from '@/components/modals/QuotePostModal';
-import { Quote } from '@/types/api';
 import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { useUser } from '@/context/UserContext';
 import { useNotifications } from '@/context/NotificationsContext';
@@ -55,8 +54,6 @@ function TabContent() {
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const { user } = useUser();
   const { markAllAsRead, unreadCount } = useNotifications();
-
-  const handleQuoteCreated = (_newQuote: Quote) => {};
 
   const tabBarIconSize = Platform.OS === 'ios' ? 28 : 20
   const headerIconSize = Platform.OS === 'ios' ? 28 : 20
@@ -215,7 +212,6 @@ function TabContent() {
       <QuotePostModal
         visible={showQuoteModal}
         onClose={() => setShowQuoteModal(false)}
-        onQuoteCreated={handleQuoteCreated}
       />
     </>
   );
