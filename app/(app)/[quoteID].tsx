@@ -64,7 +64,7 @@ const QuoteDetail: React.FC = () => {
       setQuote(data);
       setGuessMade(!!data.has_guessed);
     } catch (err) {
-      setError('Failed to load quote');
+      setError("Couldn't load quote");
     } finally {
       setLoading(false);
     }

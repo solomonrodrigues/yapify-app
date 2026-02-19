@@ -84,7 +84,7 @@ const HiddenQuotesScreen = () => {
   if (!hasLoadedOnce && error) {
     return (
       <ThemedView style={styles.centerContainer}>
-        <ThemedText style={styles.emptyText}>Unable to load hidden quotes</ThemedText>
+        <ThemedText style={styles.emptyText}>Couldn't load hidden quotes</ThemedText>
         <TouchableOpacity style={styles.retryButton} onPress={() => loadQuotes()}>
           <Text style={styles.retryText}>Retry</Text>
         </TouchableOpacity>
