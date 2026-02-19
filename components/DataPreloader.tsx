@@ -17,8 +17,8 @@ const loadingMessages = [
 ];
 
 export function DataPreloader({ children }: { children: React.ReactNode }) {
-  const { loadQuotes, initialLoading: quotesInitialLoading, hasLoadedOnce: quotesLoaded } = useQuotes();
-  const { loadUser, loading: userLoading, hasLoadedOnce: userLoaded, user } = useUser(); // Get user object
+  const { loadQuotes, initialLoading: quotesInitialLoading, hasLoadedOnce: quotesLoaded, error: quotesError } = useQuotes();
+  const { loadUser, loading: userLoading, hasLoadedOnce: userLoaded, user } = useUser();
   const { fetchNotifications, hasLoadedOnce: notificationsLoaded } = useNotifications();
   const [loadingMessage, setLoadingMessage] = useState('');
 
@@ -52,14 +52,15 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
     }
   }, [quotesInitialLoading, userLoading, userLoaded, user]);
 
-  // Don't render children until we have essential data
+  // Don't render children until we have essential data.
+  // Exclude the error case — if quotes failed, pass through so the feed can show its own error UI.
   const showInitialLoading = (
-    quotesInitialLoading ||           // Still loading quotes initially
-    userLoading ||                    // Still loading user
-    (!user && !userLoaded) ||         // No user data and haven't finished loading attempt
-    (!quotesLoaded && !quotesInitialLoading) // Haven't started loading quotes yet
+    quotesInitialLoading ||                               // Still loading quotes initially
+    userLoading ||                                        // Still loading user
+    (!user && !userLoaded) ||                             // No user data and haven't finished loading attempt
+    (!quotesLoaded && !quotesInitialLoading && !quotesError) // Haven't triggered load yet
   );
-  
+
   if (showInitialLoading) {
     return (
       <ThemedView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

@@ -29,6 +29,7 @@ const NotificationsView: React.FC = () => {
     loading,
     refreshing,
     loadingMore,
+    error,
     hasLoadedOnce,
     fetchNotifications,
     loadMore,
@@ -73,18 +74,24 @@ const NotificationsView: React.FC = () => {
     );
   }
 
-  if (notifications.length === 0) {
+  if (!hasLoadedOnce && error) {
     return (
       <ThemedView style={styles.centerContainer}>
-        <ThemedText style={styles.emptyText}>
-          No notifications
-        </ThemedText>
+        <ThemedText style={styles.emptyText}>{"Couldn't load notifications"}</ThemedText>
         <TouchableOpacity
           style={[styles.retryButton, { borderColor: theme.accent }]}
           onPress={refresh}
         >
           <Text style={[styles.retryText, { color: theme.accent }]}>Retry</Text>
         </TouchableOpacity>
+      </ThemedView>
+    );
+  }
+
+  if (notifications.length === 0) {
+    return (
+      <ThemedView style={styles.centerContainer}>
+        <ThemedText style={styles.emptyText}>No notifications</ThemedText>
       </ThemedView>
     );
   }

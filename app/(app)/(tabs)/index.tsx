@@ -25,7 +25,7 @@ const QuotesFeed: React.FC = () => {
   const styles = useThemedStyles(getStyles);
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
-  const { quotes, refreshing, isLoadingMore, hasMore, refreshQuotes, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById, saveQuoteById, unsaveQuoteById, unhideQuoteById, respondToQuoteById } = useQuotes();
+  const { quotes, refreshing, isLoadingMore, hasMore, error, hasLoadedOnce, refreshQuotes, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById, saveQuoteById, unsaveQuoteById, unhideQuoteById, respondToQuoteById } = useQuotes();
   const insets = useSafeAreaInsets();
   const paddingTop = Platform.OS === 'ios' ? 0 : 16;
   const { filter } = useFeedFilter();
@@ -69,6 +69,17 @@ const QuotesFeed: React.FC = () => {
         return 'quote.bubble';
     }
   };
+
+  if (!hasLoadedOnce && error) {
+    return (
+      <ThemedView style={styles.centerContainer}>
+        <Text style={styles.emptyText}>{"Couldn't load quotes"}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={refreshQuotes}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
+      </ThemedView>
+    );
+  }
 
   if (!refreshing && quotes.length === 0) {
     return (
