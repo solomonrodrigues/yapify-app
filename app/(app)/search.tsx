@@ -8,6 +8,7 @@ import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { searchUsers } from "@/lib/api/friends";
 import { searchQuotes } from "@/lib/api/quotes";
 import { listRecentUsers, postRecentUserClick, deleteRecent } from "@/lib/api/recents";
+import { getErrorMessage } from "@/lib/utils/error";
 import { Quote, MinimalUser, PublicUserList } from "@/types/api";
 import { LegendList } from "@legendapp/list";
 import { useRouter } from "expo-router";
@@ -21,6 +22,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import { timeAgo } from "@/lib/utils/timeAgo";
 import { FilterPicker } from "@/components/FilterPicker";
 import { MONTH_KEYS, MONTH_MAP, MONTH_MAP_REVERSE } from "@/constants/Months";
@@ -41,6 +43,7 @@ const SearchScreen = () => {
   const [userResults, setUserResults] = useState<PublicUserList[]>([]);
   const [quoteResults, setQuoteResults] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [yearFilter, setYearFilter] = useState<number | null>(null);
   const [monthFilter, setMonthFilter] = useState<number | null>(null);
   const [recentUsers, setRecentUsers] = useState<MinimalUser[]>([]);
@@ -62,10 +65,12 @@ const SearchScreen = () => {
         setQuoteResults([]);
         setQuoteNextPage(null);
         setUserNextPage(null);
+        setSearchError(null);
         return;
       }
 
       setLoading(true);
+      setSearchError(null);
       try {
         if (scope === "users") {
           const response = await searchUsers(text);
@@ -77,7 +82,7 @@ const SearchScreen = () => {
           setQuoteNextPage(response.next ?? null);
         }
       } catch (err) {
-        console.error("Search error", err);
+        setSearchError(getErrorMessage(err));
         setUserResults([]);
         setQuoteResults([]);
         setQuoteNextPage(null);
@@ -104,7 +109,7 @@ const SearchScreen = () => {
         setUserNextPage(response.next ?? null);
       }
     } catch (err) {
-      console.error("Load more error", err);
+      Toast.show({ type: 'error', text1: 'Failed to load more results', text2: getErrorMessage(err) });
     } finally {
       setIsLoadingMore(false);
     }
@@ -303,9 +308,13 @@ const SearchScreen = () => {
             ListEmptyComponent={() => (
               <View style={styles.emptyContainer}>
                 <ThemedText style={styles.emptyText}>
-                  {query.length === 0 ? "Start typing to search." : "No results found."}
+                  {query.length === 0
+                    ? "Start typing to search."
+                    : searchError
+                    ? "Search failed. Check your connection."
+                    : "No results found."}
                 </ThemedText>
-                {query.length > 0 && (
+                {query.length > 0 && !searchError && (
                   <TouchableOpacity
                     style={styles.switchScopeButton}
                     onPress={() => setScope(scope === "users" ? "quotes" : "users")}
