@@ -128,6 +128,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/devices/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Register or deregister an Expo push token for the authenticated user. */
+        post: operations["devices_create"];
+        /** @description Register or deregister an Expo push token for the authenticated user. */
+        delete: operations["devices_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/friends/": {
         parameters: {
             query?: never;
@@ -270,7 +288,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description List user notifications */
+        /** @description List user notifications.
+         *
+         *     Groups are pre-built by the pipeline (one row per type/quote/friendship).
+         *     Actor User objects are batch-fetched in one query per page and blocked
+         *     actors are stripped in Python.  Groups where all actors are blocked are
+         *     excluded from the response. */
         get: operations["notifications_list"];
         put?: never;
         post?: never;
@@ -944,18 +967,17 @@ export interface components {
             readonly display_name: string;
             readonly profile_color: components["schemas"]["ProfileColorEnum"];
         };
-        /** @description Serializer for notifications */
+        /** @description Serializer for grouped notification records. */
         Notification: {
             readonly id: number;
-            readonly sender: components["schemas"]["MinimalUser"];
             notification_type: components["schemas"]["NotificationTypeEnum"];
-            title: string;
-            message: string;
+            readonly actors: string;
+            actor_count?: number;
+            quote?: number | null;
+            readonly friendship: components["schemas"]["Friendship"] | null;
             is_read?: boolean;
             /** Format: date-time */
-            readonly created_at: string;
-            quote?: number | null;
-            friendship: components["schemas"]["Friendship"] | null;
+            last_event_at: string;
         };
         /**
          * @description * `friend_request` - Friend Request
@@ -1472,6 +1494,42 @@ export interface operations {
         responses: {
             /** @description No response body */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    devices_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    devices_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
