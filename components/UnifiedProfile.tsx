@@ -583,7 +583,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <ThemedText style={styles.emptyText}>
-                {activeTab === 'posted' ? 'No quotes posted yet' : 'No quotes received yet'}
+                {activeTab === 'posted' ? 'No quotes posted yet.' : 'No quotes received yet.'}
               </ThemedText>
             </View>
           }

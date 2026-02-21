@@ -97,17 +97,6 @@ const SavedQuotesScreen = () => {
     );
   }
 
-  if (!refreshing && quotes.length === 0) {
-    return (
-      <ThemedView style={styles.centerContainer}>
-        <ThemedText style={styles.emptyText}>No saved quotes yet</ThemedText>
-        <TouchableOpacity style={styles.retryButton} onPress={refreshQuotes}>
-          <Text style={styles.retryText}>Refresh</Text>
-        </TouchableOpacity>
-      </ThemedView>
-    );
-  }
-
   return (
     <ThemedView>
       <View
@@ -134,10 +123,17 @@ const SavedQuotesScreen = () => {
           refreshing={refreshing}
           onRefresh={refreshQuotes}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.feedContainer}
+          contentContainerStyle={[styles.feedContainer, quotes.length === 0 && styles.emptyListContent]}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <ThemedText style={styles.emptyText}>
+                {"No saved quotes yet.\nTap the bookmark on any quote to save your favourites."}
+              </ThemedText>
+            </View>
+          }
         />
       </View>
     </ThemedView>
@@ -150,6 +146,14 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   StyleSheet.create({
     feedContainer: {
       paddingBottom: 48,
+      flexGrow: 1,
+    },
+    emptyListContent: {
+      justifyContent: 'center',
+    },
+    emptyContainer: {
+      alignItems: 'center',
+      paddingHorizontal: 32,
     },
     centerContainer: {
       flex: 1,

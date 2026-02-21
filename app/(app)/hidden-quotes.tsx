@@ -116,7 +116,7 @@ const HiddenQuotesScreen = () => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <ThemedText style={styles.emptyText}>
-                You don&apos;t have any hidden quotes
+                No hidden quotes.
               </ThemedText>
             </View>
           }

@@ -88,14 +88,6 @@ const NotificationsView: React.FC = () => {
     );
   }
 
-  if (notifications.length === 0) {
-    return (
-      <ThemedView style={styles.centerContainer}>
-        <ThemedText style={styles.emptyText}>No notifications</ThemedText>
-      </ThemedView>
-    );
-  }
-
   return (
     <ThemedView>
       <SafeAreaView edges={['bottom']} style={styles.container}>
@@ -118,7 +110,12 @@ const NotificationsView: React.FC = () => {
           onEndReachedThreshold={0.4}
           onEndReached={loadMore}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContainer}
+          contentContainerStyle={[styles.listContainer, notifications.length === 0 && styles.emptyListContent]}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <ThemedText style={styles.emptyText}>You're all caught up!</ThemedText>
+            </View>
+          }
           ListFooterComponent={
             loadingMore ? (
               <View style={{ paddingVertical: 12 }}>
@@ -139,6 +136,14 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingTop: 16,
     paddingBottom: 50,
+    flexGrow: 1,
+  },
+  emptyListContent: {
+    justifyContent: 'center',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    padding: 32,
   },
   centerContainer: {
     flex: 1,

@@ -51,11 +51,11 @@ const QuotesFeed: React.FC = () => {
   const getEmptyMessage = () => {
     switch (filter) {
       case 'guessable':
-        return "No quotes to guess right now";
+        return "All caught up on guesses!\nCheck back when friends post more.";
       case 'respondable':
-        return "No quotes to respond to";
+        return "Nothing waiting for your response.";
       default:
-        return "No quotes available";
+        return "Add friends and start sharing your group's funniest moments.";
     }
   };
 
@@ -77,25 +77,6 @@ const QuotesFeed: React.FC = () => {
         <TouchableOpacity style={styles.retryButton} onPress={refreshQuotes}>
           <Text style={styles.retryText}>Retry</Text>
         </TouchableOpacity>
-      </ThemedView>
-    );
-  }
-
-  if (!refreshing && quotes.length === 0) {
-    return (
-      <ThemedView style={styles.centerContainer}>
-        <IconSymbol
-          name={getEmptyIcon()}
-          size={48}
-          color={theme.secondaryText}
-          style={{ marginBottom: 16 }}
-        />
-        <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
-        {filter === 'latest' && (
-          <TouchableOpacity style={styles.retryButton} onPress={refreshQuotes}>
-            <Text style={styles.retryText}>Retry</Text>
-          </TouchableOpacity>
-        )}
       </ThemedView>
     );
   }
@@ -128,11 +109,22 @@ const QuotesFeed: React.FC = () => {
           refreshing={refreshing}
           onRefresh={refreshQuotes}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.feedContainer}
+          contentContainerStyle={[styles.feedContainer, quotes.length === 0 && styles.emptyListContent]}
           style={{ paddingTop: paddingTop }}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <IconSymbol
+                name={getEmptyIcon()}
+                size={48}
+                color={theme.secondaryText}
+                style={{ marginBottom: 16 }}
+              />
+              <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
+            </View>
+          }
         />
       </View>
     </ThemedView>
@@ -143,6 +135,14 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   StyleSheet.create({
     feedContainer: {
       paddingBottom: 48,
+      flexGrow: 1,
+    },
+    emptyListContent: {
+      justifyContent: 'center',
+    },
+    emptyContainer: {
+      alignItems: 'center',
+      paddingHorizontal: 32,
     },
     centerContainer: {
       flex: 1,
@@ -150,10 +150,6 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       alignItems: 'center',
       padding: 20,
       backgroundColor: theme.background,
-    },
-    contentContainer: {
-      marginBottom: 20,
-      paddingVertical: 8,
     },
     emptyText: {
       fontSize: 18,
