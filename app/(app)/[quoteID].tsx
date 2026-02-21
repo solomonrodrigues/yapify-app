@@ -75,15 +75,6 @@ const QuoteDetail: React.FC = () => {
   }, [fetchQuote, quoteID]);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      if (quote) {
-        fetchQuote();
-      }
-    });
-    return unsubscribe;
-  }, [navigation, quote, fetchQuote]);
-
-  useEffect(() => {
     setShowGuessModal(false);
   }, [quoteID]);
 
