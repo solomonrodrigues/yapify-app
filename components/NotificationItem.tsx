@@ -11,6 +11,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
+import { router } from 'expo-router';
 import { timeAgo } from "@/lib/utils/timeAgo";
 
 // Individual Notification Component
@@ -69,16 +70,35 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
   // For friend_request notifications the current user is the receiver; the actor is friendship.sender
   const friendUserId = friendship?.sender?.id;
 
-  // Schema says actors is a string, but the backend may return a MinimalUser or MinimalUser[]
-  const actorLabel = (() => {
-    if (typeof actors === 'string') return actors;
-    type Actor = { display_name?: string; username?: string };
-    if (Array.isArray(actors)) {
-      return (actors as Actor[]).map((a) => a.display_name ?? a.username ?? '').filter(Boolean).join(', ');
-    }
-    const a = actors as unknown as Actor;
-    return a?.display_name ?? a?.username ?? '';
-  })();
+  // actors is MinimalUser[] from the backend (schema type is inaccurate)
+  type Actor = { id?: number; display_name?: string; username?: string };
+  const actorArr: Actor[] = Array.isArray(actors)
+    ? (actors as Actor[])
+    : typeof actors === 'object' && actors !== null
+    ? [actors as Actor]
+    : [{ display_name: String(actors) }];
+
+  const renderActorNames = () =>
+    actorArr.map((actor, i) => {
+      const name = actor.display_name ?? actor.username ?? '';
+      const isLast = i === actorArr.length - 1;
+      const suffix = isLast
+        ? ''
+        : actorArr.length === 2 || i < actorArr.length - 2
+        ? (i === actorArr.length - 2 ? ' and ' : ', ')
+        : ', and ';
+      return (
+        <React.Fragment key={actor.id ?? i}>
+          <Text
+            style={styles.actorName}
+            onPress={actor.id !== undefined ? () => router.push({ pathname: '/user/[userID]', params: { userID: actor.id! } }) : undefined}
+          >
+            {name}
+          </Text>
+          {suffix}
+        </React.Fragment>
+      );
+    });
 
   const handleReadToggle = () => {
     if (is_read) {
@@ -171,7 +191,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
         {/* Middle: Text block */}
         <View style={styles.body}>
           <Text style={[styles.primaryLine, { color: theme.text }]}>
-            <Text style={styles.actorName}>{actorLabel}</Text>
+            {renderActorNames()}
             {' '}{actionText}
           </Text>
           <View style={styles.metaRow}>
