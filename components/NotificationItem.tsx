@@ -1,7 +1,7 @@
 import { Colors } from '@/constants/Colors';
 import { IconSymbol, type IconSymbolName } from "./ui/IconSymbol";
 import { FriendButton } from "./FriendButton";
-import { Friendship, MinimalUser, Notification } from '@/types/api';
+import { Friendship, Notification } from '@/types/api';
 import React, { useRef } from 'react';
 import {
   Animated,
@@ -11,15 +11,13 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
-import { InitialsAvatar } from "@/components/InitialsAvatar";
 import { timeAgo } from "@/lib/utils/timeAgo";
-import { formatNotificationParts } from "@/lib/utils/notifications";
 
 // Individual Notification Component
 interface NotificationItemProps {
   notification: Notification;
   theme: typeof Colors.light | typeof Colors.dark;
-  onPress: (id: number) => void;
+  onPress: () => void;
   onFriendshipChange: (notificationId: number, friendship: Friendship | null) => void;
   onMarkUnread?: (id: number) => void;
   onMarkRead?: (id: number) => void;
@@ -33,7 +31,14 @@ const typeIconMap: Record<string, IconSymbolName | undefined> = {
   quote_witnessed: 'eye.fill',
   friend_request: 'person',
   friend_accepted: 'checkmark.circle.fill',
-  system: 'bell.fill',
+};
+
+const typeActionMap: Record<string, string> = {
+  new_quote: 'posted a quote about you.',
+  quote_liked: 'liked your quote.',
+  quote_witnessed: 'witnessed your quote.',
+  friend_request: 'sent you a friend request.',
+  friend_accepted: 'accepted your friend request.',
 };
 
 const ACTION_WIDTH = 72;
@@ -51,24 +56,29 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
 
   const {
     id,
-    sender,
-    title,
-    message,
+    actors,
     is_read,
-    created_at,
+    last_event_at,
     notification_type,
     friendship,
   } = notification;
 
   const iconName = typeIconMap[notification_type] ?? 'bell';
-
-  const { actor, action, object } = formatNotificationParts(
-    notification_type,
-    sender,
-    { fallbackText: message ?? "" }
-  );
-
+  const actionText = typeActionMap[notification_type] ?? '';
   const isFriendRequest = notification_type === 'friend_request';
+  // For friend_request notifications the current user is the receiver; the actor is friendship.sender
+  const friendUserId = friendship?.sender?.id;
+
+  // Schema says actors is a string, but the backend may return a MinimalUser or MinimalUser[]
+  const actorLabel = (() => {
+    if (typeof actors === 'string') return actors;
+    type Actor = { display_name?: string; username?: string };
+    if (Array.isArray(actors)) {
+      return (actors as Actor[]).map((a) => a.display_name ?? a.username ?? '').filter(Boolean).join(', ');
+    }
+    const a = actors as unknown as Actor;
+    return a?.display_name ?? a?.username ?? '';
+  })();
 
   const handleReadToggle = () => {
     if (is_read) {
@@ -145,59 +155,31 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
         style={[
           styles.notificationRow,
           {
-            // Only highlight unread notifications
             backgroundColor: !is_read
               ? (theme.cardHighlight ?? theme.unreadBackground ?? theme.cardBackground)
               : theme.background ?? 'transparent',
           },
         ]}
-        onPress={() => onPress(id)}
+        onPress={onPress}
         activeOpacity={0.7}
       >
-        {/* Left: Avatar + type icon badge */}
-        <View style={styles.left}>
-          <View style={styles.avatarWrapper}>
-            <InitialsAvatar
-              user={sender as MinimalUser}
-              size={44}
-              style={styles.avatar}
-            />
-            {iconName && (
-              <View
-                style={[
-                  styles.iconBadge,
-                  { backgroundColor: theme.background },
-                ]}
-              >
-                <IconSymbol
-                  name={iconName}
-                  size={12}
-                  color={theme.secondaryText}
-                />
-              </View>
-            )}
-          </View>
+        {/* Left: type icon in a circle */}
+        <View style={[styles.iconCircle, { backgroundColor: theme.cardBackground }]}>
+          <IconSymbol name={iconName} size={20} color={theme.secondaryText} />
         </View>
 
         {/* Middle: Text block */}
         <View style={styles.body}>
           <Text style={[styles.primaryLine, { color: theme.text }]}>
-            <Text style={styles.senderName}>{actor}</Text>
-            {" "}{action}
-            {object ? " " + object : ""}
+            <Text style={styles.actorName}>{actorLabel}</Text>
+            {' '}{actionText}
           </Text>
-
           <View style={styles.metaRow}>
             {!is_read && (
-              <View
-                style={[
-                  styles.unreadDot,
-                  { backgroundColor: theme.accent },
-                ]}
-              />
+              <View style={[styles.unreadDot, { backgroundColor: theme.accent }]} />
             )}
             <Text style={[styles.time, { color: theme.tertiaryText }]}>
-              {timeAgo(created_at)}
+              {timeAgo(last_event_at)}
             </Text>
           </View>
         </View>
@@ -205,12 +187,14 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
         {/* Right: contextual action */}
         <View style={styles.right}>
           {isFriendRequest ? (
-            <FriendButton
-              userId={(sender as MinimalUser).id}
-              friendship={friendship ?? null}
-              variant="inline"
-              onFriendshipChange={(f) => onFriendshipChange(notification.id, f)}
-            />
+            friendUserId !== undefined && (
+              <FriendButton
+                userId={friendUserId}
+                friendship={friendship ?? null}
+                variant="inline"
+                onFriendshipChange={(f) => onFriendshipChange(id, f)}
+              />
+            )
           ) : (
             <IconSymbol
               name="chevron.right"
@@ -251,25 +235,14 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    // full-width row look; separators handled by FlatList/itemSeparator
   },
-  left: {
-    marginRight: 10,
-  },
-  avatarWrapper: {
-    position: 'relative',
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  avatar: {},
-  iconBadge: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    borderRadius: 999,
-    padding: 3,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'transparent',
+    marginRight: 10,
   },
   body: {
     flex: 1,
@@ -279,12 +252,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 18,
   },
-  senderName: {
+  actorName: {
     fontWeight: '700',
-  },
-  secondaryLine: {
-    fontSize: 13,
-    marginTop: 2,
   },
   metaRow: {
     flexDirection: 'row',
