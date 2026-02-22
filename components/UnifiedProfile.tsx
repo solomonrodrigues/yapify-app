@@ -438,7 +438,25 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
               </ReAnimated.View>
             </Pressable>
             <View style={styles.headerInfo}>
-              <ThemedText type="title">{user.display_name}</ThemedText>
+              <View style={styles.nameRow}>
+                <ThemedText type="title" style={styles.displayName}>{user.display_name}</ThemedText>
+                {(currentStreak > 0 || longestStreak > 0) && (
+                  <View style={styles.inlineStreaks}>
+                    {currentStreak > 0 && (
+                      <View style={styles.inlineStreakItem}>
+                        <IconSymbol name="flame.fill" size={13} color="#FF5722" />
+                        <ThemedText style={styles.inlineStreakValue}>{currentStreak}</ThemedText>
+                      </View>
+                    )}
+                    {longestStreak > 0 && (
+                      <View style={styles.inlineStreakItem}>
+                        <IconSymbol name="trophy.fill" size={12} color="#F9A825" />
+                        <ThemedText style={styles.inlineStreakValue}>{longestStreak}</ThemedText>
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
               <ThemedText style={styles.username}>@{user.username}</ThemedText>
               {'bio' in user && user.bio && (
                 <ThemedText style={styles.bio}>{user.bio}</ThemedText>
@@ -486,25 +504,6 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Streak Row */}
-          {(currentStreak > 0 || longestStreak > 0) && (
-            <View style={styles.streakRow}>
-              <View style={[styles.streakCard, { backgroundColor: hexToRgba(userProfileColor, 0.08), borderColor: hexToRgba(userProfileColor, 0.15) }]}>
-                <ThemedText style={styles.streakEmoji}>🔥</ThemedText>
-                <View>
-                  <ThemedText style={styles.streakValue}>{currentStreak}</ThemedText>
-                  <ThemedText style={styles.streakLabel}>Guess streak</ThemedText>
-                </View>
-              </View>
-              <View style={[styles.streakCard, { backgroundColor: hexToRgba(userProfileColor, 0.08), borderColor: hexToRgba(userProfileColor, 0.15) }]}>
-                <ThemedText style={styles.streakEmoji}>👑</ThemedText>
-                <View>
-                  <ThemedText style={styles.streakValue}>{longestStreak}</ThemedText>
-                  <ThemedText style={styles.streakLabel}>Best streak</ThemedText>
-                </View>
-              </View>
-            </View>
-          )}
         </View>
 
         {/* Tabs */}
@@ -664,7 +663,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     username: {
       color: theme.secondaryText,
       fontSize: 15,
-      marginTop: 4,
+      marginTop: 0,
     },
     bio: {
       color: theme.text,
@@ -696,33 +695,30 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       color: theme.secondaryText,
       fontSize: 13,
     },
-    streakRow: {
+    nameRow: {
       flexDirection: 'row',
-      paddingHorizontal: 16,
-      gap: 12,
-      marginBottom: 16,
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
     },
-    streakCard: {
+    displayName: {
       flex: 1,
+      marginRight: 8,
+    },
+    inlineStreaks: {
+      flexDirection: 'column',
+      alignItems: 'flex-end',
+      gap: 4,
+    },
+    inlineStreakItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: 12,
-      borderRadius: 12,
-      borderWidth: 1,
-      gap: 10,
+      gap: 4,
     },
-    streakEmoji: {
-      fontSize: 20,
-    },
-    streakValue: {
-      fontSize: 15,
-      fontWeight: '600',
+    inlineStreakValue: {
+      fontSize: 14,
+      fontWeight: '700',
+      lineHeight: 14,
       color: theme.text,
-    },
-    streakLabel: {
-      fontSize: 12,
-      color: theme.secondaryText,
-      marginTop: 1,
     },
     tabsContainer: {
       flexDirection: 'row',
