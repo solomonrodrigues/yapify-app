@@ -1,4 +1,5 @@
 // app/_layout.tsx
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider } from '@/context/AuthContext';
 import { BlockedUsersProvider } from '@/context/BlockedUsersContext';
 import { FeedFilterProvider } from '@/context/FeedFilterContext';
@@ -31,6 +32,7 @@ export default function RootLayout() {
   const theme = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
 
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <UserProvider>
         <BlockedUsersProvider>
@@ -66,5 +68,6 @@ export default function RootLayout() {
         </BlockedUsersProvider>
       </UserProvider>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }
