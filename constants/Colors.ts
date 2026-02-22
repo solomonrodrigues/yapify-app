@@ -56,6 +56,7 @@ export const Colors = {
     accent: '#2da7ff',        // lighter pastel blue
     likeButton: '#FF0066',    // neon magenta-red
     witnessButton: '#00FF9F', // synthwave mint
+    friendColor: '#A78BFA',   // soft purple for friend-related actions
     border: '#e5e5e5',
   },
   dark: {
@@ -103,6 +104,7 @@ export const Colors = {
     accent: '#2da7ff',        // lighter pastel blue
     likeButton: '#FF0066',    // neon magenta-red
     witnessButton: '#00FF9F', // synthwave mint
+    friendColor: '#A78BFA',   // soft purple for friend-related actions
     border: '#272727ff',
   },
 };

@@ -34,6 +34,7 @@ const typeIconMap: Record<string, IconSymbolName | undefined> = {
   friend_accepted: 'checkmark.circle.fill',
 };
 
+
 const typeActionMap: Record<string, string> = {
   new_quote: 'posted a quote about you.',
   quote_liked: 'liked your quote.',
@@ -65,6 +66,14 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
   } = notification;
 
   const iconName = typeIconMap[notification_type] ?? 'bell';
+  const typeColorMap: Record<string, { icon: string; bg: string }> = {
+    new_quote:       { icon: theme.accent,        bg: theme.accent + '22' },
+    quote_liked:     { icon: theme.likeButton,    bg: theme.likeButton + '22' },
+    quote_witnessed: { icon: theme.witnessButton, bg: theme.witnessButton + '22' },
+    friend_request:  { icon: theme.friendColor,   bg: theme.friendColor + '22' },
+    friend_accepted: { icon: theme.friendColor,   bg: theme.friendColor + '22' },
+  };
+  const iconColors = typeColorMap[notification_type] ?? { icon: theme.secondaryText, bg: theme.cardBackground };
   const actionText = typeActionMap[notification_type] ?? '';
   const isFriendRequest = notification_type === 'friend_request';
   // For friend_request notifications the current user is the receiver; the actor is friendship.sender
@@ -184,8 +193,8 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
         activeOpacity={0.7}
       >
         {/* Left: type icon in a circle */}
-        <View style={[styles.iconCircle, { backgroundColor: theme.cardBackground }]}>
-          <IconSymbol name={iconName} size={20} color={theme.secondaryText} />
+        <View style={[styles.iconCircle, { backgroundColor: iconColors.bg }]}>
+          <IconSymbol name={iconName} size={20} color={iconColors.icon} />
         </View>
 
         {/* Middle: Text block */}
