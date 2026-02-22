@@ -90,14 +90,14 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
           // This is handled by AcceptRejectButtons for inline variant
           return {
             text: 'Requested',
-            style: { backgroundColor: theme.cardBackground, borderWidth: 1, borderColor: theme.divider },
+            style: { backgroundColor: theme.elevatedBackground, borderWidth: 1, borderColor: theme.cardBorder },
             textStyle: { color: theme.text, fontWeight: '600' as const },
             action: 'cancel',
           };
         } else {
           return {
             text: 'Requested',
-            style: { backgroundColor: theme.cardBackground, borderWidth: 1, borderColor: theme.divider },
+            style: { backgroundColor: theme.elevatedBackground, borderWidth: 1, borderColor: theme.cardBorder },
             textStyle: { color: theme.text, fontWeight: '600' as const },
             action: 'cancel',
           };
@@ -105,7 +105,7 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
       case 'accepted':
         return {
           text: 'Friends',
-          style: { backgroundColor: theme.cardBackground, borderWidth: 1, borderColor: theme.divider },
+          style: { backgroundColor: theme.elevatedBackground, borderWidth: 1, borderColor: theme.cardBorder },
           textStyle: { color: theme.text, fontWeight: '600' as const },
           action: 'unfriend',
         };
@@ -223,7 +223,7 @@ const AcceptRejectButtons: React.FC<AcceptRejectButtonsProps> = ({
         )}
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.rejectButton, { backgroundColor: theme.cardBackground, borderWidth: 1, borderColor: theme.divider }]}
+        style={[styles.rejectButton, { backgroundColor: theme.elevatedBackground, borderWidth: 1, borderColor: theme.cardBorder }]}
         onPress={onReject}
         disabled={loading}
         activeOpacity={0.7}

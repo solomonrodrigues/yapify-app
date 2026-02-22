@@ -17,6 +17,7 @@ export const Colors = {
     tertiaryText: '#666',
     background: '#fff',          // page background
     cardBackground: '#f8f9fa',   // activity cards or sections
+    elevatedBackground: '#eef0f2', // surface elevated above cardBackground (e.g. buttons on card surfaces)
     cardBorder: '#fff',
     inputBorder: '#ccc',
     avatarBorder: 'transparent',
@@ -65,6 +66,7 @@ export const Colors = {
     tertiaryText: '#666',
     background: '#0e1113',
     cardBackground: '#181c1f',    // activity cards or sections
+    elevatedBackground: '#252b2f', // surface elevated above cardBackground (e.g. buttons on card surfaces)
     cardBorder: '#26292a',
     inputBorder: '#ccc',
     avatarBorder: '#2d2d2dff',
