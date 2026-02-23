@@ -50,3 +50,7 @@ export const hasCompletedOnboarding = async (): Promise<boolean> => {
     return false;
   }
 };
+
+export const resetOnboarding = async () => {
+  await SecureStore.deleteItemAsync(ONBOARDING_KEY);
+};

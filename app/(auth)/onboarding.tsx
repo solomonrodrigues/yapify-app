@@ -261,11 +261,7 @@ export default function OnboardingScreen() {
   const handleFinish = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     await markOnboardingComplete();
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/(app)/(tabs)');
-    }
+    router.replace('/(auth)');
   };
 
   const DoneButton = () => (

@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useRouter } from 'expo-router';
 import { Alert, FlatList, Pressable, TextStyle, useColorScheme, View } from 'react-native';
+import { resetOnboarding } from '@/lib/utils/storage';
 
 type MenuItem = {
   title: string;
@@ -20,6 +21,18 @@ export default function MyAccountScreen() {
   const styles = useThemedStyles(getStyles);
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
+
+  function handleResetOnboarding() {
+    Alert.alert("Reset Onboarding", "Onboarding will show again next time you log out and back in.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Reset",
+        onPress: async () => {
+          await resetOnboarding();
+        },
+      },
+    ]);
+  }
 
   async function handleLogout() {
     Alert.alert("Confirm Logout", "Are you sure you want to log out?", [
@@ -56,9 +69,9 @@ export default function MyAccountScreen() {
       onPress: () => router.push("/help-support"),
     },
     {
-      title: "Onboarding",
+      title: "Reset Onboarding",
       icon: "sparkles",
-      onPress: () => router.push("/onboarding"),
+      onPress: handleResetOnboarding,
     },
     {
       title: "Log out",
