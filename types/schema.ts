@@ -1226,6 +1226,20 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /** @description Response serializer for guess creation — includes updated streak values. */
+        QuoteGuessCreateResponse: {
+            readonly id: number;
+            readonly user: number;
+            quote: number;
+            /** @description The friend they guessed. Null if skipped. */
+            guessed_user?: number | null;
+            readonly correct: boolean | null;
+            skipped?: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly current_streak: number;
+            readonly longest_streak: number;
+        };
         /** @description Serializer for listing guesses on a quote with friendship status */
         QuoteGuessListItem: {
             readonly id: number;
@@ -1714,7 +1728,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QuoteGuess"];
+                    "application/json": components["schemas"]["QuoteGuessCreateResponse"];
                 };
             };
         };
