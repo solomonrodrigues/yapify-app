@@ -15,14 +15,27 @@ import {
   witnessQuote,
 } from "@/lib/api/quotes";
 import { getErrorMessage } from "@/lib/utils/error";
+import { useUser } from "@/context/UserContext";
 import { MinimalUser, PaginatedQuoteList, Quote } from "@/types/api";
 import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { Alert } from "react-native";
+
+export type MilestoneMessage = { text1: string; text2: string };
+
+const STREAK_MILESTONES = [5, 10, 25, 50, 100] as const;
+const MILESTONE_MESSAGES: Record<number, MilestoneMessage> = {
+  5:   { text1: '🔥 5 streak!',   text2: 'Keep it going.' },
+  10:  { text1: '🔥 10 streak!',  text2: "You're on fire." },
+  25:  { text1: '🔥 25 streak!',  text2: 'Absolutely unstoppable.' },
+  50:  { text1: '🔥 50 streak!',  text2: 'Legendary.' },
+  100: { text1: '🔥 100 streak!', text2: 'Hall of fame.' },
+};
 
 // Simple global visibility bus so that hide/unhide actions
 // propagate across all active quote feeds (main feed, profile feeds, saved feed, etc).
@@ -74,7 +87,7 @@ export interface QuotesFeedValue {
     id: number,
     guessedUserId?: number,
     skipped?: boolean
-  ) => Promise<void>;
+  ) => Promise<{ milestoneMessage?: MilestoneMessage } | null>;
   saveQuoteById: (id: number) => Promise<void>;
   unsaveQuoteById: (id: number) => Promise<void>;
   hideQuoteById: (id: number) => Promise<void>;
@@ -97,6 +110,12 @@ interface UseQuotesFeedOptions {
 export function useQuotesFeed(
   { scope = null, fetcher }: UseQuotesFeedOptions = {}
 ): QuotesFeedValue {
+  const { user, patchUser } = useUser();
+  const prevLongestRef = useRef(user?.longest_streak ?? 0);
+  useEffect(() => {
+    prevLongestRef.current = user?.longest_streak ?? 0;
+  }, [user]);
+
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [initialLoading, setInitialLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -278,11 +297,34 @@ export function useQuotesFeed(
 
       try {
         const result = await guessQuote(id, guessedUserId, skipped);
+
+        // Destructure streak fields out before storing as QuoteGuess
+        const { current_streak, longest_streak, ...guessData } = result;
         setQuotes((prev) =>
           prev.map((q) =>
-            q.id === id ? { ...q, guess: result, has_guessed: true } : q
+            q.id === id ? { ...q, guess: guessData, has_guessed: true } : q
           )
         );
+
+        // Update in-memory user profile with latest streak values
+        patchUser({ current_streak, longest_streak });
+
+        // Compute milestone message for the caller to display inline
+        if (result.correct === true) {
+          const isMilestone = (STREAK_MILESTONES as readonly number[]).includes(current_streak);
+          if (isMilestone) {
+            return { milestoneMessage: MILESTONE_MESSAGES[current_streak] };
+          } else if (longest_streak > prevLongestRef.current && current_streak > 1) {
+            return {
+              milestoneMessage: {
+                text1: '🏆 New personal best!',
+                text2: `${current_streak} in a row`,
+              },
+            };
+          }
+          return {};
+        }
+        return null;
       } catch (e) {
         setQuotes((prev) =>
           prev.map((q) =>
@@ -298,9 +340,10 @@ export function useQuotesFeed(
           )
         );
         Alert.alert('Error', getErrorMessage(e));
+        return null;
       }
     },
-    []
+    [patchUser]
   );
 
   const saveQuoteById = useCallback(async (id: number) => {

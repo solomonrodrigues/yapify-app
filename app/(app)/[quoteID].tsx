@@ -28,6 +28,7 @@ import PillActionButton from '@/components/PillActionButton';
 import { getPastelFromId } from '@/lib/utils/style';
 import { timeAgo } from '@/lib/utils/timeAgo';
 import { useQuoteActionsModal } from '@/context/QuoteActionsModalContext';
+import { useUser } from '@/context/UserContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
@@ -39,6 +40,7 @@ const QuoteDetail: React.FC = () => {
   const navigation = useNavigation();
   const router = useRouter();
   const { openModal } = useQuoteActionsModal();
+  const { patchUser } = useUser();
 
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(true);
@@ -124,6 +126,7 @@ const QuoteDetail: React.FC = () => {
     if (!quote) return;
     try {
       const result = await guessQuote(quote.id, userId, skipped);
+      patchUser({ current_streak: result.current_streak, longest_streak: result.longest_streak });
       setGuessMade(true);
       setQuote({
         ...quote,

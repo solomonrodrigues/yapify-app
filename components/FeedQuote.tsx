@@ -1,4 +1,5 @@
 import GuessGameModal from '@/components/modals/GuessGameModal';
+import type { MilestoneMessage } from '@/hooks/useQuotesFeed';
 import GuessesModal from '@/components/modals/GuessesModal';
 import PillActionButton from '@/components/PillActionButton';
 import QuoteResponseAction from '@/components/QuoteResponseAction';
@@ -30,7 +31,7 @@ interface FeedQuoteProps {
   index?: number;
   onLike: (quoteId: number) => void;
   onWitness: (quoteId: number) => void;
-  onGuess: (quoteId: number, guessedUserId?: number, skipped?: boolean) => void;
+  onGuess: (quoteId: number, guessedUserId?: number, skipped?: boolean) => Promise<{ milestoneMessage?: MilestoneMessage } | null>;
   onSave?: (quoteId: number) => void;
   onUnsave?: (quoteId: number) => void;
   onUnhide?: (quoteId: number) => void;
@@ -70,6 +71,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
 
   const [guessMade, setGuessMade] = useState(!!quote.has_guessed);
   const [showGuessModal, setShowGuessModal] = useState(false);
+  const [milestoneMessage, setMilestoneMessage] = useState<MilestoneMessage | null>(null);
   const [showGuessesModal, setShowGuessesModal] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [showWitnessesModal, setShowWitnessesModal] = useState(false);
@@ -86,12 +88,14 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
   // Show "Guesses" list (not the game) if already guessed or can't guess but options exist (author)
   const hasGuessedAlready = guessMade || quote.has_guessed || (!quote.can_guess && hasGuessOptions);
 
-  const handleGuess = (userId?: number, skipped?: boolean) => {
-    onGuess(quote.id, userId, skipped);
+  const handleGuess = async (userId?: number, skipped?: boolean) => {
+    const result = await onGuess(quote.id, userId, skipped);
     setGuessMade(true);
+    setMilestoneMessage(result?.milestoneMessage ?? null);
   };
 
   const openGuessModal = () => {
+    setMilestoneMessage(null);
     setShowGuessModal(true);
   };
 
@@ -329,6 +333,7 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
         onGuess={handleGuess}
         theme={theme}
         accent={pastelColor}
+        milestoneMessage={milestoneMessage}
       />
 
       <UserListModal

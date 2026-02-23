@@ -1,4 +1,4 @@
-import { Quote, PaginatedQuoteList, ReportReasonEnum } from '../../types/api';
+import { Quote, PaginatedQuoteList, ReportReasonEnum, QuoteGuessCreateResponse } from '../../types/api';
 import api from './client';
 
 export type FeedScope =
@@ -88,8 +88,8 @@ export const guessQuote = async (
   quoteId: number,
   guessedUserId?: number,
   skipped = false
-) => {
-  const res = await api.post<{ id: number; user: number; quote: number; guessed_user?: number | null; correct: boolean | null; skipped: boolean; created_at: string }>(
+): Promise<QuoteGuessCreateResponse> => {
+  const res = await api.post<QuoteGuessCreateResponse>(
     `/guesses/create/`,
     {
       quote: quoteId,

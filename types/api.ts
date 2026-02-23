@@ -29,6 +29,7 @@ export type RecentSearchCreate = components["schemas"]["RecentSearchCreate"];
 export type RecentSearchItem = components["schemas"]["RecentSearchItem"];
 export type QuotedUserResponseEnum = components["schemas"]["QuotedUserResponseEnum"];
 export type QuoteGuessListItem = components["schemas"]["QuoteGuessListItem"];
+export type QuoteGuessCreateResponse = components["schemas"]["QuoteGuessCreateResponse"];
 export type PasswordResetRequest = components["schemas"]["PasswordResetRequest"];
 export type PasswordResetConfirm = components["schemas"]["PasswordResetConfirm"];
 export type DetailResponse = components["schemas"]["DetailResponse"];

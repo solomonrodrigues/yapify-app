@@ -20,7 +20,6 @@ import Animated, {
   FadeInUp,
   useAnimatedStyle,
   useSharedValue,
-  withSequence,
   withSpring,
   ZoomIn,
 } from 'react-native-reanimated';
@@ -34,6 +33,7 @@ interface GuessGameModalProps {
   onGuess: (guessedUserId?: number, skipped?: boolean) => void;
   theme: typeof Colors.light | typeof Colors.dark;
   accent: string;
+  milestoneMessage?: { text1: string; text2: string } | null;
 }
 
 const GuessGameModal: React.FC<GuessGameModalProps> = ({
@@ -43,6 +43,7 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
   onGuess,
   theme,
   accent,
+  milestoneMessage,
 }) => {
   const styles = useThemedStyles(getModalStyles);
   const { width: screenWidth } = useWindowDimensions();
@@ -73,15 +74,15 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
     };
   }, [accent, theme]);
 
-  const successScale = useSharedValue(1);
+  const successScale = useSharedValue(0);
 
   React.useEffect(() => {
     if (hasSubmitted && quote?.guess?.correct) {
-      successScale.value = 0.94;
-      successScale.value = withSequence(
-        withSpring(1.08, { damping: 14, stiffness: 300 }),
-        withSpring(1, { damping: 16, stiffness: 240 })
-      );
+      successScale.value = withSpring(1, {
+        damping: 16,
+        stiffness: 260,
+        overshootClamping: true,
+      });
     }
   }, [hasSubmitted, quote?.guess?.correct, successScale]);
 
@@ -338,7 +339,7 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
               <>
                 {/* Result banner */}
                 <Animated.View
-                  entering={ZoomIn.springify().damping(16)}
+                  entering={FadeIn.duration(220)}
                   style={styles.resultWrap}
                 >
                   <Animated.View
@@ -399,6 +400,20 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
                     <LockedTile key={option.id} option={option} />
                   ))}
                 </View>
+
+                {quote.guess?.correct && milestoneMessage && (
+                  <Animated.View
+                    entering={FadeInDown.delay(350).duration(400).springify()}
+                    style={styles.milestoneWrap}
+                  >
+                    <Text style={[styles.milestoneText1, { color: palette.text }]}>
+                      {milestoneMessage.text1}
+                    </Text>
+                    <Text style={[styles.milestoneText2, { color: palette.textMuted }]}>
+                      {milestoneMessage.text2}
+                    </Text>
+                  </Animated.View>
+                )}
 
                 {/* Done */}
                 <Animated.View entering={FadeIn.delay(300).duration(300)} style={styles.doneWrap}>
@@ -585,6 +600,23 @@ const getModalStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     resultLabel: {
       fontSize: 16,
       fontWeight: '700',
+    },
+
+    // ---- Milestone ----
+    milestoneWrap: {
+      alignItems: 'center',
+      marginTop: 24,
+    },
+    milestoneText1: {
+      fontSize: 18,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    milestoneText2: {
+      fontSize: 14,
+      fontWeight: '500',
+      textAlign: 'center',
+      marginTop: 3,
     },
 
     // ---- Done ----

@@ -11,6 +11,7 @@ interface UserContextValue {
   hasLoadedOnce: boolean;
   loadUser: () => Promise<void>;
   updateUser: (updates: Partial<User>) => Promise<void>;
+  patchUser: (updates: Partial<User>) => void;
   refetch: () => Promise<void>;
 }
 
@@ -52,6 +53,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const patchUser = useCallback((updates: Partial<User>) => {
+    setUser((prev) => prev ? { ...prev, ...updates } : prev);
+  }, []);
+
   return (
     <UserContext.Provider value={{
       user,
@@ -60,6 +65,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       hasLoadedOnce,
       loadUser,
       updateUser,
+      patchUser,
       refetch: loadUser,
     }}>
       {children}
