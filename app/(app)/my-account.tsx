@@ -3,9 +3,10 @@ import { ThemedText } from '@/components/ThemedText';
 import { IconSymbol, IconSymbolName } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
+import { useUser } from '@/context/UserContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useRouter } from 'expo-router';
-import { Alert, FlatList, Pressable, TextStyle, useColorScheme, View } from 'react-native';
+import { Alert, FlatList, Pressable, Share, TextStyle, useColorScheme, View } from 'react-native';
 import { resetOnboarding } from '@/lib/utils/storage';
 
 type MenuItem = {
@@ -18,9 +19,17 @@ type MenuItem = {
 export default function MyAccountScreen() {
   const router = useRouter();
   const { logout } = useAuth();
+  const { user } = useUser();
   const styles = useThemedStyles(getStyles);
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
+
+  async function handleInvite() {
+    if (!user?.username) return;
+    await Share.share({
+      message: `Join me on Yapify!\nhttps://yapify.net/invite/${user.username}/`,
+    });
+  }
 
   function handleResetOnboarding() {
     Alert.alert("Reset Onboarding", "Onboarding will show again next time you log out and back in.", [
@@ -52,6 +61,11 @@ export default function MyAccountScreen() {
       title: "Edit Profile",
       icon: "person.crop.circle",
       onPress: () => router.push("/edit-profile"),
+    },
+    {
+      title: "Invite Friends",
+      icon: "person.badge.plus",
+      onPress: handleInvite,
     },
     {
       title: "Saved Quotes",
