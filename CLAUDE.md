@@ -114,6 +114,9 @@ The app uses a reusable feed hook pattern:
 **Context Pattern**:
 `QuotesProvider` wraps the global feed and makes it available via `useQuotes()`. Other screens can use `useQuotesFeed()` directly with different scopes (e.g., user profiles use `useUserQuotesFeed` which wraps `useQuotesFeed` with user scope).
 
+**Data Preloader** (`components/DataPreloader.tsx`):
+Contexts like `QuotesProvider`, `UserProvider`, and `NotificationsContext` do **not** auto-load data on mount — their load functions must be called explicitly. `DataPreloader` is the single place responsible for triggering all initial loads (quotes, user profile, notifications) on app startup. It also blocks rendering of its children until essential data is ready, showing a loading screen with rotating humorous messages in the interim. Do not add auto-load `useEffect` calls inside context providers — use `DataPreloader` instead.
+
 ### Component Patterns
 
 **Themed Components**:
