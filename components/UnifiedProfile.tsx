@@ -176,7 +176,16 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
 
   // Use the active tab's feed
   const activeFeed = activeTab === 'posted' ? postedFeed : receivedFeed;
-  const { quotes, refreshing, isLoadingMore, loadMore, likeQuoteById, witnessQuoteById, guessQuoteById, unhideQuoteById, respondToQuoteById } = activeFeed;
+  const { quotes, refreshing, isLoadingMore, initialLoading, hasLoadedOnce, error, loadMore, loadQuotes, likeQuoteById, witnessQuoteById, guessQuoteById, unhideQuoteById, respondToQuoteById } = activeFeed;
+
+  // Toast on subsequent (refresh/pagination) errors — not first load
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (hasLoadedOnce && error && error !== prevErrorRef.current) {
+      Toast.show({ type: 'error', text1: 'Failed to refresh quotes' });
+    }
+    prevErrorRef.current = error ?? null;
+  }, [error, hasLoadedOnce]);
 
   // Friends fetcher for UserListModal
   const friendsFetcher = useCallback(
@@ -580,11 +589,24 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
           ListHeaderComponent={ListHeaderComponent}
           ListFooterComponent={renderFooter(isLoadingMore)}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <ThemedText style={styles.emptyText}>
-                {activeTab === 'posted' ? 'No quotes posted yet.' : 'No quotes received yet.'}
-              </ThemedText>
-            </View>
+            initialLoading ? (
+              <View style={styles.emptyContainer}>
+                <ActivityIndicator size="small" />
+              </View>
+            ) : !hasLoadedOnce && error ? (
+              <View style={styles.emptyContainer}>
+                <ThemedText style={styles.emptyText}>{"Couldn't load quotes"}</ThemedText>
+                <TouchableOpacity style={styles.retryButton} onPress={() => loadQuotes()}>
+                  <ThemedText style={styles.retryText}>Retry</ThemedText>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.emptyContainer}>
+                <ThemedText style={styles.emptyText}>
+                  {activeTab === 'posted' ? 'No quotes posted yet.' : 'No quotes received yet.'}
+                </ThemedText>
+              </View>
+            )
           }
           onScroll={scrollHandler}
           scrollEventThrottle={16}
