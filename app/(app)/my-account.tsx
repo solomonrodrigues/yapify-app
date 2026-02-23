@@ -7,7 +7,6 @@ import { useUser } from '@/context/UserContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useRouter } from 'expo-router';
 import { Alert, FlatList, Pressable, Share, TextStyle, useColorScheme, View } from 'react-native';
-import { resetOnboarding } from '@/lib/utils/storage';
 
 type MenuItem = {
   title: string;
@@ -29,18 +28,6 @@ export default function MyAccountScreen() {
     await Share.share({
       message: `Join me on Yapify!\nhttps://yapify.net/invite/${user.username}/`,
     });
-  }
-
-  function handleResetOnboarding() {
-    Alert.alert("Reset Onboarding", "Onboarding will show again next time you log out and back in.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Reset",
-        onPress: async () => {
-          await resetOnboarding();
-        },
-      },
-    ]);
   }
 
   async function handleLogout() {
@@ -81,11 +68,6 @@ export default function MyAccountScreen() {
       title: "Help & Support",
       icon: "questionmark.circle.fill",
       onPress: () => router.push("/help-support"),
-    },
-    {
-      title: "Reset Onboarding",
-      icon: "sparkles",
-      onPress: handleResetOnboarding,
     },
     {
       title: "Log out",
