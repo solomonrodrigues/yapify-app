@@ -39,7 +39,7 @@ const SearchScreen = () => {
   const { user: currentUser } = useUser();
 
   const [query, setQuery] = useState("");
-  const [scope, setScope] = useState<SearchScope>("quotes");
+  const [scope, setScope] = useState<SearchScope>("users");
   const [userResults, setUserResults] = useState<PublicUserList[]>([]);
   const [quoteResults, setQuoteResults] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(false);
@@ -245,6 +245,12 @@ const SearchScreen = () => {
                 style={[styles.filterChip, yearFilter ? styles.filterChipActive : null]}
                 onPress={() => setShowYearPicker(true)}
               >
+                <IconSymbol
+                  name="line.3.horizontal.decrease"
+                  size={11}
+                  color={yearFilter ? "#fff" : theme.secondaryText}
+                  style={{ marginRight: 4 }}
+                />
                 <ThemedText style={[styles.filterText, yearFilter ? styles.filterTextActive : null]}>
                   {yearFilter ?? "Year"}
                 </ThemedText>
@@ -254,6 +260,12 @@ const SearchScreen = () => {
                 style={[styles.filterChip, monthFilter ? styles.filterChipActive : null]}
                 onPress={() => setShowMonthPicker(true)}
               >
+                <IconSymbol
+                  name="line.3.horizontal.decrease"
+                  size={11}
+                  color={monthFilter ? "#fff" : theme.secondaryText}
+                  style={{ marginRight: 4 }}
+                />
                 <ThemedText style={[styles.filterText, monthFilter ? styles.filterTextActive : null]}>
                   {monthFilter ? MONTH_MAP_REVERSE[monthFilter] : "Month"}
                 </ThemedText>
@@ -333,7 +345,7 @@ const SearchScreen = () => {
       <FilterPicker
         visible={showYearPicker}
         onClose={() => setShowYearPicker(false)}
-        options={Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i)}
+        options={Array.from({ length: new Date().getFullYear() - 2025 + 1 }, (_, i) => new Date().getFullYear() - i)}
         selected={yearFilter}
         onSelect={(val) => setYearFilter(val as number | null)}
         theme={theme}
@@ -374,6 +386,8 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     searchBarContainer: { flex: 1 },
     filterRow: { flexDirection: "row", marginVertical: 12, flexWrap: "wrap", gap: 8 },
     filterChip: {
+      flexDirection: "row",
+      alignItems: "center",
       paddingHorizontal: 12,
       paddingVertical: 6,
       borderRadius: 999,
