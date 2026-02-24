@@ -21,9 +21,13 @@ export const getUser = async (userId: number): Promise<PublicUser> => {
     return res.data;
 };
 
-export const getFriends = async (): Promise<User[]> => {
-    const res = await api.get<{ results: User[] }>('/friends/');
-    return res.data.results || [];
+export const getFriends = async (url?: string | null): Promise<{ results: User[]; next: string | null }> => {
+    const endpoint = url ?? '/friends/';
+    const res = await api.get<{ results: User[]; next?: string | null }>(endpoint);
+    return {
+        results: res.data.results ?? [],
+        next: res.data.next ?? null,
+    };
 };
 
 export const getRecentFriends = async (): Promise<User[]> => {

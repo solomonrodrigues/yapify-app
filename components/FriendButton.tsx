@@ -1,6 +1,7 @@
 // components/FriendButton.tsx
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
+import { useFriends } from '@/context/FriendsContext';
 import { respondToFriendRequest, cancelFriendRequest, sendFriendRequest, unfriend } from '@/lib/api/friends';
 import { getErrorMessage } from '@/lib/utils/error';
 import type { Friendship } from '@/types/api';
@@ -24,6 +25,7 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
 }) => {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
+  const { refreshFriends } = useFriends();
   const [localFriendship, setLocalFriendship] = useState(friendship);
   const [loading, setLoading] = useState(false);
 
@@ -59,6 +61,9 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
 
       setLocalFriendship(result);
       onFriendshipChange?.(result);
+      if (action === 'accept' || action === 'unfriend') {
+        refreshFriends();
+      }
     } catch (err) {
       Alert.alert('Error', getErrorMessage(err));
     } finally {

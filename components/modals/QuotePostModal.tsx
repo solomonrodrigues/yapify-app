@@ -13,8 +13,11 @@ import { Quote, User } from "@/types/api";
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
 import {
+    ActivityIndicator,
     KeyboardAvoidingView,
     Modal,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
     Platform,
     ScrollView,
     StyleSheet,
@@ -40,7 +43,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   onClose,
   onQuoteCreated,
 }) => {
-  const { friends, recentFriends, loading: friendsLoading } = useFriends();
+  const { friends, recentFriends, loading: friendsLoading, friendsLoadingMore, loadMoreFriends, refreshRecentFriends } = useFriends();
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
@@ -140,6 +143,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Toast.show({ type: 'success', text1: 'Quote created!' });
       onClose();
+      refreshRecentFriends();
     } catch (error) {
       console.error('Error creating quote:', error);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -153,6 +157,14 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
     setSelectedUser(null);
     setQuoteText("");
     setContextText("");
+  };
+
+  const handleFriendsScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (query.length > 0) return;
+    const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
+    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - 80) {
+      loadMoreFriends();
+    }
   };
 
   const renderUserItem = ({ item }: { item: User }) => (
@@ -240,6 +252,8 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
             style={styles.content}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
+            onScroll={handleFriendsScroll}
+            scrollEventThrottle={200}
         >
             {loading ? (
             <View>
@@ -297,6 +311,9 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
                     <ThemedText style={styles.centerText}>
                         Start typing to search for friends
                     </ThemedText>
+                    )}
+                    {friendsLoadingMore && (
+                      <ActivityIndicator size="small" style={{ paddingVertical: 12 }} />
                     )}
                 </>
                 )}
