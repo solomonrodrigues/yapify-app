@@ -9,6 +9,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  completeLogin: () => void;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
 }
@@ -57,7 +58,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function login(email: string, password: string) {
     await apiLogin(email, password);
     setIsLoggedIn(true);
-  };
+  }
+
+  function completeLogin() {
+    setIsLoggedIn(true);
+  }
 
   async function logout() {
     await clearTokens();
@@ -75,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoading, isLoggedIn, login, logout, checkAuth }}>
+    <AuthContext.Provider value={{ isLoading, isLoggedIn, login, completeLogin, logout, checkAuth }}>
       {/* everything inside remounts on logout */}
       <View key={authKey} style={{ flex: 1 }}>{children}</View>
     </AuthContext.Provider>

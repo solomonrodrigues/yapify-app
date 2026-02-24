@@ -1,7 +1,7 @@
 // lib/api/auth.ts
 import { authClient } from '@/lib/api/client';
 import { setTokens } from '@/lib/utils/storage';
-import { DetailResponse, PasswordResetConfirm, RegisterResponse, TokenRefresh, UserRegistration } from '@/types/api';
+import { DetailResponse, PasswordResetConfirm, RegisterResponse, TokenRefresh, UserRegistration, VerifyEmailResponse } from '@/types/api';
 
 export const register = async (data: UserRegistration): Promise<RegisterResponse> => {
   const res = await authClient.post<RegisterResponse>('/auth/register/', data);
@@ -14,8 +14,9 @@ export const apiLogin = async (email: string, password: string): Promise<TokenRe
   return res.data;
 };
 
-export const verifyEmail = async (email: string, code: string): Promise<DetailResponse> => {
-  const res = await authClient.post<DetailResponse>('/auth/verify-email/', { email, code });
+export const verifyEmail = async (email: string, code: string): Promise<VerifyEmailResponse> => {
+  const res = await authClient.post<VerifyEmailResponse>('/auth/verify-email/', { email, code });
+  await setTokens(res.data.access, res.data.refresh);
   return res.data;
 };
 

@@ -48,6 +48,8 @@ export interface RegisterResponse {
   message: string;
 }
 
+export type VerifyEmailResponse = components["schemas"]["VerifyEmailResponse"];
+
 export interface CreateQuote {
   text: string;
   quoted_user_email: string;

@@ -4,6 +4,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { resendVerificationCode, verifyEmail } from "@/lib/api/auth";
+import { useAuth } from "@/context/AuthContext";
 import { getErrorMessage } from "@/lib/utils/error";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -24,8 +25,9 @@ import {
 
 export default function EmailVerificationScreen() {
   const router = useRouter();
+  const { completeLogin } = useAuth();
   const { email } = useLocalSearchParams<{ email: string }>();
-  
+
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -61,17 +63,8 @@ export default function EmailVerificationScreen() {
     
     try {
       await verifyEmail(email, code);
-      
-      Alert.alert(
-        "Email Verified!", 
-        "Your email has been verified successfully. You can now log in.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.replace("/(auth)")
-          }
-        ]
-      );
+      completeLogin();
+      router.replace("/(app)/(tabs)");
     } catch (err) {
       Alert.alert("Verification Failed", getErrorMessage(err));
     } finally {
