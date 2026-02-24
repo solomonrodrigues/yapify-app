@@ -4,8 +4,9 @@ import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { Spacing } from "@/constants/Spacing";
+import { useFriends } from "@/context/FriendsContext";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
-import { getFriends, getRecentFriends, searchFriends } from "@/lib/api/friends";
+import { searchFriends } from "@/lib/api/friends";
 import { createQuote } from "@/lib/api/quotes";
 import { hexToRgba } from "@/lib/utils/style";
 import { Quote, User } from "@/types/api";
@@ -39,12 +40,10 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   onClose,
   onQuoteCreated,
 }) => {
+  const { friends, recentFriends, loading: friendsLoading } = useFriends();
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
-  const [friends, setFriends] = useState<User[]>([]);
-  const [recentUsers, setRecentUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
-  const [friendsLoading, setFriendsLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | { display_name: string; username: string; id: null } | null>(null);
   const [quoteText, setQuoteText] = useState("");
   const [contextText, setContextText] = useState("");
@@ -64,14 +63,6 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
     transform: [{ scale: buttonScale.value }],
   }));
 
-  // Load friends when modal opens
-  useEffect(() => {
-    if (visible) {
-      loadFriends();
-      loadRecent();
-    }
-  }, [visible]);
-
   // Reset state when modal closes
   useEffect(() => {
     if (!visible) {
@@ -82,32 +73,6 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       setContextText("");
     }
   }, [visible]);
-
-  const loadFriends = async () => {
-    try {
-      setFriendsLoading(true);
-      const friendsData = await getFriends();
-      setFriends(friendsData);
-    } catch (error) {
-      console.error('Error loading friends:', error);
-      Toast.show({ type: 'error', text1: 'Failed to load friends' });
-    } finally {
-      setFriendsLoading(false);
-    }
-  };
-
-  const loadRecent = async () => {
-    try {
-      setFriendsLoading(true);
-      const recentData = await getRecentFriends();
-      setRecentUsers(recentData);
-    } catch (error) {
-      console.error('Error loading recent friends:', error);
-      Toast.show({ type: 'error', text1: 'Failed to load recent friends' });
-    } finally {
-      setFriendsLoading(false);
-    }
-  };
 
   const handleSearch = async (text: string) => {
     setQuery(text);
@@ -325,10 +290,10 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
                 </View>
                 ) : (
                 <>
-                    {renderSection("Recent", recentUsers)}
+                    {renderSection("Recent", recentFriends)}
                     {renderSection("Friends", friends)}
 
-                    {recentUsers.length === 0 && friends.length === 0 && (
+                    {recentFriends.length === 0 && friends.length === 0 && (
                     <ThemedText style={styles.centerText}>
                         Start typing to search for friends
                     </ThemedText>

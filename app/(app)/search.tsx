@@ -5,9 +5,9 @@ import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
+import { useFriends } from "@/context/FriendsContext";
 import { searchUsers } from "@/lib/api/friends";
 import { searchQuotes } from "@/lib/api/quotes";
-import { listRecentUsers, postRecentUserClick, deleteRecent } from "@/lib/api/recents";
 import { getErrorMessage } from "@/lib/utils/error";
 import { Quote, MinimalUser, PublicUserList } from "@/types/api";
 import { LegendList } from "@legendapp/list";
@@ -37,6 +37,7 @@ const SearchScreen = () => {
   const styles = useThemedStyles(getStyles);
   const insets = useSafeAreaInsets();
   const { user: currentUser } = useUser();
+  const { recentUsers, upsertRecentUser, removeRecentUser } = useFriends();
 
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState<SearchScope>("users");
@@ -46,7 +47,6 @@ const SearchScreen = () => {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [yearFilter, setYearFilter] = useState<number | null>(null);
   const [monthFilter, setMonthFilter] = useState<number | null>(null);
-  const [recentUsers, setRecentUsers] = useState<MinimalUser[]>([]);
 
   // Pagination state
   const [quoteNextPage, setQuoteNextPage] = useState<string | null>(null);
@@ -120,29 +120,14 @@ const SearchScreen = () => {
   }, [debouncedSearch]);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const users = await listRecentUsers(10);
-        if (!cancelled) setRecentUsers(users);
-      } catch (err) {
-        console.error("Failed to load recents", err);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  useEffect(() => {
     debouncedSearch(query, scope, yearFilter, monthFilter);
   }, [query, scope, yearFilter, monthFilter, debouncedSearch]);
 
   const handlePressUser = (user: PublicUserList | MinimalUser) => {
-    postRecentUserClick(user, query || undefined).catch(() => {});
-    // Optimistically upsert to top of recents
-    setRecentUsers((prev) => [
+    upsertRecentUser(
       { id: user.id, username: user.username, display_name: user.display_name, profile_color: user.profile_color } as MinimalUser,
-      ...prev.filter((u) => u.id !== user.id),
-    ].slice(0, 10));
+      query || undefined,
+    );
     router.push({ pathname: "/user/[userID]", params: { userID: user.id } });
   };
 
@@ -151,11 +136,7 @@ const SearchScreen = () => {
   };
 
   const handleRemoveRecent = (user: MinimalUser) => {
-    setRecentUsers((prev) => prev.filter((u) => u.id !== user.id));
-    deleteRecent("user", user.id).catch(() => {
-      // Rollback on failure
-      setRecentUsers((prev) => [...prev, user]);
-    });
+    removeRecentUser(user);
   };
 
   const highlightText = (text: string, term: string) => {

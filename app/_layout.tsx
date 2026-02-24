@@ -3,6 +3,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider } from '@/context/AuthContext';
 import { BlockedUsersProvider } from '@/context/BlockedUsersContext';
 import { FeedFilterProvider } from '@/context/FeedFilterContext';
+import { FriendsProvider } from '@/context/FriendsContext';
 import { NotificationsProvider } from '@/context/NotificationsContext';
 import { QuoteActionsModalProvider } from '@/context/QuoteActionsModalContext';
 import { QuotesProvider } from '@/context/QuotesContext';
@@ -39,6 +40,7 @@ export default function RootLayout() {
           <FeedFilterProvider>
             <QuotesProvider>
               <NotificationsProvider>
+              <FriendsProvider>
               <QuoteActionsModalProvider>
               <ThemeProvider value={theme}>
                 <GestureHandlerRootView>
@@ -62,6 +64,7 @@ export default function RootLayout() {
                 </GestureHandlerRootView>
               </ThemeProvider>
               </QuoteActionsModalProvider>
+              </FriendsProvider>
               </NotificationsProvider>
             </QuotesProvider>
           </FeedFilterProvider>
