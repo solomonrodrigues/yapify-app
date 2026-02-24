@@ -24,7 +24,7 @@ const api: AxiosInstance = axios.create({
 });
 
 // a separate, interceptor-free client for auth endpoints
-const authClient = axios.create({
+export const authClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
