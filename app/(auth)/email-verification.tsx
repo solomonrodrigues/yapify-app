@@ -7,6 +7,7 @@ import { resendVerificationCode, verifyEmail } from "@/lib/api/auth";
 import { getErrorMessage } from "@/lib/utils/error";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
+import Toast from "react-native-toast-message";
 import {
     Alert,
     Keyboard,
@@ -30,6 +31,19 @@ export default function EmailVerificationScreen() {
   const [resendCooldown, setResendCooldown] = useState(0);
   
   const styles = useThemedStyles(getStyles);
+
+  // Send verification code on mount
+  useEffect(() => {
+    if (!email) return;
+    resendVerificationCode(email)
+      .then(() => {
+        Toast.show({ type: "success", text1: "Verification code sent to your email." });
+      })
+      .catch((err) => {
+        Toast.show({ type: "error", text1: "Couldn't send verification email.", text2: getErrorMessage(err) });
+      });
+    setResendCooldown(30);
+  }, []);
 
   // Cooldown timer for resend functionality
   useEffect(() => {
@@ -83,11 +97,11 @@ export default function EmailVerificationScreen() {
 
     try {
       await resendVerificationCode(email);
-      Alert.alert("Code Sent", "A new verification code has been sent to your email.");
-      setResendCooldown(5); // 5 second cooldown to prevent spam
-      setCode(""); // Clear current code
+      Toast.show({ type: "success", text1: "Verification code sent to your email." });
+      setResendCooldown(30);
+      setCode("");
     } catch (err) {
-      Alert.alert("Resend Failed", getErrorMessage(err));
+      Toast.show({ type: "error", text1: "Couldn't resend verification email.", text2: getErrorMessage(err) });
     }
   };
 
