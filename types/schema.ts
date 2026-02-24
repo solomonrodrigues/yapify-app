@@ -121,6 +121,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /**
+         * Verify email address
+         * @description Verify a user's email address using the 6-digit code sent to their inbox. Returns JWT tokens on success so the user is logged in immediately.
+         */
         post: operations["auth_verify_email_create"];
         delete?: never;
         options?: never;
@@ -1337,6 +1341,16 @@ export interface components {
             password_confirm: string;
             bio?: string | null;
         };
+        VerifyEmail: {
+            /** Format: email */
+            email: string;
+            code: string;
+        };
+        VerifyEmailResponse: {
+            detail: string;
+            access: string;
+            refresh: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -1504,14 +1518,29 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyEmail"];
+                "application/x-www-form-urlencoded": components["schemas"]["VerifyEmail"];
+                "multipart/form-data": components["schemas"]["VerifyEmail"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["VerifyEmailResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
