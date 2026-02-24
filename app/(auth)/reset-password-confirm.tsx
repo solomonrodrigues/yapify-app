@@ -104,7 +104,7 @@ export default function ResetPasswordConfirmScreen() {
     try {
       await sendPasswordReset(email);
       Alert.alert("Code Sent", "A new reset code has been sent to your email.");
-      setResendCooldown(5); // 5 second cooldown
+      setResendCooldown(30);
       setCode(""); // Clear current code
     } catch (err) {
       Alert.alert("Resend Failed", getErrorMessage(err));
