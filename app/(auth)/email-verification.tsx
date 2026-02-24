@@ -32,19 +32,6 @@ export default function EmailVerificationScreen() {
   
   const styles = useThemedStyles(getStyles);
 
-  // Send verification code on mount
-  useEffect(() => {
-    if (!email) return;
-    resendVerificationCode(email)
-      .then(() => {
-        Toast.show({ type: "success", text1: "Verification code sent to your email." });
-      })
-      .catch((err) => {
-        Toast.show({ type: "error", text1: "Couldn't send verification email.", text2: getErrorMessage(err) });
-      });
-    setResendCooldown(30);
-  }, []);
-
   // Cooldown timer for resend functionality
   useEffect(() => {
     if (resendCooldown > 0) {
