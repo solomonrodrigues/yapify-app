@@ -84,9 +84,9 @@ export default class LoginErrorHandler {
       "Please wait before trying again or reset your password.",
       [
         { text: "Wait", style: "cancel" },
-        { 
-          text: "Reset Password", 
-          onPress: () => this.router.push("/(auth)/forgot-password") 
+        {
+          text: "Reset Password",
+          onPress: () => this.router.push("/(auth)/reset-password")
         }
       ]
     );
