@@ -18,9 +18,7 @@ Yapify is an inside jokes and funny quotes tracker for friend groups. Users capt
 - **Frontend:** React Native with Expo (this repo)
 
 ### Known Areas for Improvement
-- Auth flow needs refinement
-- API error handling could be more consistent and user-friendly
-- Optimistic updates should be applied more broadly to make everything feel responsive
+- The two-tier feed error pattern (`saved-quotes.tsx`, `hidden-quotes.tsx`) is not yet applied consistently across all screens — align any screen you touch
 
 ## Project Overview
 
@@ -41,7 +39,7 @@ Yapify is a React Native mobile app built with Expo that allows users to share, 
 ### Type Generation
 When the API schema changes, regenerate TypeScript types from the OpenAPI specification:
 ```bash
-npx openapi-typescript "/path/to/Yapify API.yaml" -o "/Users/solomonrodrigues/Personal/yapify-app/types/schema.ts"
+npx openapi-typescript "/path/to/Yapify API.yaml" -o "types/schema.ts"
 ```
 
 ## Architecture
@@ -57,6 +55,12 @@ The app uses **Expo Router** with file-based routing. The routing structure is:
   - `app/(app)/[quoteID].tsx` - Dynamic quote detail route
   - `app/(app)/user/[userID].tsx` - User profile route
   - `app/(app)/saved-quotes.tsx` - Saved quotes screen
+  - `app/(app)/hidden-quotes.tsx` - Hidden quotes screen
+  - `app/(app)/search.tsx` - User/quote search
+  - `app/(app)/edit-profile.tsx` - Edit display name, bio, etc.
+  - `app/(app)/blocked-users.tsx` - Manage blocked users
+  - `app/(app)/privacy-security.tsx` - Privacy and security settings
+  - `app/(app)/help-support.tsx` - Help and support screen
   - `app/(app)/my-account.tsx` - Account settings
 
 Authentication state is checked in `app/(app)/_layout.tsx` which redirects to `/(auth)` if not logged in.
@@ -66,10 +70,12 @@ Authentication state is checked in `app/(app)/_layout.tsx` which redirects to `/
 The app uses React Context for global state management. Context providers are stacked in `app/_layout.tsx` in the following order (outermost to innermost):
 1. **AuthProvider** (`context/AuthContext.tsx`) - Authentication state and token management
 2. **UserProvider** (`context/UserContext.tsx`) - Current user profile data
-3. **QuotesProvider** (`context/QuotesContext.tsx`) - Global quotes feed state
-4. **NotificationsProvider** (`context/NotificationsContext.tsx`) - Notification state and unread count
-5. **FriendsProvider** (`context/FriendsContext.tsx`) - Friends list, recently quoted, and recently viewed users. Auto-fetches on mount as a background prefetch (see below).
-6. **QuoteActionsModalProvider** (`context/QuoteActionsModalContext.tsx`) - Modal state for quote actions
+3. **BlockedUsersProvider** (`context/BlockedUsersContext.tsx`) - Blocked users list with optimistic updates
+4. **FeedFilterProvider** (`context/FeedFilterContext.tsx`) - Feed filter state (`latest` | `guessable` | `respondable`)
+5. **QuotesProvider** (`context/QuotesContext.tsx`) - Global quotes feed state; switches fetchers based on FeedFilterContext
+6. **NotificationsProvider** (`context/NotificationsContext.tsx`) - Notification state and unread count
+7. **FriendsProvider** (`context/FriendsContext.tsx`) - Friends list, recently quoted, and recently viewed users. Auto-fetches on mount as a background prefetch (see below).
+8. **QuoteActionsModalProvider** (`context/QuoteActionsModalContext.tsx`) - Modal state for quote actions
 
 ### API Client Architecture
 
@@ -101,6 +107,8 @@ The API client uses `setOnLogoutHandler()` to register the `AuthContext.logout()
 - `lib/api/profile.ts` - User profile operations
 - `lib/api/friends.ts` - Friend relationships
 - `lib/api/notifications.ts` - Notifications
+- `lib/api/users.ts` - User blocking/unblocking
+- `lib/api/recents.ts` - Recent search tracking
 
 ### Feed System
 
@@ -112,6 +120,10 @@ The app uses a reusable feed hook pattern:
 - Takes optional `scope` parameter to fetch different feeds (e.g., `{ user: 123 }` for user quotes)
 - Takes optional `fetcher` function for custom data fetching
 - All quote actions (like, witness, guess, save/unsave, hide/unhide) use optimistic updates with rollback on error
+
+Specialized feed hooks built on top of `useQuotesFeed`:
+- `hooks/useSavedQuotesFeed.tsx` - Saved quotes feed
+- `hooks/useHiddenQuotesFeed.tsx` - Hidden quotes feed
 
 **Context Pattern**:
 `QuotesProvider` wraps the global feed and makes it available via `useQuotes()`. Other screens can use `useQuotesFeed()` directly with different scopes (e.g., user profiles use `useUserQuotesFeed` which wraps `useQuotesFeed` with user scope).
@@ -194,7 +206,7 @@ All API functions should use the shared `api` client from `lib/api/client.ts` to
 Types are auto-generated from OpenAPI spec in `types/schema.ts`. Additional manual types are in `types/api.ts`. Never manually edit `types/schema.ts`.
 
 ### Error Handling
-Use `getErrorMessage()` from `lib/utils/error.ts` to safely extract error messages from unknown error types (Axios errors, Error objects, strings, etc.).
+Use `getErrorMessage()` from `lib/api/errors.ts` (re-exported from `lib/utils/error.ts`) to safely extract error messages from unknown error types (Axios errors, Error objects, strings, etc.). The `ApiError` class in `lib/api/errors.ts` wraps Django REST Framework responses and provides helpers for field-level errors, error codes, and status checks.
 
 **Feed/list screen load errors** follow a two-tier pattern:
 1. **First load failure** (`!hasLoadedOnce && error`): Show a centered error message with a Retry button. Never show a misleading empty state (e.g. "No saved quotes yet") when the real problem is a network error.
@@ -225,8 +237,8 @@ Use `useRouter()` from `expo-router` for programmatic navigation. Use typed rout
 ## Dependencies
 
 Notable dependencies:
-- `expo` ~54.0.31 - Expo framework
-- `expo-router` ~6.0.21 - File-based routing
+- `expo` ~54.0.33 - Expo framework
+- `expo-router` ~6.0.23 - File-based routing
 - `react-native` 0.81.5 - React Native
 - `axios` ^1.11.0 - HTTP client
 - `@legendapp/list` ~2.0.11 - High-performance lists
