@@ -5,12 +5,11 @@ import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { resendVerificationCode, verifyEmail } from "@/lib/api/auth";
 import { useAuth } from "@/context/AuthContext";
-import { getErrorMessage } from "@/lib/utils/error";
+import { getErrorCode, getErrorMessage } from "@/lib/api/errors";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import Toast from "react-native-toast-message";
 import {
-    Alert,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -20,7 +19,7 @@ import {
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    View
+    View,
 } from "react-native";
 
 export default function EmailVerificationScreen() {
@@ -31,6 +30,7 @@ export default function EmailVerificationScreen() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [codeError, setCodeError] = useState<string | null>(null);
   
   const styles = useThemedStyles(getStyles);
 
@@ -43,9 +43,9 @@ export default function EmailVerificationScreen() {
   }, [resendCooldown]);
 
   const handleCodeChange = (text: string) => {
-    // Only allow numeric input and limit to 6 digits
     const numericText = text.replace(/[^0-9]/g, '').slice(0, 6);
     setCode(numericText);
+    setCodeError(null);
   };
 
   const handleVerifyCode = async () => {    
@@ -66,7 +66,11 @@ export default function EmailVerificationScreen() {
       completeLogin();
       router.replace("/(app)/(tabs)");
     } catch (err) {
-      Alert.alert("Verification Failed", getErrorMessage(err));
+      if (getErrorCode(err) === 'VERIFICATION_CODE_INVALID') {
+        setCodeError('Invalid or expired code.');
+      } else {
+        Toast.show({ type: 'error', text1: 'Verification failed.', text2: getErrorMessage(err) });
+      }
     } finally {
       setLoading(false);
     }
@@ -128,18 +132,16 @@ export default function EmailVerificationScreen() {
                         
               <TextInput
                 key="email-verification-code-input"
-                style={styles.codeInput}
+                style={[styles.codeInput, codeError ? styles.codeInputError : null]}
                 value={code}
                 onChangeText={handleCodeChange}
                 placeholder="123456"
                 placeholderTextColor={styles.codeInput.color + "40"}
-                // OTP autofill hints
                 textContentType="oneTimeCode"
                 autoComplete={
                   Platform.select({ android: "sms-otp", ios: "one-time-code" }) ??
                   "one-time-code"
                 }
-                // Keyboard / input mode
                 inputMode="numeric"
                 keyboardType="number-pad"
                 maxLength={6}
@@ -148,6 +150,7 @@ export default function EmailVerificationScreen() {
                 autoCorrect={false}
                 selectTextOnFocus
               />
+              {codeError && <Text style={styles.fieldError}>{codeError}</Text>}
             </View>
 
             {/* Single Verify button */}
@@ -300,5 +303,14 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       color: theme.text,
       opacity: 0.5,
       textDecorationLine: 'none',
+    },
+    codeInputError: {
+      borderColor: '#FF3B30',
+    },
+    fieldError: {
+      color: '#FF3B30',
+      fontSize: 13,
+      textAlign: 'center',
+      marginTop: 8,
     },
   });

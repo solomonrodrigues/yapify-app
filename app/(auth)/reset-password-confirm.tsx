@@ -4,7 +4,8 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { confirmPasswordReset, sendPasswordReset } from "@/lib/api/auth";
-import { getErrorMessage } from "@/lib/api/errors";
+import { getErrorCode, getErrorMessage } from "@/lib/api/errors";
+import Toast from "react-native-toast-message";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -32,6 +33,7 @@ export default function ResetPasswordConfirmScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [codeError, setCodeError] = useState<string | null>(null);
 
   const styles = useThemedStyles(getStyles);
 
@@ -47,9 +49,9 @@ export default function ResetPasswordConfirmScreen() {
   }, [resendCooldown]);
 
   const handleCodeChange = (text: string) => {
-    // Only allow numeric input and limit to 6 digits
     const numericText = text.replace(/[^0-9]/g, "").slice(0, 6);
     setCode(numericText);
+    setCodeError(null);
   };
 
   const handleResetPassword = async () => {
@@ -92,7 +94,11 @@ export default function ResetPasswordConfirmScreen() {
         ]
       );
     } catch (err) {
-      Alert.alert("Reset Failed", getErrorMessage(err));
+      if (getErrorCode(err) === 'RESET_CODE_INVALID') {
+        setCodeError('Invalid or expired code.');
+      } else {
+        Alert.alert("Reset Failed", getErrorMessage(err));
+      }
     } finally {
       setLoading(false);
     }
@@ -107,7 +113,7 @@ export default function ResetPasswordConfirmScreen() {
       setResendCooldown(30);
       setCode(""); // Clear current code
     } catch (err) {
-      Alert.alert("Resend Failed", getErrorMessage(err));
+      Toast.show({ type: 'error', text1: 'Resend failed.', text2: getErrorMessage(err) });
     }
   };
 
@@ -143,7 +149,7 @@ export default function ResetPasswordConfirmScreen() {
             {/* Code input */}
             <TextInput
               key="reset-password-code-input"
-              style={styles.codeInput}
+              style={[styles.codeInput, codeError ? styles.codeInputError : null]}
               value={code}
               onChangeText={handleCodeChange}
               placeholder="123456"
@@ -161,6 +167,7 @@ export default function ResetPasswordConfirmScreen() {
               autoCorrect={false}
               selectTextOnFocus
             />
+            {codeError && <Text style={styles.fieldError}>{codeError}</Text>}
 
             {/* New password field */}
             <View style={styles.inputContainer}>
@@ -330,6 +337,16 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     buttonDisabled: {
       opacity: 0.6,
+    },
+    codeInputError: {
+      borderColor: '#FF3B30',
+    },
+    fieldError: {
+      color: '#FF3B30',
+      fontSize: 13,
+      textAlign: 'center',
+      marginTop: 6,
+      marginBottom: 6,
     },
     helpContainer: {
       marginTop: 20,

@@ -5,7 +5,7 @@ import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { register } from "@/lib/api/auth";
-import { getErrorMessage } from "@/lib/utils/error";
+import { ApiError, getErrorMessage } from "@/lib/api/errors";
 import LoginErrorHandler from "@/lib/utils/LoginErrorHandler";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -44,6 +44,7 @@ export default function AuthScreen() {
 
   // Submission/loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const styles = useThemedStyles(getStyles);
   const colorScheme = useColorScheme() ?? 'dark';
@@ -171,6 +172,7 @@ export default function AuthScreen() {
       return;
     }
 
+    setFieldErrors({});
     try {
       setIsSubmitting(true);
       await register({
@@ -184,7 +186,16 @@ export default function AuthScreen() {
         `/(auth)/email-verification?email=${encodeURIComponent(email)}`
       );
     } catch (err) {
-      Alert.alert("Signup Failed", getErrorMessage(err) || "Something went wrong.");
+      const apiError = new ApiError(err);
+      if (apiError.fieldErrors.length > 0) {
+        const errors: Record<string, string> = {};
+        for (const fe of apiError.fieldErrors) {
+          errors[fe.field] = fe.messages[0];
+        }
+        setFieldErrors(errors);
+      } else {
+        Alert.alert("Signup Failed", apiError.message || "Something went wrong.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -219,7 +230,7 @@ export default function AuthScreen() {
                 <>
                   <View>
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, fieldErrors.username ? styles.inputError : null]}
                       placeholder="Username"
                       placeholderTextColor="#999"
                       value={username}
@@ -228,11 +239,12 @@ export default function AuthScreen() {
                       autoCapitalize="none"
                       editable={!isSubmitting}
                     />
+                    {fieldErrors.username && <Text style={styles.fieldError}>{fieldErrors.username}</Text>}
                   </View>
 
                   <View>
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, fieldErrors.display_name ? styles.inputError : null]}
                       placeholder="Display Name"
                       placeholderTextColor="#999"
                       value={displayName}
@@ -240,13 +252,14 @@ export default function AuthScreen() {
                       maxLength={50}
                       editable={!isSubmitting}
                     />
+                    {fieldErrors.display_name && <Text style={styles.fieldError}>{fieldErrors.display_name}</Text>}
                   </View>
                 </>
               )}
 
               <TextInput
                 key={`login-email-${colorScheme}`}
-                style={[styles.input, { letterSpacing: 0 }]}
+                style={[styles.input, { letterSpacing: 0 }, fieldErrors.email ? styles.inputError : null]}
                 placeholder="Email"
                 placeholderTextColor="#999"
                 autoCapitalize="none"
@@ -255,11 +268,12 @@ export default function AuthScreen() {
                 onChangeText={setEmail}
                 editable={!isSubmitting}
               />
+              {fieldErrors.email && <Text style={styles.fieldError}>{fieldErrors.email}</Text>}
 
               {/* Password field */}
               <View style={styles.inputContainer}>
                 <TextInput
-                  style={styles.passwordInput}
+                  style={[styles.passwordInput, fieldErrors.password ? styles.inputError : null]}
                   placeholder="Password"
                   placeholderTextColor="#999"
                   secureTextEntry={!showPassword}
@@ -279,6 +293,7 @@ export default function AuthScreen() {
                   />
                 </TouchableOpacity>
               </View>
+              {fieldErrors.password && <Text style={styles.fieldError}>{fieldErrors.password}</Text>}
 
               {/* Forgot Password link - only in login mode */}
               {isLogin && (
@@ -456,5 +471,15 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       color: theme.text,
       fontSize: 14,
       opacity: 0.6,
+    },
+    inputError: {
+      borderWidth: 1,
+      borderColor: '#FF3B30',
+    },
+    fieldError: {
+      color: '#FF3B30',
+      fontSize: 13,
+      marginTop: -6,
+      marginBottom: 8,
     },
   });
