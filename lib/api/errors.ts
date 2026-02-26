@@ -4,24 +4,33 @@
 import { AxiosError } from 'axios';
 
 /**
- * Standard DRF error response formats:
+ * Standard API error response formats:
  *
- * 1. Detail string:        { "detail": "Not found." }
- * 2. Non-field errors:     { "non_field_errors": ["Invalid credentials."] }
- * 3. Field errors:         { "email": ["This field is required."], "password": ["Too short."] }
- * 4. Nested field errors:  { "profile": { "bio": ["Too long."] } }
- * 5. Mixed:                { "detail": "...", "email": ["..."] }
+ * 1. Domain / auth error:
+ *    { "code": "INVALID_CREDENTIALS", "detail": "Invalid credentials." }
+ *
+ * 2. Field validation error:
+ *    { "code": "VALIDATION_ERROR", "errors": { "email": [{ "code": "REQUIRED", "detail": "This field is required." }] } }
+ *
+ * 3. Framework errors (NotFound, Throttled, etc.):
+ *    { "code": "NOT_FOUND", "detail": "Not found." }
  */
 
+export interface FieldErrorDetail {
+  code: string;
+  detail: string;
+}
+
 export interface DRFErrorResponse {
+  code?: string;
   detail?: string;
-  non_field_errors?: string[];
-  [field: string]: string | string[] | Record<string, string[]> | undefined;
+  errors?: Record<string, FieldErrorDetail[] | Record<string, FieldErrorDetail[]>>;
 }
 
 export interface FieldError {
   field: string;
   messages: string[];
+  codes: string[];
 }
 
 /**
@@ -33,6 +42,7 @@ export class ApiError extends Error {
   public readonly data: DRFErrorResponse | undefined;
   public readonly fieldErrors: FieldError[];
   public readonly isNetworkError: boolean;
+  public readonly code: string | undefined;
 
   constructor(error: unknown) {
     const axiosError = error as AxiosError<DRFErrorResponse>;
@@ -44,6 +54,7 @@ export class ApiError extends Error {
     this.data = axiosError.response?.data;
     this.fieldErrors = ApiError.extractFieldErrors(axiosError);
     this.isNetworkError = !axiosError.response && !!axiosError.request;
+    this.code = axiosError.response?.data?.code;
   }
 
   /**
@@ -60,23 +71,19 @@ export class ApiError extends Error {
       return error.message || 'An unexpected error occurred.';
     }
 
-    // DRF detail field (most common for auth errors, 404s, etc.)
+    // Domain / auth / framework errors: { code, detail }
     if (data.detail) {
       return data.detail;
     }
 
-    // DRF non_field_errors (validation errors not tied to a specific field)
-    if (data.non_field_errors?.length) {
-      return data.non_field_errors[0];
+    // Field validation errors: { code: "VALIDATION_ERROR", errors: { field: [{ code, detail }] } }
+    if (data.errors) {
+      const firstFieldMessage = ApiError.getFirstFieldErrorMessage(data.errors);
+      if (firstFieldMessage) {
+        return firstFieldMessage;
+      }
     }
 
-    // Field-specific errors - return first one found
-    const fieldError = ApiError.getFirstFieldError(data);
-    if (fieldError) {
-      return fieldError;
-    }
-
-    // Fallback
     return error.message || 'An unexpected error occurred.';
   }
 
@@ -85,23 +92,26 @@ export class ApiError extends Error {
    */
   static extractFieldErrors(error: AxiosError<DRFErrorResponse>): FieldError[] {
     const data = error.response?.data;
-    if (!data) return [];
+    if (!data?.errors) return [];
 
     const fieldErrors: FieldError[] = [];
-    const skipFields = ['detail', 'non_field_errors'];
 
-    for (const [field, value] of Object.entries(data)) {
-      if (skipFields.includes(field)) continue;
-
+    for (const [field, value] of Object.entries(data.errors)) {
       if (Array.isArray(value)) {
-        fieldErrors.push({ field, messages: value });
+        // { email: [{ code, detail }] }
+        fieldErrors.push({
+          field,
+          messages: value.map(e => e.detail),
+          codes: value.map(e => e.code),
+        });
       } else if (typeof value === 'object' && value !== null) {
-        // Nested errors (e.g., { profile: { bio: ["..."] } })
+        // Nested serializer: { nested_field: { sub_field: [{ code, detail }] } }
         for (const [nestedField, nestedValue] of Object.entries(value)) {
           if (Array.isArray(nestedValue)) {
             fieldErrors.push({
               field: `${field}.${nestedField}`,
-              messages: nestedValue
+              messages: nestedValue.map((e: FieldErrorDetail) => e.detail),
+              codes: nestedValue.map((e: FieldErrorDetail) => e.code),
             });
           }
         }
@@ -112,19 +122,23 @@ export class ApiError extends Error {
   }
 
   /**
-   * Get the first field error message (for simple alert display).
+   * Get the first field error message string (for simple alert display).
    */
-  private static getFirstFieldError(data: DRFErrorResponse): string | null {
-    const skipFields = ['detail', 'non_field_errors'];
-
-    for (const [field, value] of Object.entries(data)) {
-      if (skipFields.includes(field)) continue;
-
+  private static getFirstFieldErrorMessage(
+    errors: Record<string, FieldErrorDetail[] | Record<string, FieldErrorDetail[]>>
+  ): string | null {
+    for (const value of Object.values(errors)) {
       if (Array.isArray(value) && value.length > 0) {
-        return value[0];
+        return value[0].detail;
+      }
+      if (typeof value === 'object' && value !== null) {
+        for (const nestedValue of Object.values(value)) {
+          if (Array.isArray(nestedValue) && nestedValue.length > 0) {
+            return (nestedValue[0] as FieldErrorDetail).detail;
+          }
+        }
       }
     }
-
     return null;
   }
 
@@ -147,6 +161,13 @@ export class ApiError extends Error {
    */
   getFieldError(field: string): string[] {
     return this.fieldErrors.find(e => e.field === field)?.messages ?? [];
+  }
+
+  /**
+   * Get error codes for a specific field.
+   */
+  getFieldErrorCodes(field: string): string[] {
+    return this.fieldErrors.find(e => e.field === field)?.codes ?? [];
   }
 }
 
@@ -180,6 +201,15 @@ export function getErrorMessage(error: unknown): string {
   }
 
   return 'An unexpected error occurred.';
+}
+
+/**
+ * Extract the machine-readable error code from a response.
+ * Returns undefined if the error has no code or isn't an Axios error.
+ */
+export function getErrorCode(error: unknown): string | undefined {
+  const axiosError = error as AxiosError<DRFErrorResponse>;
+  return axiosError?.response?.data?.code;
 }
 
 /**

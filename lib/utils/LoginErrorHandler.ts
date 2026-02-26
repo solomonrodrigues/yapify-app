@@ -2,9 +2,9 @@ import type { Router } from 'expo-router';
 import { Alert } from "react-native";
 
 export interface LoginError {
-  non_field_errors?: string[];
+  code?: string;
   detail?: string;
-  message?: string;
+  errors?: Record<string, Array<{ code: string; detail: string }>>;
 }
 
 export default class LoginErrorHandler {
@@ -17,41 +17,29 @@ export default class LoginErrorHandler {
   }
 
   handle(error: unknown): void {
-    const axiosError = error as { response?: { data?: LoginError; status?: number } };
+    const axiosError = error as { response?: { data?: LoginError } };
     const errorData: LoginError = axiosError.response?.data || {};
-    const status = axiosError.response?.status;
 
-    // Get the first non_field_error message
-    const errorMessage = this.getErrorMessage(errorData);
-
-    // Check for specific backend error messages from DRF serializer
-    if (errorMessage === 'Email not verified') {
-      this.showEmailVerificationDialog();
-    } else if (errorMessage === 'User account is disabled') {
-      this.showAccountDisabledDialog();
-    } else if (errorMessage === 'Invalid credentials') {
-      this.showCredentialsDialog();
-    } else if (errorMessage === 'Must include email and password') {
-      this.showMissingFieldsDialog();
-    } else if (this.isRateLimitError(errorData, status)) {
-      this.showRateLimitDialog();
-    } else {
-      this.showGenericError(errorData);
+    // Switch on the stable machine-readable code from the backend
+    switch (errorData.code) {
+      case 'EMAIL_NOT_VERIFIED':
+        this.showEmailVerificationDialog();
+        break;
+      case 'ACCOUNT_DISABLED':
+        this.showAccountDisabledDialog();
+        break;
+      case 'INVALID_CREDENTIALS':
+        this.showCredentialsDialog();
+        break;
+      case 'MISSING_CREDENTIALS':
+        this.showMissingFieldsDialog();
+        break;
+      case 'THROTTLED':
+        this.showRateLimitDialog();
+        break;
+      default:
+        this.showGenericError(errorData);
     }
-  }
-
-  private getErrorMessage(errorData: LoginError): string {
-    // Check non_field_errors first (Django DRF format)
-    if (errorData.non_field_errors && errorData.non_field_errors.length > 0) {
-      return errorData.non_field_errors[0];
-    }
-    
-    // Fallback to detail or message
-    return errorData.detail || errorData.message || '';
-  }
-
-  private isRateLimitError(errorData: LoginError, status?: number): boolean {
-    return status === 429;
   }
 
   private showEmailVerificationDialog(): void {
@@ -60,8 +48,8 @@ export default class LoginErrorHandler {
       "Please verify your email address to continue.",
       [
         { text: "Cancel", style: "cancel" },
-        { 
-          text: "Verify Now", 
+        {
+          text: "Verify Now",
           onPress: async () => {
             this.router.push(`/(auth)/email-verification?email=${encodeURIComponent(this.email)}`)
           }
@@ -98,9 +86,9 @@ export default class LoginErrorHandler {
       "Email or password is incorrect.",
       [
         { text: "Try Again", style: "cancel" },
-        { 
-          text: "Forgot Password?", 
-          onPress: () => this.router.push("/(auth)/reset-password") 
+        {
+          text: "Forgot Password?",
+          onPress: () => this.router.push("/(auth)/reset-password")
         }
       ]
     );
@@ -115,7 +103,7 @@ export default class LoginErrorHandler {
   }
 
   private showGenericError(errorData: LoginError): void {
-    const message = this.getErrorMessage(errorData) || "Login failed. Please try again.";
+    const message = errorData.detail || "Login failed. Please try again.";
     Alert.alert("Login Failed", message);
   }
 }
