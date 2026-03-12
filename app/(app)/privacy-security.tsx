@@ -17,6 +17,7 @@ type MenuItem = {
   subtitle?: string;
   icon: IconSymbolName;
   onPress: () => void;
+  destructive?: boolean;
 };
 
 export default function PrivacySecurityScreen() {
@@ -38,6 +39,13 @@ export default function PrivacySecurityScreen() {
       icon: 'eye.slash',
       onPress: () => router.push('/hidden-quotes'),
     },
+    {
+      title: 'Delete Account',
+      subtitle: 'Permanently delete your account and data',
+      icon: 'trash',
+      onPress: () => router.push('/delete-account'),
+      destructive: true,
+    },
   ];
 
   return (
@@ -50,6 +58,7 @@ export default function PrivacySecurityScreen() {
             onPress={item.onPress}
             style={({ pressed }) => [
               styles.menuItem,
+              item.destructive && styles.menuItemDestructive,
               pressed && styles.menuItemPressed,
             ]}
           >
@@ -57,12 +66,14 @@ export default function PrivacySecurityScreen() {
               <View style={styles.iconContainer}>
                 <IconSymbol
                   name={item.icon}
-                  color={theme.text}
+                  color={item.destructive ? theme.destructive : theme.text}
                   size={20}
                 />
               </View>
               <View style={styles.textContainer}>
-                <ThemedText style={styles.menuText}>{item.title}</ThemedText>
+                <ThemedText style={[styles.menuText, item.destructive && styles.menuTextDestructive]}>
+                  {item.title}
+                </ThemedText>
                 {item.subtitle && (
                   <ThemedText style={styles.subtitleText}>{item.subtitle}</ThemedText>
                 )}
@@ -103,10 +114,16 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     menuItemPressed: {
       opacity: 0.7,
     },
+    menuItemDestructive: {
+      backgroundColor: theme.destructiveBackground,
+    },
     menuText: {
       fontSize: 16,
       color: theme.text,
       fontWeight: '500' as TextStyle['fontWeight'],
+    },
+    menuTextDestructive: {
+      color: theme.destructive,
     },
     subtitleText: {
       fontSize: 13,

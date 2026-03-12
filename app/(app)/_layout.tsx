@@ -130,6 +130,21 @@ export default function AppLayout() {
         }}
       />
       <Stack.Screen
+        name="delete-account"
+        options={{
+          headerShown: true,
+          headerTitle: 'Delete Account',
+          headerLeft: (props) => (
+            <HeaderBackButton
+              {...props}
+              onPress={handleBackPress('/privacy-security')}
+              tintColor={theme.text}
+              label={"Back"}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
         name="help-support"
         options={{
           headerShown: true,

@@ -10,3 +10,7 @@ export const updateProfile = async (updates: Partial<User>): Promise<User> => {
   const res = await api.patch<User>('/profile/', updates);
   return res.data;
 };
+
+export const deleteAccount = async (): Promise<void> => {
+  await api.delete('/auth/me/');
+};
