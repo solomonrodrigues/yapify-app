@@ -21,6 +21,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/me/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete account
+         * @description Permanently deletes the authenticated user's account and all associated data. Quotes posted by friends where this user appears as the quoted user are preserved with their display name snapshotted, so friends' content is not lost.
+         */
+        delete: operations["auth_me_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/password-reset/": {
         parameters: {
             query?: never;
@@ -123,7 +143,7 @@ export interface paths {
         put?: never;
         /**
          * Verify email address
-         * @description Verify a user's email address using the 6-digit code sent to their inbox. Returns JWT tokens on success so the user is logged in immediately.
+         * @description Verify a user's email address using the 6-digit code sent to their inbox.Returns JWT tokens on success so the user is logged in immediately.
          */
         post: operations["auth_verify_email_create"];
         delete?: never;
@@ -1382,6 +1402,24 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CustomTokenObtainPair"];
                 };
+            };
+        };
+    };
+    auth_me_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Account deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
