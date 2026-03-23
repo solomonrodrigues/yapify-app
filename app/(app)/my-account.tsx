@@ -71,7 +71,7 @@ export default function MyAccountScreen() {
     },
     {
       title: "Log out",
-      icon: "xmark.circle.fill",
+      icon: "rectangle.portrait.and.arrow.right",
       onPress: handleLogout,
       destructive: true,
     },
