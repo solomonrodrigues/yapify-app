@@ -7,6 +7,7 @@ import {
   useColorScheme,
   Platform,
   ActivityIndicator,
+  Share,
 } from 'react-native';
 import { Quote } from '@/types/api';
 import { useQuotes } from '@/context/QuotesContext';
@@ -18,6 +19,7 @@ import { LegendList } from '@legendapp/list';
 import FeedQuote from '@/components/FeedQuote';
 import { useFeedFilter } from '@/context/FeedFilterContext';
 import { IconSymbol, type IconSymbolName } from '@/components/ui/IconSymbol';
+import { useUser } from '@/context/UserContext';
 
 
 // Main Feed Component
@@ -29,6 +31,14 @@ const QuotesFeed: React.FC = () => {
   const insets = useSafeAreaInsets();
   const paddingTop = Platform.OS === 'ios' ? 0 : 16;
   const { filter } = useFeedFilter();
+  const { user } = useUser();
+
+  const handleInvite = async () => {
+    if (!user?.username) return;
+    await Share.share({
+      message: `Join me on Yapify!\nhttps://yapify.net/invite/${user.username}/`,
+    });
+  };
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;
@@ -123,6 +133,12 @@ const QuotesFeed: React.FC = () => {
                 style={{ marginBottom: 16 }}
               />
               <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
+              {filter === 'latest' && (
+                <TouchableOpacity style={styles.inviteButton} onPress={handleInvite}>
+                  <IconSymbol name="person.badge.plus" size={16} color={theme.accent} style={{ marginRight: 8 }} />
+                  <Text style={styles.inviteText}>Invite Friends</Text>
+                </TouchableOpacity>
+              )}
             </View>
           }
         />
@@ -165,6 +181,20 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       borderColor: theme.accent,
     },
     retryText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: theme.accent,
+    },
+    inviteButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderColor: theme.accent,
+    },
+    inviteText: {
       fontSize: 16,
       fontWeight: '600',
       color: theme.accent,
