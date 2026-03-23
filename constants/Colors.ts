@@ -7,7 +7,6 @@ import { ProfileColorEnum } from "@/types/api";
 
 const tintColorLight = '#11181C';
 const tintColorDark = '#fff';
-const primaryColor = '#4F46E5';
 const error = '#ec9185ff';
 
 export const Colors = {
@@ -26,7 +25,6 @@ export const Colors = {
     icon: '#687076',             // default icon color
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
-    primary: primaryColor,       // primary action color
     error: error,
     destructive: '#D92D20',            // strong red for text/icons
     destructiveBackground: '#FEE4E2',  // soft red-tint background
@@ -54,7 +52,7 @@ export const Colors = {
     },
 
     // Feed-specific accents
-    accent: '#2da7ff',        // lighter pastel blue
+    accent: '#a135d2',        // purple — brand color
     likeButton: '#FF0066',    // neon magenta-red
     witnessButton: '#00FF9F', // synthwave mint
     friendColor: '#A78BFA',   // soft purple for friend-related actions
@@ -75,7 +73,6 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
-    primary: primaryColor,
     error: error,
     destructive: '#F97066',            // brighter red for dark theme
     destructiveBackground: '#3B1210',  // deep muted red background
@@ -103,7 +100,7 @@ export const Colors = {
     },
 
     // Feed-specific accents
-    accent: '#2da7ff',        // lighter pastel blue
+    accent: '#b44de0',        // purple — brand color (lighter for dark mode contrast)
     likeButton: '#FF0066',    // neon magenta-red
     witnessButton: '#00FF9F', // synthwave mint
     friendColor: '#A78BFA',   // soft purple for friend-related actions

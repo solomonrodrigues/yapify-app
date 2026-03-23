@@ -132,7 +132,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       paddingRight: 16,
     },
     backText: {
-      color: theme.primary,
+      color: theme.accent,
       fontWeight: "500",
     },
     headerTitle: {
