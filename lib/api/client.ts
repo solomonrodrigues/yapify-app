@@ -2,6 +2,9 @@
 import { clearTokens, getAccess, getRefresh, setTokens } from '@/lib/utils/storage';
 import { TokenRefresh } from '@/types/api';
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, isAxiosError } from 'axios';
+import Constants from 'expo-constants';
+
+const APP_VERSION = Constants.expoConfig?.version ?? '0.0.0';
 
 interface RetryableRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -16,6 +19,17 @@ let onLogoutHandler: () => void = () => {
 
 export function setOnLogoutHandler(handler: () => void) {
   onLogoutHandler = handler;
+}
+
+export interface UpdateRequiredPayload {
+  ios_store_url?: string;
+  android_store_url?: string;
+}
+
+let onUpdateRequiredHandler: ((data?: UpdateRequiredPayload) => void) | null = null;
+
+export function setOnUpdateRequiredHandler(handler: (data?: UpdateRequiredPayload) => void) {
+  onUpdateRequiredHandler = handler;
 }
 
 const api: AxiosInstance = axios.create({
@@ -37,12 +51,13 @@ export const refreshAuthTokens = async (
   return res.data;
 };
 
-// Add auth token to requests
+// Add auth token and app version to requests
 api.interceptors.request.use(async (config) => {
   const token = getAccess();
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  config.headers['X-App-Version'] = APP_VERSION;
   return config;
 });
 
@@ -76,6 +91,12 @@ api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as RetryableRequestConfig;
+
+    // Handle outdated app version
+    if (error.response?.status === 426) {
+      onUpdateRequiredHandler?.(error.response.data as UpdateRequiredPayload);
+      return Promise.reject(error);
+    }
 
     // Only handle 401 & ensure no double refresh attempt
     if (error.response?.status === 401 && originalRequest._retry) {

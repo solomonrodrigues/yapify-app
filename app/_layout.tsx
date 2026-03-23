@@ -1,5 +1,6 @@
 // app/_layout.tsx
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { UpdateRequiredScreen } from '@/components/UpdateRequiredScreen';
 import { AuthProvider } from '@/context/AuthContext';
 import { BlockedUsersProvider } from '@/context/BlockedUsersContext';
 import { FeedFilterProvider } from '@/context/FeedFilterContext';
@@ -8,16 +9,33 @@ import { NotificationsProvider } from '@/context/NotificationsContext';
 import { QuoteActionsModalProvider } from '@/context/QuoteActionsModalContext';
 import { QuotesProvider } from '@/context/QuotesContext';
 import { UserProvider } from '@/context/UserContext';
+import { getAppConfig } from '@/lib/api/config';
+import { setOnUpdateRequiredHandler, UpdateRequiredPayload } from '@/lib/api/client';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import Constants from 'expo-constants';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Platform, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from "react-native-toast-message";
+
+function isVersionBelow(current: string, minimum: string): boolean {
+  const parse = (v: string) => v.split('.').map(Number);
+  const [cMaj, cMin, cPat] = parse(current);
+  const [mMaj, mMin, mPat] = parse(minimum);
+  if (cMaj !== mMaj) return cMaj < mMaj;
+  if (cMin !== mMin) return cMin < mMin;
+  return cPat < mPat;
+}
+
+function pickStoreUrl(data: UpdateRequiredPayload): string {
+  return Platform.OS === 'ios' ? (data.ios_store_url ?? '') : (data.android_store_url ?? '');
+}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme() ?? 'dark';
@@ -28,7 +46,35 @@ export default function RootLayout() {
     'Lora-Bold': require('../assets/fonts/Lora-Bold.ttf'),
   });
 
+  const [updateRequired, setUpdateRequired] = useState(false);
+  const [storeUrl, setStoreUrl] = useState('');
+
+  // Register 426 interceptor handler
+  useEffect(() => {
+    setOnUpdateRequiredHandler((data?: UpdateRequiredPayload) => {
+      setStoreUrl(data ? pickStoreUrl(data) : '');
+      setUpdateRequired(true);
+    });
+  }, []);
+
+  // Startup version check
+  useEffect(() => {
+    getAppConfig()
+      .then((config) => {
+        const current = Constants.expoConfig?.version ?? '0.0.0';
+        if (isVersionBelow(current, config.minimum_version)) {
+          setStoreUrl(pickStoreUrl(config));
+          setUpdateRequired(true);
+        }
+      })
+      .catch(() => {}); // network failure — let app proceed normally
+  }, []);
+
   if (!loaded) return null;
+
+  if (updateRequired) {
+    return <UpdateRequiredScreen storeUrl={storeUrl} />;
+  }
 
   const theme = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
 
