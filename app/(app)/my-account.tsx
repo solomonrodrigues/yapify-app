@@ -5,6 +5,7 @@ import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
 import { useUser } from '@/context/UserContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { Alert, FlatList, Pressable, Share, TextStyle, useColorScheme, View } from 'react-native';
 
@@ -25,6 +26,7 @@ export default function MyAccountScreen() {
 
   async function handleInvite() {
     if (!user?.username) return;
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     await Share.share({
       message: `Join me on Yapify!\nhttps://yapify.net/invite/${user.username}/`,
     });
@@ -51,7 +53,7 @@ export default function MyAccountScreen() {
     },
     {
       title: "Invite Friends",
-      icon: "person.badge.plus",
+      icon: "paperplane",
       onPress: handleInvite,
     },
     {

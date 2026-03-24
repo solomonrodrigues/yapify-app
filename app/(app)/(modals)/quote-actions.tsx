@@ -10,6 +10,7 @@ import { reportQuote, unreportQuote } from "@/lib/api/quotes";
 import { getErrorMessage } from "@/lib/utils/error";
 import { ReportReasonEnum, User } from "@/types/api";
 import * as Clipboard from "expo-clipboard";
+import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import { Alert, Platform, Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
@@ -94,6 +95,7 @@ export default function QuoteActionsModal() {
 
   const handleShare = async () => {
     try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await shareRef.current?.share();
     } catch (error) {
       console.error('Share failed:', error);
