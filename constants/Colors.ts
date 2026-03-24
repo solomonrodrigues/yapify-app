@@ -5,37 +5,37 @@
 
 import { ProfileColorEnum } from "@/types/api";
 
-const tintColorLight = '#11181C';
+const tintColorLight = '#0a1628';
 const tintColorDark = '#fff';
 const error = '#ec9185ff';
 
 export const Colors = {
   light: {
-    text: '#11181C',             // main text
-    secondaryText: '#888',       // subtitles, lighter text
-    tertiaryText: '#666',
-    background: '#fff',          // page background
-    cardBackground: '#f8f9fa',   // activity cards or sections
-    elevatedBackground: '#eef0f2', // surface elevated above cardBackground (e.g. buttons on card surfaces)
-    cardBorder: '#fff',
-    inputBorder: '#ccc',
+    text: '#0a1628',             // main text — dark navy
+    secondaryText: '#4a6a88',    // subtitles, lighter text
+    tertiaryText: '#6680a0',
+    background: '#f0f4f9',       // cool off-white
+    cardBackground: '#e6ecf4',   // cool-tinted card surface
+    elevatedBackground: '#dae3ef', // elevated above card
+    cardBorder: '#d0dbe8',
+    inputBorder: '#b8c8da',
     avatarBorder: 'transparent',
-    divider: '#e5e5e5',
+    divider: '#d0dbe8',
     tint: tintColorLight,        // active tint
-    icon: '#687076',             // default icon color
-    tabIconDefault: '#687076',
+    icon: '#5a7898',             // default icon color
+    tabIconDefault: '#5a7898',
     tabIconSelected: tintColorLight,
     error: error,
     destructive: '#D92D20',            // strong red for text/icons
     destructiveBackground: '#FEE4E2',  // soft red-tint background
     buttonText: '#fff',
-    buttonDisabled: '#666',
+    buttonDisabled: '#8899aa',
 
-    inputText: '#000',
-    inputBackground: '#f1f1f1',
-    inputShadowColor: '#aaa',
+    inputText: '#0a1628',
+    inputBackground: '#e6ecf4',
+    inputShadowColor: '#b8c8da',
 
-    modalBackground: '#fff',
+    modalBackground: '#f0f4f9',
 
     // Pastel accents
     pastels: {
@@ -52,11 +52,11 @@ export const Colors = {
     },
 
     // Feed-specific accents
-    accent: '#a135d2',        // purple — brand color
+    accent: '#2aada3',        // teal — brand color (deeper for light mode contrast)
     likeButton: '#FF0066',    // neon magenta-red
-    witnessButton: '#00FF9F', // synthwave mint
-    friendColor: '#A78BFA',   // soft purple for friend-related actions
-    border: '#e5e5e5',
+    witnessButton: '#00cc88', // synthwave mint (slightly muted for light)
+    friendColor: '#2aada3',   // teal for friend-related actions
+    border: '#d0dbe8',
   },
   dark: {
     text: '#ECEDEE',
@@ -100,10 +100,10 @@ export const Colors = {
     },
 
     // Feed-specific accents
-    accent: '#b44de0',        // purple — brand color (lighter for dark mode contrast)
+    accent: '#39C5BB',        // Miku teal — brand color
     likeButton: '#FF0066',    // neon magenta-red
     witnessButton: '#00FF9F', // synthwave mint
-    friendColor: '#A78BFA',   // soft purple for friend-related actions
+    friendColor: '#39C5BB',   // teal for friend-related actions
     border: '#272727ff',
   },
 };

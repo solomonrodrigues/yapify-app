@@ -287,7 +287,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       opacity: 0.7,
     },
     emailText: {
-      color: theme.pastels.purple,
+      color: theme.accent,
       fontWeight: "600",
     },
     codeInput: {
@@ -322,7 +322,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       transform: [{ translateY: -10 }],
     },
     button: {
-      backgroundColor: theme.pastels.purple,
+      backgroundColor: theme.accent,
       paddingVertical: 14,
       borderRadius: 8,
       marginTop: 4,
@@ -358,7 +358,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       opacity: 0.7,
     },
     resendText: {
-      color: theme.pastels.purple,
+      color: theme.accent,
       fontSize: 14,
       fontWeight: "500",
     },

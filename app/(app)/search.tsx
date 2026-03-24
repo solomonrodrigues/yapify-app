@@ -375,7 +375,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       borderWidth: 1,
       borderColor: theme.border,
     },
-    filterChipActive: { backgroundColor: theme.pastels.purple, borderColor: theme.pastels.purple },
+    filterChipActive: { backgroundColor: theme.accent, borderColor: theme.accent },
     filterText: { fontSize: 13, fontWeight: "500" },
     filterTextActive: { color: "#fff" },
     userCard: {

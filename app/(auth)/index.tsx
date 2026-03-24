@@ -437,7 +437,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       transform: [{ translateY: -10 }],
     },
     button: {
-      backgroundColor: theme.pastels.purple,
+      backgroundColor: theme.accent,
       paddingVertical: 16,
       borderRadius: 14,
       marginTop: 4,
@@ -456,7 +456,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
     toggleText: {
       textAlign: "center",
-      color: theme.pastels.purple,
+      color: theme.accent,
       marginTop: 16,
     },
     toggleTextDisabled: {

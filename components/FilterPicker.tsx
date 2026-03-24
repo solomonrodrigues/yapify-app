@@ -34,7 +34,7 @@ export const FilterPicker: React.FC<FilterPickerProps> = ({
             keyExtractor={(item, index) => `${item.toString()}-${index}`}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={[styles.modalItem, item === selected ? { backgroundColor: theme.pastels.purple } : {}]}
+                style={[styles.modalItem, item === selected ? { backgroundColor: theme.accent } : {}]}
                 onPress={() => {
                   onSelect(item);
                   onClose();

@@ -153,7 +153,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontSize: 16,
     },
     button: {
-      backgroundColor: theme.pastels.purple,
+      backgroundColor: theme.accent,
       paddingVertical: 14,
       borderRadius: 8,
       marginTop: 4,

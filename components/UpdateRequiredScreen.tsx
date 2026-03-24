@@ -54,7 +54,7 @@ function makeStyles(theme: typeof Colors.light | typeof Colors.dark) {
       marginBottom: 32,
     },
     button: {
-      backgroundColor: theme.pastels.purple,
+      backgroundColor: theme.accent,
       paddingVertical: 14,
       paddingHorizontal: 28,
       borderRadius: 12,

@@ -179,7 +179,7 @@ const QuoteEditModal: React.FC<QuoteEditModalProps> = ({
                 {
                   color: colorScheme === "dark" ? "white" : "black",
                   borderBottomColor: contextText.trim()
-                    ? theme.pastels.purple
+                    ? theme.accent
                     : colorScheme === "dark"
                       ? "#222"
                       : "#ddd",
@@ -220,12 +220,12 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontWeight: "600",
     },
     headerAccent: {
-      color: theme.pastels.purple,
+      color: theme.accent,
     },
     saveButtonText: {
       fontSize: 17,
       fontWeight: "600",
-      color: theme.pastels.purple,
+      color: theme.accent,
     },
     saveButtonDisabled: {
       opacity: 0.35,
@@ -246,7 +246,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       minHeight: 60,
       textAlignVertical: "top",
       borderBottomWidth: 2,
-      borderBottomColor: theme.pastels.purple,
+      borderBottomColor: theme.accent,
     },
     charCountContainer: {
       alignItems: "flex-end",

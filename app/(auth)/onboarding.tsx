@@ -269,7 +269,7 @@ export default function OnboardingScreen() {
       onPress={handleFinish}
       style={({ pressed }) => [
         styles.doneButton,
-        { backgroundColor: theme.pastels.purple, opacity: pressed ? 0.85 : 1 },
+        { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 },
       ]}
     >
       <Text style={styles.doneButtonText}>Get Started</Text>
@@ -284,7 +284,7 @@ export default function OnboardingScreen() {
         { opacity: pressed ? 0.6 : 1 },
       ]}
     >
-      <Text style={[styles.nextButtonText, { color: theme.pastels.purple }]}>Next</Text>
+      <Text style={[styles.nextButtonText, { color: theme.accent }]}>Next</Text>
     </Pressable>
   );
 
@@ -305,7 +305,7 @@ export default function OnboardingScreen() {
       style={[
         styles.dot,
         {
-          backgroundColor: selected ? theme.pastels.purple : theme.border,
+          backgroundColor: selected ? theme.accent : theme.border,
           width: selected ? 24 : 8,
         },
       ]}

@@ -414,7 +414,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
                 styles.contextInput,
                 {
                   color: colorScheme === 'dark' ? 'white' : 'black',
-                  borderBottomColor: contextText.trim() ? theme.pastels.purple : (colorScheme === 'dark' ? '#222' : '#ddd'),
+                  borderBottomColor: contextText.trim() ? theme.accent : (colorScheme === 'dark' ? '#222' : '#ddd'),
                 }
               ]}
               placeholder="What led to this quote?"
@@ -471,7 +471,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     fontWeight: '600',
   },
   quoteText: {
-    color: theme.pastels.purple,
+    color: theme.accent,
   },
   searchContainer: {
     paddingHorizontal: Spacing.md,
@@ -484,7 +484,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   },
   integratedInputContainer: {
     borderBottomWidth: 2,
-    borderBottomColor: theme.pastels.purple,
+    borderBottomColor: theme.accent,
   },
   integratedInput: {
     fontSize: 28,
@@ -537,7 +537,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: theme.pastels.purple,
+    backgroundColor: theme.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -566,13 +566,13 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.md,
     borderRadius: 12,
-    backgroundColor: hexToRgba(theme.pastels.purple, 0.2),
+    backgroundColor: hexToRgba(theme.accent, 0.2),
   },
   customUserIcon: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: theme.pastels.purple,
+    backgroundColor: theme.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -598,7 +598,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   },
   quoteInputWrapper: {
     borderBottomWidth: 2,
-    borderBottomColor: theme.pastels.purple,
+    borderBottomColor: theme.accent,
   },
   quoteTextInput: {
     fontSize: 24,
@@ -645,7 +645,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     fontWeight: '500',
   },
   createButton: {
-    backgroundColor: theme.pastels.purple,
+    backgroundColor: theme.accent,
     paddingVertical: Spacing.md,
     marginHorizontal: Spacing.md,
     marginBottom: Spacing.xxxl + Spacing.md,
