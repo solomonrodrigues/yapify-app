@@ -89,7 +89,7 @@ const SavedQuotesScreen = () => {
   if (!hasLoadedOnce && error) {
     return (
       <ThemedView style={styles.centerContainer}>
-        <ThemedText style={styles.emptyText}>Couldn't load saved quotes</ThemedText>
+        <ThemedText style={styles.emptyText}>Couldn&apos;t load saved quotes</ThemedText>
         <TouchableOpacity style={styles.retryButton} onPress={() => loadQuotes()}>
           <Text style={styles.retryText}>Retry</Text>
         </TouchableOpacity>

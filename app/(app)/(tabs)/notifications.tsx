@@ -113,7 +113,7 @@ const NotificationsView: React.FC = () => {
           contentContainerStyle={[styles.listContainer, notifications.length === 0 && styles.emptyListContent]}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <ThemedText style={styles.emptyText}>You're all caught up!</ThemedText>
+              <ThemedText style={styles.emptyText}>You&apos;re all caught up!</ThemedText>
             </View>
           }
           ListFooterComponent={
