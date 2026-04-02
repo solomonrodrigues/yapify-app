@@ -202,9 +202,9 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     [user]
   );
 
-  // Initial load of quotes for both tabs
+  // Initial load of quotes for both tabs — only if we can actually see them
   useEffect(() => {
-    if (user) {
+    if (user && (isOwnProfile || friendship?.status === 'accepted')) {
       postedFeed.loadQuotes();
       receivedFeed.loadQuotes();
     }
@@ -592,6 +592,12 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
             initialLoading ? (
               <View style={styles.emptyContainer}>
                 <ActivityIndicator size="small" />
+              </View>
+            ) : !isOwnProfile && friendship?.status !== 'accepted' ? (
+              <View style={styles.emptyContainer}>
+                <ThemedText style={styles.emptyText}>
+                  {"Add " + (user?.display_name ?? "this user") + " as a friend to see their quotes."}
+                </ThemedText>
               </View>
             ) : !hasLoadedOnce && error ? (
               <View style={styles.emptyContainer}>
