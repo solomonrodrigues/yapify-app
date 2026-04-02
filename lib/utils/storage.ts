@@ -53,6 +53,37 @@ export const clearPushToken = async () => {
   await SecureStore.deleteItemAsync('expoPushToken');
 };
 
+// Pending deregistrations — tokens that failed to deregister on logout due to no network.
+// Drained on the next cold start before auth is checked, using the unauthenticated
+// DELETE /api/devices/ path (token value is the credential).
+const PENDING_DEREG_KEY = 'pendingDeregistrations';
+
+export const addPendingDeregistration = async (token: string): Promise<void> => {
+  const existing = await getPendingDeregistrations();
+  if (!existing.includes(token)) {
+    await SecureStore.setItemAsync(PENDING_DEREG_KEY, JSON.stringify([...existing, token]));
+  }
+};
+
+export const getPendingDeregistrations = async (): Promise<string[]> => {
+  try {
+    const raw = await SecureStore.getItemAsync(PENDING_DEREG_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const removePendingDeregistrations = async (tokens: string[]): Promise<void> => {
+  const existing = await getPendingDeregistrations();
+  const remaining = existing.filter((t) => !tokens.includes(t));
+  if (remaining.length === 0) {
+    await SecureStore.deleteItemAsync(PENDING_DEREG_KEY);
+  } else {
+    await SecureStore.setItemAsync(PENDING_DEREG_KEY, JSON.stringify(remaining));
+  }
+};
+
 // Onboarding
 const ONBOARDING_KEY = 'onboardingComplete';
 

@@ -9,8 +9,10 @@ import { NotificationsProvider } from '@/context/NotificationsContext';
 import { QuoteActionsModalProvider } from '@/context/QuoteActionsModalContext';
 import { QuotesProvider } from '@/context/QuotesContext';
 import { UserProvider } from '@/context/UserContext';
+import { deregisterDeviceToken } from '@/lib/api/devices';
 import { getAppConfig } from '@/lib/api/config';
 import { setOnUpdateRequiredHandler, UpdateRequiredPayload } from '@/lib/api/client';
+import { getPendingDeregistrations, removePendingDeregistrations } from '@/lib/utils/storage';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import { useFonts } from 'expo-font';
@@ -48,6 +50,34 @@ export default function RootLayout() {
 
   const [updateRequired, setUpdateRequired] = useState(false);
   const [storeUrl, setStoreUrl] = useState('');
+
+  // Drain any push tokens that failed to deregister on a previous logout (e.g. no network).
+  // Runs on every cold start before auth is checked. Uses the unauthenticated DELETE path,
+  // so no session is needed. Tokens that still fail are left in the queue for the next start.
+  useEffect(() => {
+    async function drainPendingDeregistrations() {
+      const pending = await getPendingDeregistrations();
+      if (pending.length === 0) return;
+
+      const succeeded: string[] = [];
+      await Promise.allSettled(
+        pending.map(async (token) => {
+          try {
+            await deregisterDeviceToken(token);
+            succeeded.push(token);
+          } catch {
+            // Still no network — leave in queue
+          }
+        })
+      );
+
+      if (succeeded.length > 0) {
+        await removePendingDeregistrations(succeeded);
+      }
+    }
+
+    drainPendingDeregistrations();
+  }, []);
 
   // Register 426 interceptor handler
   useEffect(() => {

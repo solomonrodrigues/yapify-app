@@ -1,5 +1,5 @@
 // api/client.ts
-import { clearTokens, getAccess, getRefresh, setTokens } from '@/lib/utils/storage';
+import { clearTokens, getAccess, getPushToken, getRefresh, setTokens } from '@/lib/utils/storage';
 import { TokenRefresh } from '@/types/api';
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, isAxiosError } from 'axios';
 import Constants from 'expo-constants';
@@ -45,9 +45,12 @@ export const authClient = axios.create({
 
 // ---- Refresh call (no interceptors)
 export const refreshAuthTokens = async (
-  refresh: string
+  refresh: string,
+  pushToken?: string,
 ): Promise<TokenRefresh> => {
-  const res = await authClient.post<TokenRefresh>('/auth/refresh/', { refresh });
+  const body: Record<string, string> = { refresh };
+  if (pushToken) body.push_token = pushToken;
+  const res = await authClient.post<TokenRefresh>('/auth/refresh/', body);
   return res.data;
 };
 
@@ -132,7 +135,8 @@ api.interceptors.response.use(
 
       // Begin refresh operation
       isRefreshing = true;
-      refreshPromise = refreshAuthTokens(refreshToken);
+      const pushToken = await getPushToken();
+      refreshPromise = refreshAuthTokens(refreshToken, pushToken ?? undefined);
 
       try {
         const { access, refresh } = await refreshPromise;

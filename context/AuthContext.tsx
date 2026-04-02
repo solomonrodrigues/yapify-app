@@ -1,7 +1,7 @@
 import { apiLogin } from "@/lib/api/auth";
 import { deregisterDeviceToken } from "@/lib/api/devices";
 import { refreshAuthTokens, setOnLogoutHandler } from "@/lib/api/client";
-import { clearPushToken, clearTokens, getPushToken, getRefresh, setTokens } from "@/lib/utils/storage";
+import { addPendingDeregistration, clearPushToken, clearTokens, getPushToken, getRefresh, setTokens } from "@/lib/utils/storage";
 import { isAxiosError } from "axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { View } from "react-native";
@@ -34,8 +34,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // 2. Try to refresh tokens
-      const { access, refresh } = await refreshAuthTokens(refreshToken);
+      // 2. Try to refresh tokens, forwarding push token so the backend can update
+      //    last_refreshed_at on this specific device only (not all user devices).
+      const pushToken = await getPushToken();
+      const { access, refresh } = await refreshAuthTokens(refreshToken, pushToken ?? undefined);
       await setTokens(access, refresh);
 
       // 3. If we got here, we’re authenticated
@@ -72,7 +74,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         await deregisterDeviceToken(pushToken);
       } catch {
-        // Ignore — backend will naturally deactivate it on next failed delivery
+        // Network failure — queue for retry on next cold start. The backend's
+        // unauthenticated DELETE /api/devices/ path accepts the token as the
+        // credential, so this works even after the session is cleared.
+        await addPendingDeregistration(pushToken);
       }
       await clearPushToken();
     }
