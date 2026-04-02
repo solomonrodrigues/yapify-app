@@ -30,7 +30,8 @@ import Toast from "react-native-toast-message";
 // Configure how push notifications are displayed when the app is foregrounded.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),

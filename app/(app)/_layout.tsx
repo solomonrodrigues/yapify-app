@@ -60,13 +60,10 @@ export default function AppLayout() {
 
     registerPushToken();
 
-    // Handles Expo token rotation: re-register immediately when the token changes.
-    const tokenSubscription = Notifications.addPushTokenListener(async ({ data: token }) => {
-      const stored = await getPushToken();
-      if (stored !== token) {
-        await registerDeviceToken(token);
-        await setPushToken(token);
-      }
+    // Handles native token rotation (APNs/FCM). The listener emits the raw device
+    // token, not an Expo push token — re-run the full registration to exchange it.
+    const tokenSubscription = Notifications.addPushTokenListener(() => {
+      registerPushToken();
     });
 
     // Re-check on foreground to catch permission grants via Settings after prior denial.
@@ -93,14 +90,14 @@ export default function AppLayout() {
     });
 
     // Handle the notification tap that cold-started (or re-opened) the app.
-    Notifications.getLastNotificationResponseAsync().then((response) => {
-      if (!response) return;
-      const data = response.notification.request.content.data as Record<string, string | undefined>;
+    const lastResponse = Notifications.getLastNotificationResponse();
+    if (lastResponse) {
+      const data = lastResponse.notification.request.content.data as Record<string, string | undefined>;
       const quoteId = data?.quote_id;
       if (quoteId) {
         router.push({ pathname: '/(app)/[quoteID]', params: { quoteID: quoteId } });
       }
-    });
+    }
 
     return () => subscription.remove();
   }, [router]);
