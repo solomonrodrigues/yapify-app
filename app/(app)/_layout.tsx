@@ -4,10 +4,11 @@ import { useAuth } from "@/context/AuthContext";
 import { registerDeviceToken } from "@/lib/api/devices";
 import { getPushToken, setPushToken } from "@/lib/utils/storage";
 import Constants from "expo-constants";
+import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Redirect, Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { Platform, useColorScheme } from "react-native";
+import { AppState, Platform, useColorScheme } from "react-native";
 import { HeaderBackButton } from "@react-navigation/elements";
 
 export default function AppLayout() {
@@ -19,14 +20,30 @@ export default function AppLayout() {
 
   useEffect(() => {
     async function registerPushToken() {
-      let { status } = await Notifications.getPermissionsAsync();
-      if (status === 'undetermined') {
-        const { status: requested } = await Notifications.requestPermissionsAsync();
-        status = requested;
-      }
-      if (status !== 'granted') return;
+      // Push tokens are not available on simulators/emulators.
+      if (!Device.isDevice) return;
 
-      const projectId = Constants.expoConfig?.extra?.projectId as string | undefined;
+      // Android requires a notification channel before requesting permissions.
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('default', {
+          name: 'default',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#FF231F7C',
+        });
+      }
+
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') return;
+
+      const projectId =
+        Constants?.expoConfig?.extra?.eas?.projectId ??
+        Constants?.easConfig?.projectId;
       if (!projectId) return;
 
       try {
@@ -37,11 +54,32 @@ export default function AppLayout() {
           await setPushToken(token);
         }
       } catch {
-        // Notification permission or network failure — non-fatal
+        // Non-fatal — network failure or device registration issue
       }
     }
 
     registerPushToken();
+
+    // Handles Expo token rotation: re-register immediately when the token changes.
+    const tokenSubscription = Notifications.addPushTokenListener(async ({ data: token }) => {
+      const stored = await getPushToken();
+      if (stored !== token) {
+        await registerDeviceToken(token);
+        await setPushToken(token);
+      }
+    });
+
+    // Re-check on foreground to catch permission grants via Settings after prior denial.
+    const appStateSubscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        registerPushToken();
+      }
+    });
+
+    return () => {
+      tokenSubscription.remove();
+      appStateSubscription.remove();
+    };
   }, []);
 
   // Deep-link to a quote when the user taps a push notification.
