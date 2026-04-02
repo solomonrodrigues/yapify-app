@@ -62,13 +62,16 @@ const NotificationsView: React.FC = () => {
     }
   }, [hasLoadedOnce, fetchNotifications]);
 
-  // Refresh when the tab comes into focus so unread state stays current.
+  // Silently refresh when the tab comes into focus so unread state stays current.
+  // We call fetchNotifications directly (not refresh) to avoid triggering the
+  // pull-to-refresh indicator, which programmatically sets refreshing=true and
+  // adds empty space at the top of the list.
   useFocusEffect(
     useCallback(() => {
       if (hasLoadedOnce) {
-        refresh();
+        fetchNotifications();
       }
-    }, [hasLoadedOnce, refresh])
+    }, [hasLoadedOnce, fetchNotifications])
   );
 
   if (loading) {
