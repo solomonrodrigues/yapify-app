@@ -1,7 +1,12 @@
 // app/(app)/_layout.tsx
 import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
+import { registerDeviceToken } from "@/lib/api/devices";
+import { getPushToken, setPushToken } from "@/lib/utils/storage";
+import Constants from "expo-constants";
+import * as Notifications from "expo-notifications";
 import { Redirect, Stack, useRouter } from "expo-router";
+import { useEffect } from "react";
 import { Platform, useColorScheme } from "react-native";
 import { HeaderBackButton } from "@react-navigation/elements";
 
@@ -11,6 +16,29 @@ export default function AppLayout() {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
   const router = useRouter();
+
+  useEffect(() => {
+    async function registerPushToken() {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') return;
+
+      const projectId = Constants.expoConfig?.extra?.projectId as string | undefined;
+      if (!projectId) return;
+
+      try {
+        const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
+        const stored = await getPushToken();
+        if (stored !== token) {
+          await registerDeviceToken(token);
+          await setPushToken(token);
+        }
+      } catch {
+        // Notification permission or network failure — non-fatal
+      }
+    }
+
+    registerPushToken();
+  }, []);
 
   // While auth state is being restored, don't render anything yet
   if (isLoading) return null;

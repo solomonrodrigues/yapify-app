@@ -1,6 +1,7 @@
 import { apiLogin } from "@/lib/api/auth";
+import { deregisterDeviceToken } from "@/lib/api/devices";
 import { refreshAuthTokens, setOnLogoutHandler } from "@/lib/api/client";
-import { clearTokens, getRefresh, setTokens } from "@/lib/utils/storage";
+import { clearPushToken, clearTokens, getPushToken, getRefresh, setTokens } from "@/lib/utils/storage";
 import { isAxiosError } from "axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { View } from "react-native";
@@ -65,6 +66,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logout() {
+    // Best-effort deregister — don't let a network failure block the user from logging out
+    const pushToken = await getPushToken();
+    if (pushToken) {
+      try {
+        await deregisterDeviceToken(pushToken);
+      } catch {
+        // Ignore — backend will naturally deactivate it on next failed delivery
+      }
+      await clearPushToken();
+    }
+
     await clearTokens();
     setIsLoggedIn(false);
     setAuthKey((k) => k + 1); // forces remount of children

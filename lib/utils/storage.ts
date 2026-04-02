@@ -35,6 +35,24 @@ export const clearTokens = async () => {
   await SecureStore.deleteItemAsync('refreshToken');
 };
 
+// Push token (persisted in SecureStore so it survives until logout)
+export const setPushToken = async (token: string) => {
+  await SecureStore.setItemAsync('expoPushToken', token);
+};
+
+export const getPushToken = async (): Promise<string | null> => {
+  try {
+    return await SecureStore.getItemAsync('expoPushToken');
+  } catch (e) {
+    console.warn("Failed reading push token:", e);
+    return null;
+  }
+};
+
+export const clearPushToken = async () => {
+  await SecureStore.deleteItemAsync('expoPushToken');
+};
+
 // Onboarding
 const ONBOARDING_KEY = 'onboardingComplete';
 
