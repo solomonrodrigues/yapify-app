@@ -108,7 +108,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description User registration endpoint */
+        /**
+         * Register a new user
+         * @description User registration endpoint
+         */
         post: operations["auth_register_create"];
         delete?: never;
         options?: never;
@@ -125,6 +128,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** Resend email verification code */
         post: operations["auth_resend_verification_create"];
         delete?: never;
         options?: never;
@@ -152,6 +156,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/config/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get app config
+         * @description Public endpoint returning the minimum supported app version and store URLs.
+         */
+        get: operations["config_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/devices/": {
         parameters: {
             query?: never;
@@ -161,9 +185,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Register or deregister an Expo push token for the authenticated user. */
+        /**
+         * Register device push token
+         * @description Register or deregister an Expo push token for the authenticated user.
+         */
         post: operations["devices_create"];
-        /** @description Register or deregister an Expo push token for the authenticated user. */
+        /**
+         * Deregister device push token
+         * @description Register or deregister an Expo push token for the authenticated user.
+         */
         delete: operations["devices_destroy"];
         options?: never;
         head?: never;
@@ -197,7 +227,10 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** @description Cancel outgoing pending friend request. */
+        /**
+         * Cancel a sent friend request
+         * @description Cancel outgoing pending friend request.
+         */
         delete: operations["friends_cancel_destroy"];
         options?: never;
         head?: never;
@@ -213,7 +246,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Accept or reject friend request */
+        /**
+         * Accept or reject a friend request
+         * @description Accept or reject friend request
+         */
         post: operations["friends_respond_create"];
         delete?: never;
         options?: never;
@@ -231,7 +267,10 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** @description Unfriend (remove accepted friendship). */
+        /**
+         * Unfriend a user
+         * @description Unfriend (remove accepted friendship).
+         */
         delete: operations["friends_unfriend_destroy"];
         options?: never;
         head?: never;
@@ -281,7 +320,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Send friend request */
+        /**
+         * Send a friend request
+         * @description Send friend request
+         */
         post: operations["friends_send_create"];
         delete?: never;
         options?: never;
@@ -312,12 +354,15 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description List user notifications.
+        /**
+         * List notifications
+         * @description List user notifications.
          *
          *     Groups are pre-built by the pipeline (one row per type/quote/friendship).
          *     Actor User objects are batch-fetched in one query per page and blocked
          *     actors are stripped in Python.  Groups where all actors are blocked are
-         *     excluded from the response. */
+         *     excluded from the response.
+         */
         get: operations["notifications_list"];
         put?: never;
         post?: never;
@@ -337,7 +382,10 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** @description Delete a single notification */
+        /**
+         * Delete a notification
+         * @description Delete a single notification
+         */
         delete: operations["notifications_destroy"];
         options?: never;
         head?: never;
@@ -353,7 +401,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Mark notification as read */
+        /**
+         * Mark a notification as read
+         * @description Mark notification as read
+         */
         post: operations["notifications_read_create_2"];
         delete?: never;
         options?: never;
@@ -370,7 +421,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Mark notification as unread */
+        /**
+         * Mark a notification as unread
+         * @description Mark notification as unread
+         */
         post: operations["notifications_unread_create"];
         delete?: never;
         options?: never;
@@ -387,7 +441,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Mark all notifications as read. */
+        /**
+         * Mark all notifications as read
+         * @description Mark all notifications as read.
+         */
         post: operations["notifications_read_create"];
         delete?: never;
         options?: never;
@@ -402,7 +459,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Return the count of unread notifications */
+        /**
+         * Get unread notification count
+         * @description Return the count of unread notifications
+         */
         get: operations["notifications_unread_count_retrieve"];
         put?: never;
         post?: never;
@@ -478,8 +538,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Allow the author of a quote to replace a quoted_name with a quoted_user.
-         *     The quoted_user must be a friend of the author. */
+        /**
+         * Assign a user to a quote
+         * @description Allow the author of a quote to replace a quoted_name with a quoted_user.
+         *     The quoted_user must be a friend of the author.
+         */
         post: operations["quotes_assign_user_create"];
         delete?: never;
         options?: never;
@@ -518,15 +581,21 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Hide / unhide a quote.
+        /**
+         * Hide a quote
+         * @description Hide / unhide a quote.
          *
          *     POST   -> ensure quote is hidden for the current user.
-         *     DELETE -> ensure quote is not hidden for the current user. */
+         *     DELETE -> ensure quote is not hidden for the current user.
+         */
         post: operations["quotes_hide_create"];
-        /** @description Hide / unhide a quote.
+        /**
+         * Unhide a quote
+         * @description Hide / unhide a quote.
          *
          *     POST   -> ensure quote is hidden for the current user.
-         *     DELETE -> ensure quote is not hidden for the current user. */
+         *     DELETE -> ensure quote is not hidden for the current user.
+         */
         delete: operations["quotes_hide_destroy"];
         options?: never;
         head?: never;
@@ -542,7 +611,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Like/unlike a quote */
+        /**
+         * Like or unlike a quote
+         * @description Like/unlike a quote
+         */
         post: operations["quotes_like_create"];
         delete?: never;
         options?: never;
@@ -600,9 +672,12 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Allow the quoted user to confirm or deny a quote attributed to them.
+        /**
+         * Confirm or deny a quote attribution
+         * @description Allow the quoted user to confirm or deny a quote attributed to them.
          *
-         *     POST with {"response": "confirmed"} or {"response": "denied"} or {"response": null} */
+         *     POST with {"response": "confirmed"} or {"response": "denied"} or {"response": null}
+         */
         post: operations["quotes_respond_create"];
         delete?: never;
         options?: never;
@@ -619,15 +694,21 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Save / unsave a quote.
+        /**
+         * Save a quote
+         * @description Save / unsave a quote.
          *
          *     POST   -> ensure quote is saved for the current user.
-         *     DELETE -> ensure quote is not saved for the current user. */
+         *     DELETE -> ensure quote is not saved for the current user.
+         */
         post: operations["quotes_save_create"];
-        /** @description Save / unsave a quote.
+        /**
+         * Unsave a quote
+         * @description Save / unsave a quote.
          *
          *     POST   -> ensure quote is saved for the current user.
-         *     DELETE -> ensure quote is not saved for the current user. */
+         *     DELETE -> ensure quote is not saved for the current user.
+         */
         delete: operations["quotes_save_destroy"];
         options?: never;
         head?: never;
@@ -643,7 +724,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Witness/unwitness a quote */
+        /**
+         * Witness or unwitness a quote
+         * @description Witness/unwitness a quote
+         */
         post: operations["quotes_witness_create"];
         delete?: never;
         options?: never;
@@ -832,9 +916,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Block a user. */
+        /**
+         * Block a user
+         * @description Block a user.
+         */
         post: operations["users_block_create"];
-        /** @description Unblock a user. */
+        /**
+         * Unblock a user
+         * @description Unblock a user.
+         */
         delete: operations["users_block_destroy"];
         options?: never;
         head?: never;
@@ -954,6 +1044,17 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * @description * `accept` - accept
+         *     * `reject` - reject
+         * @enum {string}
+         */
+        ActionEnum: "accept" | "reject";
+        AppConfigResponse: {
+            minimum_version: string;
+            ios_store_url: string | null;
+            android_store_url: string | null;
+        };
         /** @description Custom JWT token serializer */
         CustomTokenObtainPair: {
             /** Format: email */
@@ -963,9 +1064,15 @@ export interface components {
         DetailResponse: {
             detail: string;
         };
+        DeviceToken: {
+            token: string;
+        };
         /** @description Serializer for sending friend requests */
         FriendRequest: {
             receiver_id: number;
+        };
+        FriendRequestAction: {
+            action: components["schemas"]["ActionEnum"];
         };
         /** @description Serializer for friendship relationships */
         Friendship: {
@@ -978,12 +1085,23 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        FriendshipWithMessage: {
+            message: string;
+            readonly friendship: components["schemas"]["Friendship"];
+        };
         /**
          * @description * `user` - user
          *     * `quote` - quote
          * @enum {string}
          */
         KindEnum: "user" | "quote";
+        MarkAllReadResponse: {
+            message: string;
+            count: number;
+        };
+        MessageResponse: {
+            message: string;
+        };
         /** @description User serializer including minimum necessary fields */
         MinimalUser: {
             readonly id: number;
@@ -995,7 +1113,8 @@ export interface components {
         Notification: {
             readonly id: number;
             notification_type: components["schemas"]["NotificationTypeEnum"];
-            readonly actors: string;
+            readonly actors: components["schemas"]["MinimalUser"][];
+            /** Format: int64 */
             actor_count?: number;
             quote?: number | null;
             readonly friendship: components["schemas"]["Friendship"] | null;
@@ -1144,11 +1263,13 @@ export interface components {
             bio?: string | null;
             /** Format: date-time */
             readonly date_joined?: string;
-            readonly friends_count?: string;
-            readonly quotes_posted?: string;
-            readonly quotes_received?: string;
+            readonly friends_count?: number;
+            readonly quotes_posted?: number;
+            readonly quotes_received?: number;
             profile_color?: components["schemas"]["ProfileColorEnum"];
+            /** Format: int64 */
             current_streak?: number;
+            /** Format: int64 */
             longest_streak?: number;
         };
         /**
@@ -1176,13 +1297,12 @@ export interface components {
             readonly profile_color: string;
             /** Format: date-time */
             readonly date_joined: string;
-            /** @description Total friends this user has */
             readonly friends_count: number;
-            /** @description Total quotes this user has posted */
             readonly quotes_posted: number;
-            /** @description Total quotes about this user */
             readonly quotes_received: number;
+            /** Format: int64 */
             current_streak?: number;
+            /** Format: int64 */
             longest_streak?: number;
             readonly recent_quotes_posted: components["schemas"]["Quote"][];
             readonly friendship: components["schemas"]["Friendship"] | null;
@@ -1195,13 +1315,12 @@ export interface components {
             readonly profile_color: string;
             /** Format: date-time */
             readonly date_joined: string;
-            /** @description Total friends this user has */
             readonly friends_count: number;
-            /** @description Total quotes this user has posted */
             readonly quotes_posted: number;
-            /** @description Total quotes about this user */
             readonly quotes_received: number;
+            /** Format: int64 */
             current_streak?: number;
+            /** Format: int64 */
             longest_streak?: number;
             readonly friendship: components["schemas"]["Friendship"] | null;
         };
@@ -1238,6 +1357,9 @@ export interface components {
             readonly guess: components["schemas"]["QuoteGuess"] | null;
             readonly remaining_skips: number;
             readonly guess_options: components["schemas"]["MinimalUser"][];
+        };
+        QuoteAssignUserRequest: {
+            quoted_user_id: number;
         };
         QuoteGuess: {
             readonly id: number;
@@ -1276,6 +1398,13 @@ export interface components {
             /** @description Return friendship status between requesting user and the guesser */
             readonly friendship_status: string | null;
         };
+        QuoteRespondRequest: {
+            response: (components["schemas"]["ResponseEnum"] | components["schemas"]["NullEnum"]) | null;
+        };
+        QuoteWithMessage: {
+            message: string;
+            readonly quote: components["schemas"]["Quote"];
+        };
         /** @description Serializer for quote witnesses */
         QuoteWitness: {
             readonly id: number;
@@ -1304,12 +1433,18 @@ export interface components {
             query?: string | null;
         };
         RecentSearchItem: {
-            readonly kind: string;
+            readonly kind: components["schemas"]["KindEnum"];
             readonly target_id: string;
             /** Format: date-time */
             touched_at?: string;
             last_query?: string | null;
-            readonly data: string;
+            readonly data: {
+                [key: string]: unknown;
+            };
+        };
+        RegisterResponse: {
+            readonly user: components["schemas"]["User"];
+            message: string;
         };
         ReportRequest: {
             reason: components["schemas"]["ReasonEnum"];
@@ -1322,6 +1457,16 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        ResendVerification: {
+            /** Format: email */
+            email: string;
+        };
+        /**
+         * @description * `confirmed` - confirmed
+         *     * `denied` - denied
+         * @enum {string}
+         */
+        ResponseEnum: "confirmed" | "denied";
         /**
          * @description * `pending` - Pending
          *     * `accepted` - Accepted
@@ -1334,6 +1479,9 @@ export interface components {
             readonly access: string;
             refresh: string;
         };
+        UnreadCountResponse: {
+            unread_count: number;
+        };
         /** @description Serializer for user profile */
         User: {
             readonly id: number;
@@ -1344,11 +1492,13 @@ export interface components {
             bio?: string | null;
             /** Format: date-time */
             readonly date_joined: string;
-            readonly friends_count: string;
-            readonly quotes_posted: string;
-            readonly quotes_received: string;
+            readonly friends_count: number;
+            readonly quotes_posted: number;
+            readonly quotes_received: number;
             profile_color?: components["schemas"]["ProfileColorEnum"];
+            /** Format: int64 */
             current_streak?: number;
+            /** Format: int64 */
             longest_streak?: number;
         };
         /** @description Serializer for user registration */
@@ -1370,6 +1520,10 @@ export interface components {
             detail: string;
             access: string;
             refresh: string;
+        };
+        WitnessResponse: {
+            message: string;
+            readonly witness: components["schemas"]["QuoteWitness"] | null;
         };
     };
     responses: never;
@@ -1526,7 +1680,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserRegistration"];
+                    "application/json": components["schemas"]["RegisterResponse"];
                 };
             };
         };
@@ -1538,14 +1692,21 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResendVerification"];
+                "application/x-www-form-urlencoded": components["schemas"]["ResendVerification"];
+                "multipart/form-data": components["schemas"]["ResendVerification"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -1582,7 +1743,7 @@ export interface operations {
             };
         };
     };
-    devices_create: {
+    config_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -1591,12 +1752,46 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AppConfigResponse"];
+                };
+            };
+        };
+    };
+    devices_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceToken"];
+                "application/x-www-form-urlencoded": components["schemas"]["DeviceToken"];
+                "multipart/form-data": components["schemas"]["DeviceToken"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -1673,14 +1868,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FriendRequestAction"];
+                "application/x-www-form-urlencoded": components["schemas"]["FriendRequestAction"];
+                "multipart/form-data": components["schemas"]["FriendRequestAction"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FriendshipWithMessage"];
+                };
             };
         };
     };
@@ -1770,7 +1972,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FriendRequest"];
+                    "application/json": components["schemas"]["FriendshipWithMessage"];
                 };
             };
         };
@@ -1855,12 +2057,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponse"];
+                };
             };
         };
     };
@@ -1875,12 +2078,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponse"];
+                };
             };
         };
     };
@@ -1893,12 +2097,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MarkAllReadResponse"];
+                };
             };
         };
     };
@@ -1911,12 +2116,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["UnreadCountResponse"];
+                };
             };
         };
     };
@@ -2142,14 +2348,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteAssignUserRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["QuoteAssignUserRequest"];
+                "multipart/form-data": components["schemas"]["QuoteAssignUserRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["Quote"];
+                };
             };
         };
     };
@@ -2190,12 +2403,21 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -2210,12 +2432,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
-            204: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -2230,12 +2453,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponse"];
+                };
             };
         };
     };
@@ -2337,14 +2561,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteRespondRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["QuoteRespondRequest"];
+                "multipart/form-data": components["schemas"]["QuoteRespondRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["QuoteWithMessage"];
+                };
             };
         };
     };
@@ -2359,12 +2590,21 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -2379,12 +2619,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
-            204: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -2399,12 +2640,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["WitnessResponse"];
+                };
             };
         };
     };
@@ -2694,12 +2936,21 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -2714,12 +2965,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
-            204: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
