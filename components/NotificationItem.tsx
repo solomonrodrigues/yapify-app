@@ -76,6 +76,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
   const iconColors = typeColorMap[notification_type] ?? { icon: theme.secondaryText, bg: theme.cardBackground };
   const actionText = typeActionMap[notification_type] ?? '';
   const isFriendRequest = notification_type === 'friend_request';
+  const isNavigable = notification_type === 'new_quote' || notification_type === 'quote_liked' || notification_type === 'quote_witnessed';
   // For friend_request notifications the current user is the receiver; the actor is friendship.sender
   const friendUserId = friendship?.sender?.id;
 
@@ -224,13 +225,13 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
                 onFriendshipChange={(f) => onFriendshipChange(id, f)}
               />
             )
-          ) : (
+          ) : isNavigable ? (
             <IconSymbol
               name="chevron.right"
               size={16}
               color={theme.secondaryText}
             />
-          )}
+          ) : null}
         </View>
       </TouchableOpacity>
     </Swipeable>

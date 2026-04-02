@@ -1,8 +1,8 @@
 // context/NotificationsContext.tsx
-import { getNotifications, markAllNotificationsRead, markNotificationRead, markNotificationUnread, deleteNotification as deleteNotificationApi } from '@/lib/api/notifications';
+import { getNotifications, getUnreadNotificationCount, markAllNotificationsRead, markNotificationRead, markNotificationUnread, deleteNotification as deleteNotificationApi } from '@/lib/api/notifications';
 import { getErrorMessage } from '@/lib/utils/error';
 import { Friendship, Notification } from '@/types/api';
-import React, { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 interface NotificationsContextValue {
   notifications: Notification[];
@@ -33,6 +33,15 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  // Authoritative unread count from the server — accurate even with pagination.
+  // null means not yet fetched (falls back to computed count from loaded notifications).
+  const [apiUnreadCount, setApiUnreadCount] = useState<number | null>(null);
+  // Ref for reading current notifications in action callbacks without stale closures.
+  const notificationsRef = useRef<Notification[]>([]);
+
+  useEffect(() => {
+    notificationsRef.current = notifications;
+  }, [notifications]);
 
   const fetchNotifications = useCallback(async (url?: string, mode: 'reset' | 'append' = 'reset') => {
     try {
@@ -42,6 +51,11 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       const res = await getNotifications(url);
       setNextUrl(res.next ?? null);
       setNotifications((prev) => (mode === 'append' ? [...prev, ...res.results] : res.results));
+      if (mode === 'reset') {
+        // Fetch the true server-side unread count in the background so the badge
+        // is accurate even for notifications not yet loaded via pagination.
+        getUnreadNotificationCount().then(r => setApiUnreadCount(r.unread_count)).catch(() => {});
+      }
       setError(null);
       setHasLoadedOnce(true);
     } catch (err) {
@@ -62,9 +76,13 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   }, [loadingMore, nextUrl, fetchNotifications]);
 
   const markAsRead = useCallback(async (id: number) => {
+    const wasUnread = notificationsRef.current.find(n => n.id === id)?.is_read === false;
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
     );
+    if (wasUnread) {
+      setApiUnreadCount(prev => prev !== null ? Math.max(0, prev - 1) : null);
+    }
     try {
       await markNotificationRead(id);
     } catch (err) {
@@ -72,6 +90,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, is_read: false } : n))
       );
+      if (wasUnread) {
+        setApiUnreadCount(prev => prev !== null ? prev + 1 : null);
+      }
       const errorMessage = getErrorMessage(err);
       console.error('Failed to mark notification as read:', errorMessage);
       throw err;
@@ -79,23 +100,28 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const markAllAsRead = useCallback(async () => {
+    // Optimistic update
+    const prevNotifications = notificationsRef.current;
+    const prevApiUnreadCount = apiUnreadCount;
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    setApiUnreadCount(0);
     try {
       await markAllNotificationsRead();
-      // Update all notifications to is_read: true
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, is_read: true }))
-      );
     } catch (err) {
+      // Rollback on failure
+      setNotifications(prevNotifications);
+      setApiUnreadCount(prevApiUnreadCount);
       const errorMessage = getErrorMessage(err);
       console.error('Failed to mark all notifications as read:', errorMessage);
       throw err;
     }
-  }, []);
+  }, [apiUnreadCount]);
 
   const markAsUnread = useCallback(async (id: number) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, is_read: false } : n))
     );
+    setApiUnreadCount(prev => prev !== null ? prev + 1 : null);
     try {
       await markNotificationUnread(id);
     } catch (err) {
@@ -103,6 +129,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
       );
+      setApiUnreadCount(prev => prev !== null ? Math.max(0, prev - 1) : null);
       const errorMessage = getErrorMessage(err);
       console.error('Failed to mark notification as unread:', errorMessage);
       throw err;
@@ -110,22 +137,25 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const deleteNotification = useCallback(async (id: number) => {
-    let removed: Notification | undefined;
-    setNotifications((prev) => {
-      removed = prev.find((n) => n.id === id);
-      return prev.filter((n) => n.id !== id);
-    });
+    const toRemove = notificationsRef.current.find(n => n.id === id);
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    if (toRemove && !toRemove.is_read) {
+      setApiUnreadCount(prev => prev !== null ? Math.max(0, prev - 1) : null);
+    }
     try {
       await deleteNotificationApi(id);
     } catch (err) {
       // Rollback on failure
-      if (removed) {
+      if (toRemove) {
         setNotifications((prev) => {
           const idx = prev.findIndex((n) => n.id > id);
           const copy = [...prev];
-          copy.splice(idx === -1 ? copy.length : idx, 0, removed!);
+          copy.splice(idx === -1 ? copy.length : idx, 0, toRemove);
           return copy;
         });
+        if (!toRemove.is_read) {
+          setApiUnreadCount(prev => prev !== null ? prev + 1 : null);
+        }
       }
       const errorMessage = getErrorMessage(err);
       console.error('Failed to delete notification:', errorMessage);
@@ -148,10 +178,11 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     await fetchNotifications();
   }, [fetchNotifications]);
 
-  const unreadCount = useMemo(
+  const computedUnreadCount = useMemo(
     () => notifications.filter((n) => !n.is_read).length,
     [notifications]
   );
+  const unreadCount = apiUnreadCount ?? computedUnreadCount;
 
   return (
     <NotificationsContext.Provider value={{

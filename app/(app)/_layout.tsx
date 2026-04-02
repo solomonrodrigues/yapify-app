@@ -19,7 +19,11 @@ export default function AppLayout() {
 
   useEffect(() => {
     async function registerPushToken() {
-      const { status } = await Notifications.getPermissionsAsync();
+      let { status } = await Notifications.getPermissionsAsync();
+      if (status === 'undetermined') {
+        const { status: requested } = await Notifications.requestPermissionsAsync();
+        status = requested;
+      }
       if (status !== 'granted') return;
 
       const projectId = Constants.expoConfig?.extra?.projectId as string | undefined;
@@ -39,6 +43,29 @@ export default function AppLayout() {
 
     registerPushToken();
   }, []);
+
+  // Deep-link to a quote when the user taps a push notification.
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data as Record<string, string | undefined>;
+      const quoteId = data?.quote_id;
+      if (quoteId) {
+        router.push({ pathname: '/(app)/[quoteID]', params: { quoteID: quoteId } });
+      }
+    });
+
+    // Handle the notification tap that cold-started (or re-opened) the app.
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (!response) return;
+      const data = response.notification.request.content.data as Record<string, string | undefined>;
+      const quoteId = data?.quote_id;
+      if (quoteId) {
+        router.push({ pathname: '/(app)/[quoteID]', params: { quoteID: quoteId } });
+      }
+    });
+
+    return () => subscription.remove();
+  }, [router]);
 
   // While auth state is being restored, don't render anything yet
   if (isLoading) return null;

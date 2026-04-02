@@ -6,8 +6,8 @@ import { Colors } from '@/constants/Colors';
 import { useNotifications } from '@/context/NotificationsContext';
 import { Notification } from '@/types/api';
 import { LegendList } from '@legendapp/list';
-import { router } from 'expo-router';
-import React, { useEffect } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import React, { useCallback, useEffect } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -48,10 +48,10 @@ const NotificationsView: React.FC = () => {
         Alert.alert('Error', 'Failed to mark notification as read');
       }
     }
-    if (item.notification_type === 'new_quote' || item.notification_type === 'quote_liked' || item.notification_type === 'quote_witnessed') {
+    if ((item.notification_type === 'new_quote' || item.notification_type === 'quote_liked' || item.notification_type === 'quote_witnessed') && item.quote) {
       router.push({
         pathname: "/(app)/[quoteID]",
-        params: { quoteID: item.quote! },
+        params: { quoteID: item.quote },
       });
     }
   };
@@ -61,6 +61,15 @@ const NotificationsView: React.FC = () => {
       fetchNotifications();
     }
   }, [hasLoadedOnce, fetchNotifications]);
+
+  // Refresh when the tab comes into focus so unread state stays current.
+  useFocusEffect(
+    useCallback(() => {
+      if (hasLoadedOnce) {
+        refresh();
+      }
+    }, [hasLoadedOnce, refresh])
+  );
 
   if (loading) {
     return (

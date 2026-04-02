@@ -1,4 +1,4 @@
-import { MarkAllReadResponse, MessageResponse, PaginatedNotificationList } from '../../types/api';
+import { MarkAllReadResponse, MessageResponse, PaginatedNotificationList, UnreadCountResponse } from '../../types/api';
 import api from './client';
 
 export const getNotifications = async (url?: string | null): Promise<PaginatedNotificationList> => {
@@ -36,4 +36,9 @@ export const markNotificationUnread = async (notificationId: number): Promise<Me
 
 export const deleteNotification = async (notificationId: number): Promise<void> => {
   await api.delete(`/notifications/${notificationId}/`);
+};
+
+export const getUnreadNotificationCount = async (): Promise<UnreadCountResponse> => {
+  const res = await api.get<UnreadCountResponse>('/notifications/unread-count/');
+  return res.data;
 };
