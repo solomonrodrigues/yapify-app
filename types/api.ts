@@ -10,9 +10,8 @@ export type NotificationTypeEnum = components["schemas"]["NotificationTypeEnum"]
 export type PaginatedFriendshipList = components["schemas"]["PaginatedFriendshipList"];
 export type PaginatedNotificationList = components["schemas"]["PaginatedNotificationList"];
 export type PaginatedQuoteList = components["schemas"]["PaginatedQuoteList"];
-export type PaginatedPublicUserList = components["schemas"]["PaginatedPublicUserList"];
-export type PaginatedPublicUserListList = components["schemas"]["PaginatedPublicUserListList"];
-export type PublicUserList = components["schemas"]["PublicUserList"];
+export type PaginatedPublicUserList = components["schemas"]["PaginatedPublicUserSummaryList"];
+export type PublicUserSummary = components["schemas"]["PublicUserSummary"];
 export type PatchedQuote = components["schemas"]["PatchedQuote"];
 export type PatchedUser = components["schemas"]["PatchedUser"];
 export type ProfileColorEnum = components["schemas"]["ProfileColorEnum"];
@@ -36,17 +35,17 @@ export type DetailResponse = components["schemas"]["DetailResponse"];
 export type ReportReasonEnum = components["schemas"]["ReasonEnum"];
 export type ReportRequest = components["schemas"]["ReportRequest"];
 export type ReportResponse = components["schemas"]["ReportResponse"];
-
-// Response obj
-// type SuccessResponse =
-//   paths["/my/endpoint"]["get"]["responses"][200]["content"]["application/json"]["schema"];
-// type ErrorResponse =
-//   paths["/my/endpoint"]["get"]["responses"][500]["content"]["application/json"]["schema"];
-
-export interface RegisterResponse {
-  user: User;
-  message: string;
-}
+export type RegisterResponse = components["schemas"]["RegisterResponse"];
+export type MessageResponse = components["schemas"]["MessageResponse"];
+export type FriendRequestAction = components["schemas"]["FriendRequestAction"];
+export type FriendshipWithMessage = components["schemas"]["FriendshipWithMessage"];
+export type WitnessResponse = components["schemas"]["WitnessResponse"];
+export type QuoteRespondRequest = components["schemas"]["QuoteRespondRequest"];
+export type QuoteWithMessage = components["schemas"]["QuoteWithMessage"];
+export type QuoteAssignUserRequest = components["schemas"]["QuoteAssignUserRequest"];
+export type MarkAllReadResponse = components["schemas"]["MarkAllReadResponse"];
+export type UnreadCountResponse = components["schemas"]["UnreadCountResponse"];
+export type AppConfigResponse = components["schemas"]["AppConfigResponse"];
 
 export type VerifyEmailResponse = components["schemas"]["VerifyEmailResponse"];
 

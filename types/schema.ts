@@ -1163,7 +1163,7 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["Notification"][];
         };
-        PaginatedPublicUserListList: {
+        PaginatedPublicUserSummaryList: {
             /** @example 123 */
             count: number;
             /**
@@ -1176,7 +1176,7 @@ export interface components {
              * @example http://api.example.org/accounts/?page=2
              */
             previous?: string | null;
-            results: components["schemas"]["PublicUserList"][];
+            results: components["schemas"]["PublicUserSummary"][];
         };
         PaginatedQuoteGuessListItemList: {
             /** @example 123 */
@@ -1308,7 +1308,7 @@ export interface components {
             readonly friendship: components["schemas"]["Friendship"] | null;
         };
         /** @description Lighter serializer for user list views — excludes expensive nested quotes. */
-        PublicUserList: {
+        PublicUserSummary: {
             readonly id: number;
             readonly username: string;
             readonly display_name: string;
@@ -1834,7 +1834,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserSummaryList"];
                 };
             };
         };
@@ -1923,7 +1923,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserSummaryList"];
                 };
             };
         };
@@ -2484,7 +2484,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserSummaryList"];
                 };
             };
         };
@@ -2671,7 +2671,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserSummaryList"];
                 };
             };
         };
@@ -2998,7 +2998,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserSummaryList"];
                 };
             };
         };
@@ -3137,7 +3137,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserSummaryList"];
                 };
             };
         };
@@ -3163,7 +3163,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserListList"];
+                    "application/json": components["schemas"]["PaginatedPublicUserSummaryList"];
                 };
             };
         };

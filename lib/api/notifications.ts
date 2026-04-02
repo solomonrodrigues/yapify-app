@@ -1,4 +1,4 @@
-import { PaginatedNotificationList } from '../../types/api';
+import { MarkAllReadResponse, MessageResponse, PaginatedNotificationList } from '../../types/api';
 import api from './client';
 
 export const getNotifications = async (url?: string | null): Promise<PaginatedNotificationList> => {
@@ -19,16 +19,19 @@ export const getNotifications = async (url?: string | null): Promise<PaginatedNo
   return res.data;
 };
 
-export const markNotificationRead = async (notificationId: number): Promise<void> => {
-  await api.post(`/notifications/${notificationId}/read/`);
+export const markNotificationRead = async (notificationId: number): Promise<MessageResponse> => {
+  const res = await api.post<MessageResponse>(`/notifications/${notificationId}/read/`);
+  return res.data;
 };
 
-export const markAllNotificationsRead = async (): Promise<void> => {
-  await api.post('/notifications/read/');
+export const markAllNotificationsRead = async (): Promise<MarkAllReadResponse> => {
+  const res = await api.post<MarkAllReadResponse>('/notifications/read/');
+  return res.data;
 };
 
-export const markNotificationUnread = async (notificationId: number): Promise<void> => {
-  await api.post(`/notifications/${notificationId}/unread/`);
+export const markNotificationUnread = async (notificationId: number): Promise<MessageResponse> => {
+  const res = await api.post<MessageResponse>(`/notifications/${notificationId}/unread/`);
+  return res.data;
 };
 
 export const deleteNotification = async (notificationId: number): Promise<void> => {

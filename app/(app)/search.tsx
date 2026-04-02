@@ -9,7 +9,7 @@ import { useFriends } from "@/context/FriendsContext";
 import { searchUsers } from "@/lib/api/friends";
 import { searchQuotes } from "@/lib/api/quotes";
 import { getErrorMessage } from "@/lib/utils/error";
-import { Quote, MinimalUser, PublicUserList } from "@/types/api";
+import { Quote, MinimalUser, PublicUserSummary } from "@/types/api";
 import { LegendList } from "@legendapp/list";
 import { useRouter } from "expo-router";
 import { debounce } from "lodash";
@@ -41,7 +41,7 @@ const SearchScreen = () => {
 
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState<SearchScope>("users");
-  const [userResults, setUserResults] = useState<PublicUserList[]>([]);
+  const [userResults, setUserResults] = useState<PublicUserSummary[]>([]);
   const [quoteResults, setQuoteResults] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -123,7 +123,7 @@ const SearchScreen = () => {
     debouncedSearch(query, scope, yearFilter, monthFilter);
   }, [query, scope, yearFilter, monthFilter, debouncedSearch]);
 
-  const handlePressUser = (user: PublicUserList | MinimalUser) => {
+  const handlePressUser = (user: PublicUserSummary | MinimalUser) => {
     upsertRecentUser(
       { id: user.id, username: user.username, display_name: user.display_name, profile_color: user.profile_color } as MinimalUser,
       query || undefined,
@@ -155,7 +155,7 @@ const SearchScreen = () => {
   };
 
   /** Dedicated components for list items */
-  const UserItem = ({ user }: { user: PublicUserList | MinimalUser }) => (
+  const UserItem = ({ user }: { user: PublicUserSummary | MinimalUser }) => (
     <TouchableOpacity style={styles.userCard} onPress={() => handlePressUser(user)}>
       <InitialsAvatar user={user} size={32} />
       <View style={{ marginLeft: 8 }}>
@@ -285,12 +285,12 @@ const SearchScreen = () => {
             )}
           />
         ) : (
-          <LegendList<PublicUserList | Quote>
+          <LegendList<PublicUserSummary | Quote>
             data={scope === "users" ? userResults : quoteResults}
             keyExtractor={(item) => item.id.toString()}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
-            renderItem={({ item }) => (scope === "users" ? <UserItem user={item as PublicUserList} /> : <QuoteItem quote={item as Quote} />)}
+            renderItem={({ item }) => (scope === "users" ? <UserItem user={item as PublicUserSummary} /> : <QuoteItem quote={item as Quote} />)}
             onEndReached={loadMore}
             onEndReachedThreshold={0.5}
             ListFooterComponent={

@@ -1,4 +1,4 @@
-import { Quote, PaginatedQuoteList, ReportReasonEnum, QuoteGuessCreateResponse } from '../../types/api';
+import { Quote, PaginatedQuoteList, ReportReasonEnum, QuoteGuessCreateResponse, WitnessResponse, MessageResponse, DetailResponse, QuoteWithMessage } from '../../types/api';
 import api from './client';
 
 export type FeedScope =
@@ -74,13 +74,13 @@ export const deleteQuote = async (quoteId: number): Promise<void> => {
   await api.delete(`/quotes/${quoteId}/`);
 };
 
-export const witnessQuote = async (quoteId: number) => {
-  const res = await api.post(`/quotes/${quoteId}/witness/`);
+export const witnessQuote = async (quoteId: number): Promise<WitnessResponse> => {
+  const res = await api.post<WitnessResponse>(`/quotes/${quoteId}/witness/`);
   return res.data;
 };
 
-export const likeQuote = async (quoteId: number) => {
-  const res = await api.post(`/quotes/${quoteId}/like/`);
+export const likeQuote = async (quoteId: number): Promise<MessageResponse> => {
+  const res = await api.post<MessageResponse>(`/quotes/${quoteId}/like/`);
   return res.data;
 };
 
@@ -100,13 +100,13 @@ export const guessQuote = async (
   return res.data;
 };
 
-export const saveQuote = async (quoteId: number) => {
-  const res = await api.post(`/quotes/${quoteId}/save/`);
+export const saveQuote = async (quoteId: number): Promise<DetailResponse> => {
+  const res = await api.post<DetailResponse>(`/quotes/${quoteId}/save/`);
   return res.data;
 };
 
-export const unsaveQuote = async (quoteId: number) => {
-  const res = await api.delete(`/quotes/${quoteId}/save/`);
+export const unsaveQuote = async (quoteId: number): Promise<DetailResponse> => {
+  const res = await api.delete<DetailResponse>(`/quotes/${quoteId}/save/`);
   return res.data;
 };
 
@@ -125,13 +125,13 @@ export const getSavedQuotes = async (
   return res.data;
 };
 
-export const hideQuote = async (quoteId: number) => {
-  const res = await api.post(`/quotes/${quoteId}/hide/`);
+export const hideQuote = async (quoteId: number): Promise<DetailResponse> => {
+  const res = await api.post<DetailResponse>(`/quotes/${quoteId}/hide/`);
   return res.data;
 };
 
-export const unhideQuote = async (quoteId: number) => {
-  const res = await api.delete(`/quotes/${quoteId}/hide/`);
+export const unhideQuote = async (quoteId: number): Promise<DetailResponse> => {
+  const res = await api.delete<DetailResponse>(`/quotes/${quoteId}/hide/`);
   return res.data;
 };
 
@@ -185,8 +185,8 @@ export const getQuoteWitnesses = async (
 export const respondToQuote = async (
   quoteId: number,
   response: 'confirmed' | 'denied' | null
-) => {
-  const res = await api.post(`/quotes/${quoteId}/respond/`, { response });
+): Promise<QuoteWithMessage> => {
+  const res = await api.post<QuoteWithMessage>(`/quotes/${quoteId}/respond/`, { response });
   return res.data;
 };
 

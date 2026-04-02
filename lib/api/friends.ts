@@ -1,18 +1,18 @@
-import { PaginatedPublicUserList, PaginatedPublicUserListList, PublicUser, User } from '../../types/api';
+import { FriendshipWithMessage, PaginatedFriendshipList, PaginatedPublicUserList, PublicUser, User } from '../../types/api';
 import api from './client';
 
 export const searchUsers = async (
     query: string,
     url?: string | null,
-): Promise<PaginatedPublicUserListList> => {
+): Promise<PaginatedPublicUserList> => {
     if (!query.trim()) return { count: 0, results: [] };
 
     if (url) {
-        const res = await api.get<PaginatedPublicUserListList>(url);
+        const res = await api.get<PaginatedPublicUserList>(url);
         return res.data;
     }
 
-    const res = await api.get<PaginatedPublicUserListList>(`/users/search/?search=${encodeURIComponent(query)}`);
+    const res = await api.get<PaginatedPublicUserList>(`/users/search/?search=${encodeURIComponent(query)}`);
     return res.data;
 };
 
@@ -71,13 +71,13 @@ export const getUserFriends = async (
     return res.data;
 };
 
-export const getFriendRequests = async () => {
-    const res = await api.get('/friends/requests/');
+export const getFriendRequests = async (): Promise<PaginatedFriendshipList> => {
+    const res = await api.get<PaginatedFriendshipList>('/friends/requests/');
     return res.data;
 };
 
-export const sendFriendRequest = async (receiverId: number) => {
-    const res = await api.post('/friends/send/', { receiver_id: receiverId });
+export const sendFriendRequest = async (receiverId: number): Promise<FriendshipWithMessage> => {
+    const res = await api.post<FriendshipWithMessage>('/friends/send/', { receiver_id: receiverId });
     return res.data;
 };
 
@@ -91,7 +91,7 @@ export const unfriend = async (receiverId: number) => {
     return;
 };
 
-export const respondToFriendRequest = async (userId: number, action: 'accept' | 'reject') => {
-    const res = await api.post(`/friends/${userId}/respond/`, { action });
+export const respondToFriendRequest = async (userId: number, action: 'accept' | 'reject'): Promise<FriendshipWithMessage> => {
+    const res = await api.post<FriendshipWithMessage>(`/friends/${userId}/respond/`, { action });
     return res.data;
 };
