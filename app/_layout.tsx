@@ -17,10 +17,13 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import Constants from 'expo-constants';
 import { useFonts } from 'expo-font';
 import * as Notifications from 'expo-notifications';
+import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { Platform, useColorScheme } from 'react-native';
+
+SplashScreen.preventAutoHideAsync();
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import 'react-native-reanimated';
@@ -110,6 +113,12 @@ export default function RootLayout() {
       })
       .catch(() => {}); // network failure — let app proceed normally
   }, []);
+
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
 
   if (!loaded) return null;
 
