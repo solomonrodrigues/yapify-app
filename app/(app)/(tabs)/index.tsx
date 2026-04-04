@@ -42,7 +42,7 @@ const QuotesFeed: React.FC = () => {
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;
-    
+
     return (
       <View style={styles.loadingFooter}>
         <ActivityIndicator size="small" />

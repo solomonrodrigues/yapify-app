@@ -374,11 +374,12 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) => ({
     marginTop: Spacing.lg,
   },
   subtitle: {
-    fontSize: 16,
-    lineHeight: 23,
+    fontSize: 17,
+    lineHeight: 26,
     color: theme.secondaryText,
     fontWeight: '400' as const,
     paddingHorizontal: Spacing.xl,
+    marginTop: Spacing.md,
   },
   dot: {
     height: 8,
