@@ -27,20 +27,25 @@ interface NotificationItemProps {
 
 // Map types to a small leading glyph
 const typeIconMap: Record<string, IconSymbolName | undefined> = {
-  new_quote: 'quote.bubble',
-  quote_liked: 'heart.fill',
-  quote_witnessed: 'eye.fill',
-  friend_request: 'person',
-  friend_accepted: 'checkmark.circle.fill',
+  new_quote:        'quote.bubble',
+  quote_liked:      'heart.fill',
+  quote_witnessed:  'eye.fill',
+  friend_request:   'person',
+  friend_accepted:  'checkmark.circle.fill',
+  quote_guessed:    'target',
+  you_were_guessed: 'person.fill.viewfinder',
+  quote_response:   'quote.bubble.fill',
 };
 
-
 const typeActionMap: Record<string, string> = {
-  new_quote: 'posted a quote about you.',
-  quote_liked: 'liked your quote.',
-  quote_witnessed: 'witnessed your quote.',
-  friend_request: 'sent you a friend request.',
-  friend_accepted: 'accepted your friend request.',
+  new_quote:        'posted a quote about you.',
+  quote_liked:      'liked your quote.',
+  quote_witnessed:  'witnessed your quote.',
+  friend_request:   'sent you a friend request.',
+  friend_accepted:  'accepted your friend request.',
+  quote_guessed:    'guessed your quote.',
+  you_were_guessed: 'guessed it was you.',
+  quote_response:   'responded to your quote.',
 };
 
 const ACTION_WIDTH = 72;
@@ -67,16 +72,26 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
 
   const iconName = typeIconMap[notification_type] ?? 'bell';
   const typeColorMap: Record<string, { icon: string; bg: string }> = {
-    new_quote:       { icon: theme.accent,        bg: theme.accent + '22' },
-    quote_liked:     { icon: theme.likeButton,    bg: theme.likeButton + '22' },
-    quote_witnessed: { icon: theme.witnessButton, bg: theme.witnessButton + '22' },
-    friend_request:  { icon: theme.friendColor,   bg: theme.friendColor + '22' },
-    friend_accepted: { icon: theme.friendColor,   bg: theme.friendColor + '22' },
+    new_quote:        { icon: theme.accent,        bg: theme.accent + '22' },
+    quote_liked:      { icon: theme.likeButton,    bg: theme.likeButton + '22' },
+    quote_witnessed:  { icon: theme.witnessButton, bg: theme.witnessButton + '22' },
+    friend_request:   { icon: theme.friendColor,   bg: theme.friendColor + '22' },
+    friend_accepted:  { icon: theme.friendColor,   bg: theme.friendColor + '22' },
+    quote_guessed:    { icon: theme.accent,        bg: theme.accent + '22' },
+    you_were_guessed: { icon: '#A135D2',            bg: '#A135D222' },
+    quote_response:   { icon: '#E09520',            bg: '#E0952022' },
   };
   const iconColors = typeColorMap[notification_type] ?? { icon: theme.secondaryText, bg: theme.cardBackground };
   const actionText = typeActionMap[notification_type] ?? '';
   const isFriendRequest = notification_type === 'friend_request';
-  const isNavigable = notification_type === 'new_quote' || notification_type === 'quote_liked' || notification_type === 'quote_witnessed';
+  const isNavigable = (
+    notification_type === 'new_quote' ||
+    notification_type === 'quote_liked' ||
+    notification_type === 'quote_witnessed' ||
+    notification_type === 'quote_guessed' ||
+    notification_type === 'you_were_guessed' ||
+    notification_type === 'quote_response'
+  );
   // For friend_request notifications the current user is the receiver; the actor is friendship.sender
   const friendUserId = friendship?.sender?.id;
 

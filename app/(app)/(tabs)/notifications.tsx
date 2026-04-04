@@ -48,7 +48,8 @@ const NotificationsView: React.FC = () => {
         Alert.alert('Error', 'Failed to mark notification as read');
       }
     }
-    if ((item.notification_type === 'new_quote' || item.notification_type === 'quote_liked' || item.notification_type === 'quote_witnessed') && item.quote) {
+    const quoteNavigableTypes = ['new_quote', 'quote_liked', 'quote_witnessed', 'quote_guessed', 'you_were_guessed', 'quote_response'];
+    if (quoteNavigableTypes.includes(item.notification_type) && item.quote) {
       router.push({
         pathname: "/(app)/[quoteID]",
         params: { quoteID: item.quote },

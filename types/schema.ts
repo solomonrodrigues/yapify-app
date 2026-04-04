@@ -90,8 +90,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Takes a refresh type JSON web token and returns an access type JSON web
-         *     token if the refresh token is valid. */
+        /** @description Wraps simplejwt's TokenRefreshView to update last_refreshed_at on the specific
+         *     device making the request. The client optionally passes `push_token` in the
+         *     request body alongside `refresh`. Only that token's timestamp is updated —
+         *     not all of the user's tokens — so a stale token on a logged-out device is
+         *     not kept alive by activity on a different device. */
         post: operations["auth_refresh_create"];
         delete?: never;
         options?: never;
@@ -1114,7 +1117,6 @@ export interface components {
             readonly id: number;
             notification_type: components["schemas"]["NotificationTypeEnum"];
             readonly actors: components["schemas"]["MinimalUser"][];
-            /** Format: int64 */
             actor_count?: number;
             quote?: number | null;
             readonly friendship: components["schemas"]["Friendship"] | null;
@@ -1128,9 +1130,12 @@ export interface components {
          *     * `new_quote` - New Quote About You
          *     * `quote_witnessed` - Quote Witnessed
          *     * `quote_liked` - Quote Liked
+         *     * `quote_guessed` - Quote Guessed
+         *     * `you_were_guessed` - You Were Guessed
+         *     * `quote_response` - Quote Confirmed or Denied
          * @enum {string}
          */
-        NotificationTypeEnum: "friend_request" | "friend_accepted" | "new_quote" | "quote_witnessed" | "quote_liked";
+        NotificationTypeEnum: "friend_request" | "friend_accepted" | "new_quote" | "quote_witnessed" | "quote_liked" | "quote_guessed" | "you_were_guessed" | "quote_response";
         /** @enum {unknown} */
         NullEnum: null;
         PaginatedFriendshipList: {
@@ -1267,9 +1272,7 @@ export interface components {
             readonly quotes_posted?: number;
             readonly quotes_received?: number;
             profile_color?: components["schemas"]["ProfileColorEnum"];
-            /** Format: int64 */
             current_streak?: number;
-            /** Format: int64 */
             longest_streak?: number;
         };
         /**
@@ -1300,9 +1303,7 @@ export interface components {
             readonly friends_count: number;
             readonly quotes_posted: number;
             readonly quotes_received: number;
-            /** Format: int64 */
             current_streak?: number;
-            /** Format: int64 */
             longest_streak?: number;
             readonly recent_quotes_posted: components["schemas"]["Quote"][];
             readonly friendship: components["schemas"]["Friendship"] | null;
@@ -1318,9 +1319,7 @@ export interface components {
             readonly friends_count: number;
             readonly quotes_posted: number;
             readonly quotes_received: number;
-            /** Format: int64 */
             current_streak?: number;
-            /** Format: int64 */
             longest_streak?: number;
             readonly friendship: components["schemas"]["Friendship"] | null;
         };
@@ -1496,9 +1495,7 @@ export interface components {
             readonly quotes_posted: number;
             readonly quotes_received: number;
             profile_color?: components["schemas"]["ProfileColorEnum"];
-            /** Format: int64 */
             current_streak?: number;
-            /** Format: int64 */
             longest_streak?: number;
         };
         /** @description Serializer for user registration */

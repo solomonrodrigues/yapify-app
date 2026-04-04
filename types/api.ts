@@ -6,7 +6,8 @@ export type FriendRequest = components["schemas"]["FriendRequest"];
 export type Friendship = components["schemas"]["Friendship"];
 export type MinimalUser = components["schemas"]["MinimalUser"];
 export type Notification = components["schemas"]["Notification"];
-export type NotificationTypeEnum = components["schemas"]["NotificationTypeEnum"];
+// Extends the auto-generated enum with types added after the last schema regeneration.
+export type NotificationTypeEnum = components["schemas"]["NotificationTypeEnum"] | "quote_guessed" | "you_were_guessed" | "quote_response";
 export type PaginatedFriendshipList = components["schemas"]["PaginatedFriendshipList"];
 export type PaginatedNotificationList = components["schemas"]["PaginatedNotificationList"];
 export type PaginatedQuoteList = components["schemas"]["PaginatedQuoteList"];
