@@ -306,7 +306,7 @@ const QuoteDetail: React.FC = () => {
                     <Text style={styles.quotedPersonExternal}>{quote.quoted_name}</Text>
                   )}
                   {quote.quoted_user_response && (
-                    <QuoteResponseBadge response={quote.quoted_user_response} compact />
+                    <QuoteResponseBadge response={quote.quoted_user_response} />
                   )}
                 </View>
                 <Text style={styles.attributionLabel}>

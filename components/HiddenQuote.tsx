@@ -68,7 +68,6 @@ const HiddenQuote: React.FC<HiddenQuoteProps> = ({ quote, theme, onUnhide }) => 
               {quote.quoted_user_response && (
                 <QuoteResponseBadge
                   response={quote.quoted_user_response}
-                  compact
                 />
               )}
             </View>

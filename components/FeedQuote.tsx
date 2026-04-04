@@ -203,9 +203,8 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
               <TouchableOpacity onPress={() => navigateToProfile(quote.quoted_user.id)}>
                 <Text style={styles.quotedNameLink}>{quote.quoted_user.display_name}</Text>
               </TouchableOpacity>
-              {/* Inline response badge - compact version next to name */}
               {quote.quoted_user_response && (
-                <QuoteResponseBadge response={quote.quoted_user_response} compact />
+                <QuoteResponseBadge response={quote.quoted_user_response} />
               )}
             </View>
           ) : (
