@@ -317,7 +317,7 @@ export function useQuotesFeed(
           } else if (longest_streak > prevLongestRef.current && current_streak > 1) {
             return {
               milestoneMessage: {
-                text1: '🏆 New personal best!',
+                text1: 'New personal best!',
                 text2: `${current_streak} in a row`,
               },
             };

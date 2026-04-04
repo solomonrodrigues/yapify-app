@@ -7,17 +7,16 @@ import {
   Modal,
   ActivityIndicator,
   ScrollView,
-  useWindowDimensions,
 } from 'react-native';
 import { Quote, MinimalUser } from '@/types/api';
 import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { Colors } from '@/constants/Colors';
+import { Colors, ProfileColorHexMapPastel, ProfileColorEnum } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import Animated, {
   FadeIn,
   FadeInDown,
-  FadeInUp,
+  FadeInRight,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -46,13 +45,18 @@ type ModalPalette = {
   border: string;
   text: string;
   textMuted: string;
+  textTertiary: string;
+  inputBg: string;
+  bg: string;
   correct: string;
   correctSoft: string;
+  correctMedium: string;
   incorrect: string;
   incorrectSoft: string;
+  incorrectMedium: string;
 };
 
-// ---------- Styles (defined before tile components so they can reference it) ----------
+// ---------- Styles ----------
 
 const getModalStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   StyleSheet.create({
@@ -63,26 +67,32 @@ const getModalStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       flex: 1,
     },
     scrollContent: {
-      paddingBottom: 32,
+      paddingBottom: 40,
     },
 
     // ---- Header ----
     header: {
-      height: 44,
-      alignItems: 'center',
-      justifyContent: 'center',
+      paddingTop: 12,
+      paddingBottom: 16,
       paddingHorizontal: 16,
+      alignItems: 'center',
     },
     grabber: {
       width: 36,
       height: 5,
       borderRadius: 3,
       backgroundColor: theme.border,
+      marginBottom: 14,
+    },
+    headerTitle: {
+      fontSize: 13,
+      fontWeight: '700',
+      letterSpacing: 1.4,
     },
     closeBtn: {
       position: 'absolute',
       right: 16,
-      top: 8,
+      top: 10,
     },
     closeBtnCircle: {
       width: 28,
@@ -94,55 +104,82 @@ const getModalStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
 
     // ---- Quote card ----
     quoteCardWrap: {
-      marginTop: 8,
-      marginBottom: 24,
-    },
-    quoteCard: {
       marginHorizontal: 16,
-      padding: 24,
+      marginBottom: 24,
       borderRadius: 20,
       borderCurve: 'continuous',
-      alignItems: 'center',
+      overflow: 'hidden',
+      flexDirection: 'row',
     },
-    quotePrompt: {
-      fontSize: 11,
-      fontWeight: '700',
-      letterSpacing: 1.8,
-      marginBottom: 16,
+    quoteAccentStrip: {
+      width: 4,
+      borderTopLeftRadius: 20,
+      borderBottomLeftRadius: 20,
+    },
+    quoteCardBody: {
+      flex: 1,
+      paddingVertical: 22,
+      paddingHorizontal: 20,
+      paddingLeft: 18,
     },
     quoteText: {
-      fontSize: 22,
-      lineHeight: 32,
+      fontSize: 21,
+      lineHeight: 31,
       fontFamily: 'Lora',
-      textAlign: 'center',
       letterSpacing: 0.2,
     },
+    quoteContext: {
+      fontSize: 13,
+      fontWeight: '500',
+      marginTop: 10,
+      fontStyle: 'italic',
+    },
 
-    // ---- Options grid ----
-    grid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
+    // ---- Options list ----
+    optionsList: {
       paddingHorizontal: 16,
       gap: 10,
     },
     optionTile: {
-      alignItems: 'center',
-      paddingVertical: 18,
-      paddingHorizontal: 12,
       borderRadius: 18,
-      borderWidth: 1.5,
       borderCurve: 'continuous',
-      gap: 8,
+      borderWidth: 1.5,
+      flexDirection: 'row',
+      alignItems: 'center',
+      overflow: 'hidden',
+    },
+    optionColorStrip: {
+      width: 4,
+      alignSelf: 'stretch',
+    },
+    optionContent: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 14,
+      paddingLeft: 14,
+      paddingRight: 16,
+      gap: 14,
+    },
+    optionTextCol: {
+      flex: 1,
     },
     optionName: {
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '600',
-      textAlign: 'center',
     },
     optionUsername: {
-      fontSize: 11,
+      fontSize: 12,
       fontWeight: '500',
-      textAlign: 'center',
+      marginTop: 2,
+    },
+    selectionIndicator: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      borderWidth: 2,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
 
     // ---- Locked tile avatar badge ----
@@ -159,97 +196,150 @@ const getModalStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 2,
-      borderColor: theme.cardBackground,
     },
 
-    // ---- Confirm area ----
-    confirmArea: {
+    // ---- Actions ----
+    actionsWrap: {
       paddingHorizontal: 16,
       marginTop: 20,
       gap: 12,
-      alignItems: 'center',
     },
     confirmBtn: {
       paddingVertical: 15,
       borderRadius: 999,
-      alignSelf: 'stretch',
       alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: 8,
     },
     confirmBtnText: {
       fontSize: 16,
       fontWeight: '700',
       color: '#fff',
     },
-
-    // ---- Skip ----
-    skipWrap: {
-      alignItems: 'center',
-      marginTop: 20,
-    },
     skipBtn: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
       gap: 6,
-      paddingVertical: 10,
-      paddingHorizontal: 18,
-      borderRadius: 999,
+      paddingVertical: 12,
     },
     skipLabel: {
       fontSize: 14,
       fontWeight: '500',
     },
+    skipHint: {
+      fontSize: 12,
+      fontWeight: '500',
+      marginTop: 2,
+    },
 
     // ---- Checking ----
     checkingWrap: {
-      alignItems: 'center',
+      paddingHorizontal: 16,
       marginTop: 24,
-      marginBottom: 20,
+      marginBottom: 8,
     },
-
-    // ---- Result ----
-    resultWrap: {
-      alignItems: 'center',
-      marginBottom: 20,
-    },
-    resultPill: {
+    checkingPill: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
       gap: 10,
       paddingVertical: 14,
-      paddingHorizontal: 22,
-      borderRadius: 999,
+      borderRadius: 16,
     },
-    resultLabel: {
-      fontSize: 16,
+    checkingLabel: {
+      fontSize: 15,
+      fontWeight: '600',
+    },
+
+    // ---- Result banner ----
+    resultBannerWrap: {
+      marginHorizontal: 16,
+      marginBottom: 20,
+      borderRadius: 20,
+      borderCurve: 'continuous',
+      overflow: 'hidden',
+      flexDirection: 'row',
+    },
+    resultStrip: {
+      width: 4,
+    },
+    resultBannerBody: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 16,
+      paddingHorizontal: 18,
+      gap: 14,
+    },
+    resultIconWrap: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    resultTextCol: {
+      flex: 1,
+    },
+    resultHeadline: {
+      fontSize: 17,
+      fontWeight: '700',
+    },
+    resultSubtitle: {
+      fontSize: 13,
+      fontWeight: '500',
+      marginTop: 2,
+    },
+    streakBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 999,
+      alignSelf: 'flex-start',
+      marginTop: 8,
+    },
+    streakBadgeText: {
+      fontSize: 12,
       fontWeight: '700',
     },
 
     // ---- Milestone ----
     milestoneWrap: {
+      marginHorizontal: 16,
+      marginTop: 16,
+      borderRadius: 16,
+      borderCurve: 'continuous',
+      padding: 16,
+      flexDirection: 'row',
       alignItems: 'center',
-      marginTop: 24,
+      gap: 12,
+    },
+    milestoneTextCol: {
+      flex: 1,
     },
     milestoneText1: {
-      fontSize: 18,
+      fontSize: 15,
       fontWeight: '700',
-      textAlign: 'center',
     },
     milestoneText2: {
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: '500',
-      textAlign: 'center',
-      marginTop: 3,
+      marginTop: 2,
     },
 
     // ---- Done ----
     doneWrap: {
-      alignItems: 'center',
-      marginTop: 24,
+      paddingHorizontal: 16,
+      marginTop: 20,
     },
     doneBtn: {
       paddingVertical: 15,
-      paddingHorizontal: 48,
       borderRadius: 999,
+      alignItems: 'center',
     },
     doneBtnText: {
       fontSize: 16,
@@ -258,25 +348,25 @@ const getModalStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     },
   });
 
-// ---------- OptionTile (module-level so identity is stable across parent re-renders) ----------
+// ---------- OptionTile ----------
 
 interface OptionTileProps {
   option: MinimalUser;
   index: number;
   isPending: boolean;
-  optionWidth: number;
   palette: ModalPalette;
   onSelect: (id: number | null) => void;
 }
 
 const OptionTile = React.memo<OptionTileProps>(({
-  option, index, isPending, optionWidth, palette, onSelect,
+  option, index, isPending, palette, onSelect,
 }) => {
   const styles = useThemedStyles(getModalStyles);
+  const profileColor = ProfileColorHexMapPastel[option.profile_color as ProfileColorEnum] ?? palette.accent;
+
   return (
     <Animated.View
-      entering={FadeInDown.delay(100 + index * 60).duration(300).springify()}
-      style={{ width: optionWidth }}
+      entering={FadeInRight.delay(80 + index * 70).duration(280).springify()}
     >
       <TouchableOpacity
         activeOpacity={0.75}
@@ -289,69 +379,98 @@ const OptionTile = React.memo<OptionTileProps>(({
           },
         ]}
       >
-        <InitialsAvatar user={option} size={36} defaultBorder={false} />
-        <Text style={[styles.optionName, { color: palette.text }]} numberOfLines={1}>
-          {option.display_name}
-        </Text>
-        {!!option.username && (
-          <Text style={[styles.optionUsername, { color: palette.textMuted }]} numberOfLines={1}>
-            @{option.username}
-          </Text>
-        )}
+        <View style={[styles.optionColorStrip, { backgroundColor: profileColor, opacity: isPending ? 0.7 : 0.5 }]} />
+        <View style={styles.optionContent}>
+          <InitialsAvatar user={option} size={44} defaultBorder={false} />
+          <View style={styles.optionTextCol}>
+            <Text style={[styles.optionName, { color: palette.text }]} numberOfLines={1}>
+              {option.display_name}
+            </Text>
+            {!!option.username && (
+              <Text style={[styles.optionUsername, { color: palette.textMuted }]} numberOfLines={1}>
+                @{option.username}
+              </Text>
+            )}
+          </View>
+          <View
+            style={[
+              styles.selectionIndicator,
+              {
+                borderColor: isPending ? palette.accent : palette.border,
+                backgroundColor: isPending ? palette.accent : 'transparent',
+              },
+            ]}
+          >
+            {isPending && (
+              <Animated.View entering={ZoomIn.duration(150)}>
+                <IconSymbol name="checkmark" size={11} color="#fff" />
+              </Animated.View>
+            )}
+          </View>
+        </View>
       </TouchableOpacity>
     </Animated.View>
   );
 });
 
-// ---------- LockedTile (module-level for the same reason) ----------
+// ---------- LockedTile ----------
 
 interface LockedTileProps {
   option: MinimalUser;
-  optionWidth: number;
   isCorrect: boolean;
   isWrong: boolean;
   palette: ModalPalette;
 }
 
 const LockedTile = React.memo<LockedTileProps>(({
-  option, optionWidth, isCorrect, isWrong, palette,
+  option, isCorrect, isWrong, palette,
 }) => {
   const styles = useThemedStyles(getModalStyles);
+  const profileColor = ProfileColorHexMapPastel[option.profile_color as ProfileColorEnum] ?? palette.accent;
+
   const tileBg = isCorrect ? palette.correctSoft : isWrong ? palette.incorrectSoft : palette.card;
   const tileBorder = isCorrect ? palette.correct : isWrong ? palette.incorrect : palette.border;
+  const stripColor = isCorrect ? palette.correct : isWrong ? palette.incorrect : profileColor;
+  const stripOpacity = isCorrect || isWrong ? 1 : 0.3;
+  const textOpacity = isCorrect || isWrong ? 1 : 0.45;
 
   return (
     <View
-      style={[styles.optionTile, { width: optionWidth, backgroundColor: tileBg, borderColor: tileBorder }]}
+      style={[styles.optionTile, { backgroundColor: tileBg, borderColor: tileBorder, opacity: 1 }]}
       pointerEvents="none"
     >
-      <View style={styles.lockedAvatarWrap}>
-        <InitialsAvatar user={option} size={36} defaultBorder={false} />
-        {isCorrect && (
-          <Animated.View
-            entering={ZoomIn.delay(200).springify()}
-            style={[styles.avatarBadge, { backgroundColor: palette.correct }]}
-          >
-            <IconSymbol name="checkmark" size={9} color="#fff" />
-          </Animated.View>
-        )}
-        {isWrong && (
-          <Animated.View
-            entering={ZoomIn.delay(200).springify()}
-            style={[styles.avatarBadge, { backgroundColor: palette.incorrect }]}
-          >
-            <IconSymbol name="xmark" size={9} color="#fff" />
-          </Animated.View>
-        )}
+      <View style={[styles.optionColorStrip, { backgroundColor: stripColor, opacity: stripOpacity }]} />
+      <View style={[styles.optionContent, { opacity: textOpacity }]}>
+        <View style={styles.lockedAvatarWrap}>
+          <InitialsAvatar user={option} size={44} defaultBorder={false} />
+          {isCorrect && (
+            <Animated.View
+              entering={ZoomIn.delay(180).springify()}
+              style={[styles.avatarBadge, { backgroundColor: palette.correct, borderColor: tileBg }]}
+            >
+              <IconSymbol name="checkmark" size={9} color="#fff" />
+            </Animated.View>
+          )}
+          {isWrong && (
+            <Animated.View
+              entering={ZoomIn.delay(180).springify()}
+              style={[styles.avatarBadge, { backgroundColor: palette.incorrect, borderColor: tileBg }]}
+            >
+              <IconSymbol name="xmark" size={9} color="#fff" />
+            </Animated.View>
+          )}
+        </View>
+        <View style={styles.optionTextCol}>
+          <Text style={[styles.optionName, { color: isCorrect ? palette.correct : isWrong ? palette.incorrect : palette.text }]} numberOfLines={1}>
+            {option.display_name}
+          </Text>
+          {!!option.username && (
+            <Text style={[styles.optionUsername, { color: palette.textMuted }]} numberOfLines={1}>
+              @{option.username}
+            </Text>
+          )}
+        </View>
       </View>
-      <Text style={[styles.optionName, { color: palette.text }]} numberOfLines={1}>
-        {option.display_name}
-      </Text>
-      {!!option.username && (
-        <Text style={[styles.optionUsername, { color: palette.textMuted }]} numberOfLines={1}>
-          @{option.username}
-        </Text>
-      )}
     </View>
   );
 });
@@ -368,7 +487,6 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
   milestoneMessage,
 }) => {
   const styles = useThemedStyles(getModalStyles);
-  const { width: screenWidth } = useWindowDimensions();
   const [pendingSelection, setPendingSelection] = useState<number | null>(null);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -383,17 +501,20 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
     return {
       accent,
       accentSoft: withAlpha(accent, 0.10),
-      accentMedium: withAlpha(accent, 0.18),
+      accentMedium: withAlpha(accent, 0.16),
       text: theme.text,
       textMuted: theme.secondaryText,
+      textTertiary: theme.tertiaryText,
       card: theme.cardBackground,
       bg: theme.modalBackground,
       border: theme.border,
       inputBg: theme.inputBackground,
       correct: '#34C759',
-      correctSoft: 'rgba(52, 199, 89, 0.12)',
+      correctSoft: 'rgba(52, 199, 89, 0.10)',
+      correctMedium: 'rgba(52, 199, 89, 0.20)',
       incorrect: '#FF6B6B',
-      incorrectSoft: 'rgba(255, 107, 107, 0.12)',
+      incorrectSoft: 'rgba(255, 107, 107, 0.10)',
+      incorrectMedium: 'rgba(255, 107, 107, 0.20)',
     };
   }, [accent, theme]);
 
@@ -401,11 +522,7 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
 
   React.useEffect(() => {
     if (hasSubmitted && quote?.guess?.correct) {
-      successScale.value = withSpring(1, {
-        damping: 16,
-        stiffness: 260,
-        overshootClamping: true,
-      });
+      successScale.value = withSpring(1, { damping: 16, stiffness: 260, overshootClamping: true });
     }
   }, [hasSubmitted, quote?.guess?.correct, successScale]);
 
@@ -427,10 +544,14 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
 
   const correctId = quote?.quoted_user?.id ?? null;
   const isPostGuess = hasSubmitted || !!quote?.guess;
-  const isWaitingForResult =
-    isPostGuess && quote?.guess?.correct === null && !quote?.guess?.skipped;
+  const isWaitingForResult = isPostGuess && quote?.guess?.correct === null && !quote?.guess?.skipped;
+  const remainingSkips = quote?.remaining_skips ?? 0;
 
-  const optionWidth = (screenWidth - 32 - 10) / 2;
+  const resultIsCorrect = !isWaitingForResult && !!quote?.guess?.correct;
+  const resultIsSkipped = !isWaitingForResult && !!quote?.guess?.skipped;
+  const resultIsWrong = !isWaitingForResult && isPostGuess && !resultIsCorrect && !resultIsSkipped;
+
+  const currentStreak = quote?.guess?.current_streak ?? 0;
 
   return (
     <Modal
@@ -441,9 +562,12 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
     >
       <View style={[styles.container, { backgroundColor: palette.bg }]}>
         <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
-          {/* Grabber + close */}
+          {/* Header */}
           <View style={styles.header}>
             <View style={styles.grabber} />
+            <Text style={[styles.headerTitle, { color: palette.textMuted }]}>
+              WHO SAID THIS?
+            </Text>
             <TouchableOpacity
               onPress={onClose}
               style={styles.closeBtn}
@@ -462,76 +586,76 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
             bounces={false}
           >
             {/* Quote card */}
-            <Animated.View entering={FadeIn.delay(60).duration(320)} style={styles.quoteCardWrap}>
-              <View style={[styles.quoteCard, { backgroundColor: palette.card }]}>
-                <Text style={[styles.quotePrompt, { color: palette.textMuted }]}>
-                  WHO SAID THIS?
-                </Text>
+            <Animated.View entering={FadeIn.delay(60).duration(280)} style={styles.quoteCardWrap}>
+              <View style={[styles.quoteAccentStrip, { backgroundColor: accent }]} />
+              <View style={[styles.quoteCardBody, { backgroundColor: palette.card }]}>
                 <Text style={[styles.quoteText, { color: palette.text }]} selectable>
                   &ldquo;{quote.text}&rdquo;
                 </Text>
+                {!!quote.context && (
+                  <Text style={[styles.quoteContext, { color: palette.textMuted }]}>
+                    {quote.context}
+                  </Text>
+                )}
               </View>
             </Animated.View>
 
             {/* ---- Pre-guess state ---- */}
             {!isPostGuess && (
               <>
-                <View style={styles.grid}>
+                <View style={styles.optionsList}>
                   {quote.guess_options?.map((option, i) => (
                     <OptionTile
                       key={option.id}
                       option={option}
                       index={i}
                       isPending={pendingSelection === option.id}
-                      optionWidth={optionWidth}
                       palette={palette}
                       onSelect={setPendingSelection}
                     />
                   ))}
                 </View>
 
-                {pendingSelection !== null ? (
-                  <Animated.View
-                    entering={FadeInUp.duration(200)}
-                    style={styles.confirmArea}
+                <Animated.View entering={FadeIn.delay(400).duration(280)} style={styles.actionsWrap}>
+                  {pendingSelection !== null ? (
+                    <Animated.View entering={FadeIn.duration(180)}>
+                      <TouchableOpacity
+                        onPress={handleConfirm}
+                        activeOpacity={0.85}
+                        style={[styles.confirmBtn, { backgroundColor: palette.accent }]}
+                      >
+                        <Text style={styles.confirmBtnText}>Lock it in</Text>
+                        <IconSymbol name="chevron.right" size={14} color="#fff" />
+                      </TouchableOpacity>
+                    </Animated.View>
+                  ) : null}
+                  <TouchableOpacity
+                    onPress={handleSkip}
+                    activeOpacity={0.7}
+                    style={styles.skipBtn}
                   >
-                    <TouchableOpacity
-                      onPress={handleConfirm}
-                      activeOpacity={0.85}
-                      style={[styles.confirmBtn, { backgroundColor: palette.accent }]}
-                    >
-                      <Text style={styles.confirmBtnText}>Confirm</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={handleSkip}
-                      activeOpacity={0.7}
-                      style={styles.skipBtn}
-                    >
-                      <IconSymbol name="forward.fill" size={12} color={palette.textMuted} />
-                      <Text style={[styles.skipLabel, { color: palette.textMuted }]}>Skip instead</Text>
-                    </TouchableOpacity>
-                  </Animated.View>
-                ) : (
-                  <Animated.View entering={FadeIn.delay(400).duration(300)} style={styles.skipWrap}>
-                    <TouchableOpacity
-                      onPress={handleSkip}
-                      activeOpacity={0.7}
-                      style={styles.skipBtn}
-                    >
-                      <IconSymbol name="forward.fill" size={12} color={palette.textMuted} />
-                      <Text style={[styles.skipLabel, { color: palette.textMuted }]}>Skip</Text>
-                    </TouchableOpacity>
-                  </Animated.View>
-                )}
+                    <IconSymbol name="forward.fill" size={12} color={palette.textMuted} />
+                    <View>
+                      <Text style={[styles.skipLabel, { color: palette.textMuted }]}>
+                        {pendingSelection !== null ? 'Skip instead' : 'Skip'}
+                      </Text>
+                      {remainingSkips <= 2 && (
+                        <Text style={[styles.skipHint, { color: palette.textTertiary }]}>
+                          {remainingSkips} skip{remainingSkips !== 1 ? 's' : ''} left this week
+                        </Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                </Animated.View>
               </>
             )}
 
             {/* ---- Waiting for result ---- */}
             {isWaitingForResult && (
               <Animated.View entering={FadeIn.duration(200)} style={styles.checkingWrap}>
-                <View style={[styles.resultPill, { backgroundColor: palette.accentSoft }]}>
+                <View style={[styles.checkingPill, { backgroundColor: palette.accentSoft }]}>
                   <ActivityIndicator size="small" color={palette.accent} />
-                  <Text style={[styles.resultLabel, { color: palette.text }]}>Checking...</Text>
+                  <Text style={[styles.checkingLabel, { color: palette.text }]}>Checking...</Text>
                 </View>
               </Animated.View>
             )}
@@ -541,63 +665,105 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
               <>
                 {/* Result banner */}
                 <Animated.View
-                  entering={FadeIn.duration(220)}
-                  style={styles.resultWrap}
+                  entering={FadeInDown.duration(300).springify()}
+                  style={styles.resultBannerWrap}
                 >
-                  <Animated.View
+                  <View
                     style={[
-                      styles.resultPill,
+                      styles.resultStrip,
                       {
-                        backgroundColor: quote.guess?.skipped
-                          ? palette.accentSoft
-                          : quote.guess?.correct
-                          ? palette.correctSoft
-                          : palette.incorrectSoft,
+                        backgroundColor: resultIsCorrect
+                          ? palette.correct
+                          : resultIsWrong
+                          ? palette.incorrect
+                          : palette.accent,
                       },
-                      quote.guess?.correct ? badgeSpringStyle : null,
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.resultBannerBody,
+                      {
+                        backgroundColor: resultIsCorrect
+                          ? palette.correctSoft
+                          : resultIsWrong
+                          ? palette.incorrectSoft
+                          : palette.accentSoft,
+                      },
                     ]}
                   >
-                    <IconSymbol
-                      name={
-                        quote.guess?.skipped
-                          ? 'forward.fill'
-                          : quote.guess?.correct
-                          ? 'checkmark.seal.fill'
-                          : 'xmark.octagon'
-                      }
-                      size={22}
-                      color={
-                        quote.guess?.skipped
-                          ? palette.accent
-                          : quote.guess?.correct
-                          ? palette.correct
-                          : palette.incorrect
-                      }
-                    />
-                    <Text
+                    <Animated.View
                       style={[
-                        styles.resultLabel,
+                        styles.resultIconWrap,
                         {
-                          color: quote.guess?.skipped
-                            ? palette.text
-                            : quote.guess?.correct
-                            ? palette.correct
-                            : palette.incorrect,
+                          backgroundColor: resultIsCorrect
+                            ? palette.correctMedium
+                            : resultIsWrong
+                            ? palette.incorrectMedium
+                            : palette.accentMedium,
                         },
+                        resultIsCorrect ? badgeSpringStyle : null,
                       ]}
                     >
-                      {quote.guess?.skipped
-                        ? 'Skipped'
-                        : quote.guess?.correct
-                        ? 'Correct!'
-                        : `Nope — it was ${quote.quoted_user?.display_name ?? quote.quoted_name}`}
-                    </Text>
-                  </Animated.View>
-                  <BurstParticles color={palette.correct} active={!!quote.guess?.correct} />
+                      <IconSymbol
+                        name={
+                          resultIsSkipped
+                            ? 'forward.fill'
+                            : resultIsCorrect
+                            ? 'checkmark.seal.fill'
+                            : 'xmark.octagon'
+                        }
+                        size={22}
+                        color={
+                          resultIsSkipped
+                            ? palette.accent
+                            : resultIsCorrect
+                            ? palette.correct
+                            : palette.incorrect
+                        }
+                      />
+                    </Animated.View>
+
+                    <View style={styles.resultTextCol}>
+                      <Text
+                        style={[
+                          styles.resultHeadline,
+                          {
+                            color: resultIsCorrect
+                              ? palette.correct
+                              : resultIsWrong
+                              ? palette.incorrect
+                              : palette.text,
+                          },
+                        ]}
+                      >
+                        {resultIsSkipped
+                          ? 'Skipped'
+                          : resultIsCorrect
+                          ? 'Correct!'
+                          : 'Nope!'}
+                      </Text>
+                      {resultIsWrong && (
+                        <Text style={[styles.resultSubtitle, { color: palette.textMuted }]}>
+                          It was {quote.quoted_user?.display_name ?? quote.quoted_name}
+                        </Text>
+                      )}
+                      {resultIsCorrect && currentStreak > 1 && (
+                        <View style={[styles.streakBadge, { backgroundColor: palette.correctMedium }]}>
+                          <IconSymbol name="flame.fill" size={12} color={palette.correct} />
+                          <Text style={[styles.streakBadgeText, { color: palette.correct }]}>
+                            {currentStreak} in a row
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
                 </Animated.View>
 
-                {/* Locked grid */}
-                <View style={styles.grid}>
+                <BurstParticles color={palette.correct} active={resultIsCorrect} />
+
+                {/* Locked tiles */}
+                <View style={styles.optionsList}>
                   {quote.guess_options?.map((option) => {
                     const isSelected = selectedOption === option.id;
                     const isCorrect = correctId != null && option.id === correctId;
@@ -606,7 +772,6 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
                       <LockedTile
                         key={option.id}
                         option={option}
-                        optionWidth={optionWidth}
                         isCorrect={isCorrect}
                         isWrong={isWrong}
                         palette={palette}
@@ -615,22 +780,26 @@ const GuessGameModal: React.FC<GuessGameModalProps> = ({
                   })}
                 </View>
 
-                {quote.guess?.correct && milestoneMessage && (
+                {/* Milestone */}
+                {resultIsCorrect && milestoneMessage && (
                   <Animated.View
-                    entering={FadeInDown.delay(350).duration(400).springify()}
-                    style={styles.milestoneWrap}
+                    entering={FadeInDown.delay(350).duration(350).springify()}
+                    style={[styles.milestoneWrap, { backgroundColor: palette.accentSoft }]}
                   >
-                    <Text style={[styles.milestoneText1, { color: palette.text }]}>
-                      {milestoneMessage.text1}
-                    </Text>
-                    <Text style={[styles.milestoneText2, { color: palette.textMuted }]}>
-                      {milestoneMessage.text2}
-                    </Text>
+                    <IconSymbol name="trophy.fill" size={20} color={palette.accent} />
+                    <View style={styles.milestoneTextCol}>
+                      <Text style={[styles.milestoneText1, { color: palette.text }]}>
+                        {milestoneMessage.text1}
+                      </Text>
+                      <Text style={[styles.milestoneText2, { color: palette.textMuted }]}>
+                        {milestoneMessage.text2}
+                      </Text>
+                    </View>
                   </Animated.View>
                 )}
 
                 {/* Done */}
-                <Animated.View entering={FadeIn.delay(300).duration(300)} style={styles.doneWrap}>
+                <Animated.View entering={FadeIn.delay(280).duration(280)} style={styles.doneWrap}>
                   <TouchableOpacity
                     onPress={onClose}
                     activeOpacity={0.85}
