@@ -20,6 +20,14 @@ Yapify is an inside jokes and funny quotes tracker for friend groups. Users capt
 ### Known Areas for Improvement
 - The two-tier feed error pattern (`saved-quotes.tsx`, `hidden-quotes.tsx`) is not yet applied consistently across all screens — align any screen you touch
 
+### Push Notifications Status
+- **iOS:** Implementation complete (`app/(app)/_layout.tsx`). Requires end-to-end testing on a real device with a production/development EAS build. Not testable in Expo Go or the simulator.
+- **Android:** Implementation is wired up but **not functional** — requires Firebase project setup. Steps needed:
+  1. Create a Firebase project and register the Android app
+  2. Download `google-services.json` and add it to the project
+  3. Configure FCM v1 credentials in the Expo/EAS dashboard
+  4. Build with EAS (`eas build --platform android`) — push does not work in Expo Go on Android (SDK 53+)
+
 ## Project Overview
 
 Yapify is a React Native mobile app built with Expo that allows users to share, discover, and interact with quotes. The app features authentication, social interactions (likes, witnesses, guessing who said the quote), and a feed-based UI.
@@ -164,6 +172,7 @@ Contexts that provide data which is *not* required for the first screen, and who
 
 **Android**:
 - Edge-to-edge display enabled (`android.edgeToEdgeEnabled: true`)
+- Push notifications require Firebase setup (see Push Notifications Status above) — not yet configured
 
 ## Design Principles
 
