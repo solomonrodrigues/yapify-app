@@ -40,7 +40,7 @@ const QuoteDetail: React.FC = () => {
   const navigation = useNavigation();
   const router = useRouter();
   const { openModal } = useQuoteActionsModal();
-  const { patchUser } = useUser();
+  const { patchUser, user } = useUser();
 
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(true);
@@ -233,8 +233,9 @@ const QuoteDetail: React.FC = () => {
 
   const randomPastel = getPastelFromId(quote.id, theme);
   const guessable = quote.can_guess && !guessMade;
-  const showGuessButton = quote.can_guess || quote.has_guessed;
+  const isAuthor = user?.id === quote.author.id;
   const hasGuessedAlready = guessMade || quote.has_guessed;
+  const showGuessButton = quote.can_guess || hasGuessedAlready || isAuthor || !!quote.can_respond;
 
   const profileColor = guessable ? null
     : quote.quoted_user ? ProfileColorHexMap[quote.quoted_user.profile_color]
@@ -405,7 +406,7 @@ const QuoteDetail: React.FC = () => {
           )}
 
           {showGuessButton && (
-            hasGuessedAlready ? (
+            (hasGuessedAlready || isAuthor || quote.can_respond) ? (
               <PillActionButton
                 icon={
                   <IconSymbol
