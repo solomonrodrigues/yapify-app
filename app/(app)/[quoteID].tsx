@@ -17,10 +17,11 @@ import { Spacing } from '@/constants/Spacing';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import GuessGameModal from '@/components/modals/GuessGameModal';
 import GuessesModal from '@/components/modals/GuessesModal';
+import { UserListModal } from '@/components/UserListModal';
 import QuoteResponseAction from '@/components/QuoteResponseAction';
 import QuoteResponseBadge from '@/components/QuoteResponseBadge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getQuote, likeQuote, witnessQuote, guessQuote, respondToQuote } from '@/lib/api/quotes';
+import { getQuote, likeQuote, witnessQuote, guessQuote, respondToQuote, getQuoteLikes, getQuoteWitnesses } from '@/lib/api/quotes';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useNavigation } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -48,6 +49,8 @@ const QuoteDetail: React.FC = () => {
   const [guessMade, setGuessMade] = useState(false);
   const [showGuessModal, setShowGuessModal] = useState(false);
   const [showGuessesModal, setShowGuessesModal] = useState(false);
+  const [showLikesModal, setShowLikesModal] = useState(false);
+  const [showWitnessesModal, setShowWitnessesModal] = useState(false);
 
   const params = useLocalSearchParams();
   const { quoteID } = params;
@@ -102,13 +105,25 @@ const QuoteDetail: React.FC = () => {
   };
 
   const handleWitness = async () => {
-    if (!quote) return;
+    if (!quote || !user) return;
     const previousIsWitnessed = quote.is_witnessed;
     const previousWitnessCount = quote.witness_count;
+    const previousWitnesses = quote.witnesses;
+    const updatedWitnesses = quote.is_witnessed
+      ? quote.witnesses.filter((w) => w.witness.id !== user.id)
+      : [
+          ...quote.witnesses,
+          {
+            id: -1,
+            witness: { id: user.id, username: user.username, display_name: user.display_name, profile_color: user.profile_color ?? 'BLUE' },
+            created_at: new Date().toISOString(),
+          },
+        ];
     setQuote({
       ...quote,
       is_witnessed: !quote.is_witnessed,
       witness_count: quote.is_witnessed ? quote.witness_count - 1 : quote.witness_count + 1,
+      witnesses: updatedWitnesses,
     });
     try {
       await witnessQuote(quote.id);
@@ -118,6 +133,7 @@ const QuoteDetail: React.FC = () => {
         ...prev,
         is_witnessed: previousIsWitnessed,
         witness_count: previousWitnessCount,
+        witnesses: previousWitnesses,
       } : null);
     }
   };
@@ -390,6 +406,7 @@ const QuoteDetail: React.FC = () => {
             borderColor={theme.border}
             highlightBgColor={theme.likeButton}
             onPress={handleLike}
+            onLongPress={() => setShowLikesModal(true)}
             highlighted={quote.is_liked}
           />
 
@@ -401,6 +418,7 @@ const QuoteDetail: React.FC = () => {
               borderColor={theme.border}
               highlightBgColor={theme.witnessButton}
               onPress={handleWitness}
+              onLongPress={() => setShowWitnessesModal(true)}
               highlighted={quote.is_witnessed}
             />
           )}
@@ -441,6 +459,34 @@ const QuoteDetail: React.FC = () => {
             )
           )}
         </Animated.View>
+
+        {/* Witness chips — surfaces who was there without opening the modal */}
+        {!guessable && quote.witnesses.length > 0 && (
+          <Animated.View entering={FadeInDown.delay(400).duration(300)} style={styles.witnessChipsSection}>
+            <Text style={styles.witnessChipsLabel}>witnessed by</Text>
+          <View style={styles.witnessChipsRow}>
+            {quote.witnesses.slice(0, 4).map((w) => (
+              <TouchableOpacity
+                key={w.witness.id}
+                style={styles.witnessChip}
+                onPress={() => navigateToProfile(w.witness.id)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.witnessChipText}>@{w.witness.username}</Text>
+              </TouchableOpacity>
+            ))}
+            {quote.witness_count > 4 && (
+              <TouchableOpacity
+                style={[styles.witnessChip, styles.witnessChipMore]}
+                onPress={() => setShowWitnessesModal(true)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.witnessChipMoreText}>+{quote.witness_count - 4} more</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          </Animated.View>
+        )}
       </ScrollView>
 
       {quote && (
@@ -461,6 +507,34 @@ const QuoteDetail: React.FC = () => {
           quoteId={quote.id}
           quotedUser={quote.quoted_user}
           onUserPress={handleGuessesUserPress}
+        />
+      )}
+
+      {quote && (
+        <UserListModal
+          visible={showLikesModal}
+          onClose={() => setShowLikesModal(false)}
+          title="Likes"
+          fetcher={({ url }) => getQuoteLikes(quote.id, url)}
+          onUserPress={(u) => {
+            setShowLikesModal(false);
+            navigateToProfile(u.id);
+          }}
+          emptyMessage="No likes yet"
+        />
+      )}
+
+      {quote && (
+        <UserListModal
+          visible={showWitnessesModal}
+          onClose={() => setShowWitnessesModal(false)}
+          title="Witnesses"
+          fetcher={({ url }) => getQuoteWitnesses(quote.id, url)}
+          onUserPress={(u) => {
+            setShowWitnessesModal(false);
+            navigateToProfile(u.id);
+          }}
+          emptyMessage="No witnesses yet"
         />
       )}
     </ThemedView>
@@ -630,6 +704,42 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       alignItems: 'center',
       gap: Spacing.sm + 2,
       flexWrap: 'wrap',
+    },
+
+    // Witness chips
+    witnessChipsSection: {
+      marginTop: Spacing.md,
+      gap: Spacing.xs,
+    },
+    witnessChipsLabel: {
+      fontSize: 13,
+      color: theme.secondaryText,
+      opacity: 0.7,
+    },
+    witnessChipsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: Spacing.xs,
+    },
+    witnessChip: {
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 20,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.border,
+      backgroundColor: theme.cardBackground,
+    },
+    witnessChipText: {
+      fontSize: 13,
+      color: theme.secondaryText,
+    },
+    witnessChipMore: {
+      backgroundColor: 'transparent',
+    },
+    witnessChipMoreText: {
+      fontSize: 13,
+      color: theme.secondaryText,
+      opacity: 0.6,
     },
   });
 
