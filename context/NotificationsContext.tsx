@@ -163,14 +163,12 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const updateFriendship = useCallback((notificationId: number, friendship: Friendship | null) => {
-    setNotifications((prev) =>
-      prev.map((n) =>
-        n.id === notificationId
-          ? { ...n, friendship, is_read: true }
-          : n
-      )
-    );
+  const updateFriendship = useCallback((notificationId: number, _friendship: Friendship | null) => {
+    const wasUnread = notificationsRef.current.find(n => n.id === notificationId)?.is_read === false;
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    if (wasUnread) {
+      setApiUnreadCount(prev => prev !== null ? Math.max(0, prev - 1) : null);
+    }
   }, []);
 
   const refresh = useCallback(async () => {
