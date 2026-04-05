@@ -1,10 +1,12 @@
-// app/(app)/menu.tsx
+// app/(app)/my-account.tsx
+import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { ThemedText } from '@/components/ThemedText';
 import { IconSymbol, IconSymbolName } from '@/components/ui/IconSymbol';
-import { Colors } from '@/constants/Colors';
+import { Colors, ProfileColorHexMap } from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
 import { useUser } from '@/context/UserContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
+import type { ProfileColorEnum } from '@/types/api';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { Alert, FlatList, Pressable, Share, TextStyle, useColorScheme, View } from 'react-native';
@@ -23,6 +25,10 @@ export default function MyAccountScreen() {
   const styles = useThemedStyles(getStyles);
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
+
+  const profileColor = user?.profile_color
+    ? ProfileColorHexMap[user.profile_color as ProfileColorEnum]
+    : theme.accent;
 
   async function handleInvite() {
     if (!user?.username) return;
@@ -79,12 +85,25 @@ export default function MyAccountScreen() {
     },
   ];
 
+  const profileHeader = user ? (
+    <View style={styles.profileCard}>
+      <View style={[styles.profileColorStrip, { backgroundColor: profileColor }]} />
+      <View style={styles.profileBody}>
+        <InitialsAvatar user={user} size={56} />
+        <View style={styles.profileInfo}>
+          <ThemedText style={styles.displayName}>{user.display_name}</ThemedText>
+          <ThemedText style={styles.usernameText}>@{user.username}</ThemedText>
+        </View>
+      </View>
+    </View>
+  ) : null;
+
   return (
     <View style={styles.container}>
-      {/* Menu List */}
       <FlatList
         data={menuItems}
         keyExtractor={(item) => item.title}
+        ListHeaderComponent={profileHeader}
         renderItem={({ item }) => (
           <Pressable
             onPress={item.onPress}
@@ -100,7 +119,6 @@ export default function MyAccountScreen() {
                 size={20}
                 style={{ marginRight: 12 }}
               />
-
               <ThemedText
                 style={[styles.menuText, item.destructive && styles.destructiveText]}
               >
@@ -124,30 +142,39 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       paddingHorizontal: 16,
       paddingTop: 12,
     },
-    header: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: 24,
-    },
-    backButton: {
-      paddingVertical: 8,
-      paddingRight: 16,
-    },
-    backText: {
-      color: theme.accent,
-      fontWeight: "500",
-    },
-    headerTitle: {
-      flex: 1,
-      textAlign: "center",
-      fontSize: 20,
-      fontWeight: "600",
-      color: theme.text,
-      marginRight: 32, // so it's centered despite back button
-    },
     listContent: {
       paddingBottom: 20,
     },
+    // Profile hero card
+    profileCard: {
+      backgroundColor: theme.cardBackground,
+      borderRadius: 16,
+      marginBottom: 20,
+      overflow: 'hidden',
+    },
+    profileColorStrip: {
+      height: 4,
+    },
+    profileBody: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 16,
+      gap: 14,
+    },
+    profileInfo: {
+      flex: 1,
+    },
+    displayName: {
+      fontSize: 18,
+      fontWeight: '700' as TextStyle['fontWeight'],
+      color: theme.text,
+      marginBottom: 2,
+    },
+    usernameText: {
+      fontSize: 13,
+      color: theme.secondaryText,
+    },
+    // Menu items
     menuItem: {
       paddingVertical: 14,
       paddingHorizontal: 16,
@@ -171,5 +198,5 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     row: {
       flexDirection: "row",
       alignItems: "center",
-    },    
+    },
   });
