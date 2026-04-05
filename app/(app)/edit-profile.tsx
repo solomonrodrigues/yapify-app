@@ -148,14 +148,14 @@ export default function EditProfileScreen() {
       {hasChanges && (
         <View style={[styles.saveButtonContainer, { backgroundColor: theme.background }]}>
           <TouchableOpacity
-            style={[styles.saveButton, { backgroundColor: theme.accent }]}
+            style={[styles.saveButton, { backgroundColor: ProfileColorHexMap[profileColor] }]}
             onPress={handleSave}
             disabled={saving}
           >
             {saving ? (
-              <ActivityIndicator color="#FFF" />
+              <ActivityIndicator color={profileColor === 'WHITE' || profileColor === 'YELLOW' ? '#000' : '#FFF'} />
             ) : (
-              <Text style={styles.saveButtonText}>Save Changes</Text>
+              <Text style={[styles.saveButtonText, { color: profileColor === 'WHITE' || profileColor === 'YELLOW' ? '#000' : '#FFF' }]}>Save Changes</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -260,6 +260,5 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     saveButtonText: {
       fontSize: 16,
       fontWeight: '600',
-      color: '#FFF',
     },
   });
