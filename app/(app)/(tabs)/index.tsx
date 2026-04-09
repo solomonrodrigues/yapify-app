@@ -96,7 +96,10 @@ const QuotesFeed: React.FC = () => {
       <View
         style={{
           flex: 1,
-          paddingBottom: insets.bottom,
+          // On Android the tab bar is not absolutely positioned, so the content
+          // area already ends at the top of the tab bar — no bottom padding needed.
+          // On iOS the tab bar floats over content, so pad by the home-indicator height.
+          paddingBottom: Platform.OS === 'ios' ? insets.bottom : 0,
         }}
       >
         <LegendList

@@ -19,9 +19,13 @@ export default function AppLayout() {
   const router = useRouter();
 
   useEffect(() => {
+    // expo-notifications remote push APIs were removed from Expo Go on Android in SDK 53.
+    // Skip all push setup when running in Expo Go on Android to avoid crashes.
+    const isExpoGoAndroid = Platform.OS === 'android' && Constants.executionEnvironment === 'storeClient';
+
     async function registerPushToken() {
-      // Push tokens are not available on simulators/emulators.
-      if (!Device.isDevice) return;
+      // Push tokens are not available on simulators/emulators or Expo Go on Android.
+      if (!Device.isDevice || isExpoGoAndroid) return;
 
       // Android requires a notification channel before requesting permissions.
       if (Platform.OS === 'android') {
@@ -62,7 +66,7 @@ export default function AppLayout() {
 
     // Handles native token rotation (APNs/FCM). The listener emits the raw device
     // token, not an Expo push token — re-run the full registration to exchange it.
-    const tokenSubscription = Notifications.addPushTokenListener(() => {
+    const tokenSubscription = isExpoGoAndroid ? null : Notifications.addPushTokenListener(() => {
       registerPushToken();
     });
 
@@ -74,7 +78,7 @@ export default function AppLayout() {
     });
 
     return () => {
-      tokenSubscription.remove();
+      tokenSubscription?.remove();
       appStateSubscription.remove();
     };
   }, []);

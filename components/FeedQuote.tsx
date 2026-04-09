@@ -325,43 +325,51 @@ const FeedQuote: React.FC<FeedQuoteProps> = ({
         )}
       </View>
 
-      <GuessGameModal
-        quote={quote}
-        visible={showGuessModal}
-        onClose={() => setShowGuessModal(false)}
-        onGuess={handleGuess}
-        theme={theme}
-        accent={pastelColor}
-        milestoneMessage={milestoneMessage}
-      />
+      {showGuessModal && (
+        <GuessGameModal
+          quote={quote}
+          visible={showGuessModal}
+          onClose={() => setShowGuessModal(false)}
+          onGuess={handleGuess}
+          theme={theme}
+          accent={pastelColor}
+          milestoneMessage={milestoneMessage}
+        />
+      )}
 
-      <UserListModal
-        visible={showLikesModal}
-        onClose={() => setShowLikesModal(false)}
-        title="Likes"
-        fetcher={likesFetcher}
-        onUserPress={handleUserPress}
-        searchable={false}
-        emptyMessage="No likes yet"
-      />
+      {showLikesModal && (
+        <UserListModal
+          visible={showLikesModal}
+          onClose={() => setShowLikesModal(false)}
+          title="Likes"
+          fetcher={likesFetcher}
+          onUserPress={handleUserPress}
+          searchable={false}
+          emptyMessage="No likes yet"
+        />
+      )}
 
-      <UserListModal
-        visible={showWitnessesModal}
-        onClose={() => setShowWitnessesModal(false)}
-        title="Witnesses"
-        fetcher={witnessesFetcher}
-        onUserPress={handleUserPress}
-        searchable={false}
-        emptyMessage="No witnesses yet"
-      />
+      {showWitnessesModal && (
+        <UserListModal
+          visible={showWitnessesModal}
+          onClose={() => setShowWitnessesModal(false)}
+          title="Witnesses"
+          fetcher={witnessesFetcher}
+          onUserPress={handleUserPress}
+          searchable={false}
+          emptyMessage="No witnesses yet"
+        />
+      )}
 
-      <GuessesModal
-        visible={showGuessesModal}
-        onClose={() => setShowGuessesModal(false)}
-        quoteId={quote.id}
-        quotedUser={quote.quoted_user}
-        onUserPress={handleGuessesUserPress}
-      />
+      {showGuessesModal && (
+        <GuessesModal
+          visible={showGuessesModal}
+          onClose={() => setShowGuessesModal(false)}
+          quoteId={quote.id}
+          quotedUser={quote.quoted_user}
+          onUserPress={handleGuessesUserPress}
+        />
+      )}
     </Animated.View>
   );
 };
