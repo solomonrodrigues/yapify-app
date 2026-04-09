@@ -53,7 +53,7 @@ const MAPPING = {
   'eye': { name: 'eye' },
   'eye.slash': { name: 'eye-slash' },
   // Options for quote guess button
-  'questionmark.circle.fill':       { name: 'cirlce-question' },
+  'questionmark.circle.fill':       { name: 'circle-question' },
   'square.fill.questionmark':       { name: 'square-question' },
   'person.fill.questionmark':       { name: 'user-question' },
   'person.crop.circle.badge.questionmark': { name: 'user-circle-question' },
@@ -79,6 +79,8 @@ const MAPPING = {
   'quote.opening':           { name: 'quote-left' },       // decorative quote start
   'quote.closing':           { name: 'quote-right' },      // decorative quote end
   'checkmark.seal.fill':     { name: 'circle-check' },     // correct result
+  'xmark.seal.fill':         { name: 'circle-xmark' },     // wrong/denied result (filled seal variant)
+  'xmark.circle':            { name: 'circle-xmark' },     // dismiss/cancel (non-filled variant)
   'xmark.octagon':           { name: 'circle-xmark' },     // wrong result
   // Required icons for Search / Explore screen
   'line.3.horizontal.decrease.circle': { name: 'sliders' },           // filter/sort
@@ -89,6 +91,8 @@ const MAPPING = {
   'trash':                             { name: 'trash' },             // delete
   'person.circle':                     { name: 'user-circle' },       // user profile
   'square.and.arrow.up':               { name: 'share-from-square' }, // share
+  'paperplane':                        { name: 'paper-plane' },       // send / invite
+  'rectangle.portrait.and.arrow.right': { name: 'right-from-bracket' }, // sign out
   // Actions
   'pencil':                            { name: 'pen' },               // edit
   'exclamationmark.triangle':          { name: 'triangle-exclamation' }, // warning/report
