@@ -391,6 +391,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) => ({
     paddingHorizontal: 28,
     borderRadius: 24,
     marginRight: Spacing.md,
+    alignSelf: 'center',
   } as const,
   doneButtonText: {
     fontSize: 16,
