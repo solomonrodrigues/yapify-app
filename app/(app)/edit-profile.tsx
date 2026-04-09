@@ -18,6 +18,7 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 // Generate profile color options from the hex map
@@ -35,6 +36,7 @@ export default function EditProfileScreen() {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
 
+  const insets = useSafeAreaInsets();
   const [bio, setBio] = useState(user?.bio || '');
   const [profileColor, setProfileColor] = useState<ProfileColorEnum>(
     (user?.profile_color as ProfileColorEnum) || 'PURPLE'
@@ -146,7 +148,7 @@ export default function EditProfileScreen() {
 
       {/* Save Button */}
       {hasChanges && (
-        <View style={[styles.saveButtonContainer, { backgroundColor: theme.background }]}>
+        <View style={[styles.saveButtonContainer, { backgroundColor: theme.background, paddingBottom: insets.bottom || 16 }]}>
           <TouchableOpacity
             style={[styles.saveButton, { backgroundColor: ProfileColorHexMap[profileColor] }]}
             onPress={handleSave}
@@ -247,7 +249,8 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       bottom: 0,
       left: 0,
       right: 0,
-      padding: 16,
+      paddingTop: 16,
+      paddingHorizontal: 16,
       borderTopWidth: 1,
       borderTopColor: theme.divider,
     },
