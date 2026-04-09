@@ -105,6 +105,8 @@ const MAPPING = {
   'checkmark.circle':                  { name: 'circle-check' },      // accepted (non-filled variant)
   'bell':                              { name: 'bell' },              // notification (non-filled)
   'person.2':                          { name: 'users' },             // people
+  'text.alignleft':                    { name: 'align-left' },        // text alignment / bio
+  'paintpalette':                      { name: 'palette' },           // color / theme
 } as const satisfies Record<string, IconMappingEntry>;
 
 // Component props for FontAwesome 7
