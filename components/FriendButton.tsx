@@ -15,6 +15,7 @@ interface FriendButtonProps {
   friendship: Friendship | null;
   onFriendshipChange?: (friendship: Friendship | null) => void;
   variant?: 'default' | 'compact' | 'inline';
+  style?: StyleProp<ViewStyle>;
 }
 
 export const FriendButton: React.FC<FriendButtonProps> = ({
@@ -22,6 +23,7 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
   friendship,
   onFriendshipChange,
   variant = 'default',
+  style,
 }) => {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
@@ -183,6 +185,7 @@ export const FriendButton: React.FC<FriendButtonProps> = ({
         buttonSize === 'small' && styles.buttonSmall,
         buttonSize === 'inline' && styles.buttonInline,
         config.style,
+        style,
       ]}
       onPress={handlePress}
       disabled={!config.action || loading}

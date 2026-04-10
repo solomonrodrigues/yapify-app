@@ -439,41 +439,63 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
       <View>
         {/* Scrollable header content - measure this to know when tabs reach top */}
         <View onLayout={handleHeaderLayout}>
-          {/* Header */}
-          <View style={styles.header}>
+
+          {/* Avatar + name row */}
+          <View style={styles.headerRow}>
             <Pressable onPress={handleAvatarPress}>
-              <ReAnimated.View style={[styles.headerAvatar, avatarAnimatedStyle]}>
-                <InitialsAvatar user={user} size={80} />
+              <ReAnimated.View style={avatarAnimatedStyle}>
+                <InitialsAvatar user={user} size={96} />
               </ReAnimated.View>
             </Pressable>
+
             <View style={styles.headerInfo}>
-              <View style={styles.nameRow}>
-                <ThemedText type="title" style={styles.displayName}>{user.display_name}</ThemedText>
+              <ThemedText style={styles.displayName} numberOfLines={2}>{user.display_name}</ThemedText>
+              <View style={styles.usernameRow}>
+                <ThemedText style={styles.username}>@{user.username}</ThemedText>
                 {(currentStreak > 0 || longestStreak > 0) && (
-                  <View style={styles.inlineStreaks}>
+                  <View style={styles.streakRow}>
                     {currentStreak > 0 && (
-                      <View style={styles.inlineStreakItem}>
-                        <IconSymbol name="flame.fill" size={13} color="#FF5722" />
-                        <ThemedText style={styles.inlineStreakValue}>{currentStreak}</ThemedText>
+                      <View style={[styles.streakPill, { backgroundColor: hexToRgba(userProfileColor, 0.12) }]}>
+                        <IconSymbol name="flame.fill" size={11} color="#FF5722" />
+                        <ThemedText style={styles.streakPillText}>{currentStreak}</ThemedText>
                       </View>
                     )}
                     {longestStreak > 0 && (
-                      <View style={styles.inlineStreakItem}>
-                        <IconSymbol name="trophy.fill" size={12} color="#F9A825" />
-                        <ThemedText style={styles.inlineStreakValue}>{longestStreak}</ThemedText>
+                      <View style={[styles.streakPill, { backgroundColor: hexToRgba(userProfileColor, 0.12) }]}>
+                        <IconSymbol name="trophy.fill" size={11} color="#F9A825" />
+                        <ThemedText style={styles.streakPillText}>{longestStreak}</ThemedText>
                       </View>
                     )}
                   </View>
                 )}
               </View>
-              <ThemedText style={styles.username}>@{user.username}</ThemedText>
-              {'bio' in user && user.bio && (
-                <ThemedText style={styles.bio}>{user.bio}</ThemedText>
-              )}
             </View>
           </View>
 
-          {/* Friend Button (only for other users) */}
+          {/* Bio — full width, part of identity */}
+          {'bio' in user && user.bio ? (
+            <ThemedText style={styles.bio}>{user.bio}</ThemedText>
+          ) : null}
+
+          {/* Stats row — full width, hairline borders */}
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <ThemedText style={styles.statNumber}>{quotesPostedCount}</ThemedText>
+              <ThemedText style={styles.statLabel}>Posted</ThemedText>
+            </View>
+            <View style={styles.statSeparator} />
+            <View style={styles.statItem}>
+              <ThemedText style={styles.statNumber}>{quotesReceivedCount}</ThemedText>
+              <ThemedText style={styles.statLabel}>{"Recv'd"}</ThemedText>
+            </View>
+            <View style={styles.statSeparator} />
+            <TouchableOpacity style={styles.statItem} onPress={handleOpenFriends} activeOpacity={0.7}>
+              <ThemedText style={styles.statNumber}>{friendsCount}</ThemedText>
+              <ThemedText style={styles.statLabel}>Friends</ThemedText>
+            </TouchableOpacity>
+          </View>
+
+          {/* Friend button (other user only) */}
           {!isOwnProfile && (
             <View style={styles.actionContainer}>
               <FriendButton
@@ -481,37 +503,10 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
                 friendship={friendship}
                 onFriendshipChange={handleFriendshipChange}
                 variant="default"
+                style={styles.friendButtonFull}
               />
             </View>
           )}
-
-          {/* Stats Row */}
-          <View style={styles.statsRow}>
-            <TouchableOpacity
-              style={[styles.statCard, { backgroundColor: hexToRgba(userProfileColor, 0.08), borderColor: hexToRgba(userProfileColor, 0.15) }]}
-              activeOpacity={0.7}
-              onPress={() => handleTabChange('posted')}
-            >
-              <ThemedText type="title">{quotesPostedCount}</ThemedText>
-              <ThemedText style={styles.statLabel}>Posted</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.statCard, { backgroundColor: hexToRgba(userProfileColor, 0.08), borderColor: hexToRgba(userProfileColor, 0.15) }]}
-              activeOpacity={0.7}
-              onPress={() => handleTabChange('received')}
-            >
-              <ThemedText type="title">{quotesReceivedCount}</ThemedText>
-              <ThemedText style={styles.statLabel}>Received</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.statCard, { backgroundColor: hexToRgba(userProfileColor, 0.08), borderColor: hexToRgba(userProfileColor, 0.15) }]}
-              activeOpacity={0.7}
-              onPress={handleOpenFriends}
-            >
-              <ThemedText type="title">{friendsCount}</ThemedText>
-              <ThemedText style={styles.statLabel}>Friends</ThemedText>
-            </TouchableOpacity>
-          </View>
 
         </View>
 
@@ -520,9 +515,9 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
       </View>
     );
   }, [user, isOwnProfile, friendship, quotesPostedCount, quotesReceivedCount, friendsCount,
-      currentStreak, longestStreak,
+      currentStreak, longestStreak, userProfileColor,
       styles, theme, avatarAnimatedStyle, handleHeaderLayout, handleAvatarPress,
-      handleFriendshipChange, handleTabChange, handleOpenFriends, renderTabs]);
+      handleFriendshipChange, handleOpenFriends, renderTabs]);
 
   if (loading) {
     return (
@@ -677,76 +672,98 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       fontWeight: '600',
       color: theme.text,
     },
-    header: {
+    headerRow: {
       flexDirection: 'row',
-      padding: 16,
-      alignItems: 'flex-start',
-    },
-    headerAvatar: {
-      marginRight: 16,
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingTop: 20,
+      paddingBottom: 16,
+      gap: 16,
     },
     headerInfo: {
       flex: 1,
+      justifyContent: 'center',
+    },
+    displayName: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: theme.text,
+      lineHeight: 26,
+    },
+    usernameRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: 6,
+      marginTop: 3,
     },
     username: {
-      color: theme.secondaryText,
-      fontSize: 15,
-      marginTop: 0,
-    },
-    bio: {
-      color: theme.text,
       fontSize: 14,
-      marginTop: 8,
-      lineHeight: 20,
+      color: theme.secondaryText,
     },
-    actionContainer: {
-      paddingHorizontal: 16,
-      marginBottom: 16,
+    streakRow: {
+      flexDirection: 'row',
+      gap: 5,
+    },
+    streakPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 999,
+    },
+    streakPillText: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: theme.text,
     },
     statsRow: {
       flexDirection: 'row',
-      paddingHorizontal: 16,
-      gap: 12,
-      marginBottom: 16,
-    },
-    statCard: {
-      flex: 1,
-      padding: 16,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: theme.divider,
-      backgroundColor: theme.cardBackground,
       alignItems: 'center',
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: theme.divider,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.divider,
+      paddingVertical: 14,
+    },
+    statItem: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    statSeparator: {
+      width: StyleSheet.hairlineWidth,
+      height: 28,
+      backgroundColor: theme.divider,
+    },
+    statNumber: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: theme.text,
+      lineHeight: 24,
     },
     statLabel: {
-      marginTop: 4,
+      marginTop: 2,
+      fontSize: 12,
       color: theme.secondaryText,
-      fontSize: 13,
+      lineHeight: 16,
     },
-    nameRow: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      justifyContent: 'space-between',
-    },
-    displayName: {
-      flex: 1,
-      marginRight: 8,
-    },
-    inlineStreaks: {
-      flexDirection: 'column',
-      alignItems: 'flex-end',
-      gap: 4,
-    },
-    inlineStreakItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-    },
-    inlineStreakValue: {
+    bio: {
+      color: theme.secondaryText,
       fontSize: 14,
-      fontWeight: '700',
-      lineHeight: 14,
-      color: theme.text,
+      lineHeight: 20,
+      paddingHorizontal: 16,
+      paddingBottom: 16,
+    },
+    actionContainer: {
+      paddingHorizontal: 16,
+      paddingTop: 14,
+      paddingBottom: 4,
+    },
+    friendButtonFull: {
+      alignSelf: 'stretch',
+      minWidth: undefined,
+      paddingHorizontal: 0,
     },
     tabsContainer: {
       flexDirection: 'row',
