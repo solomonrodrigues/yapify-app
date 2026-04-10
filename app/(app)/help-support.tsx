@@ -32,8 +32,8 @@ const FAQ_ITEMS: FAQItem[] = [
     answer: 'Tap the + button in the bottom navigation bar to create a new quote. Enter the quote text and tag the person who said it.',
   },
   {
-    question: 'What is quote visibility?',
-    answer: 'Quote visibility controls who can see quotes you are tagged in. You can set this to "Mutual Friends Only" or "Friends of Friends" in Privacy & Security settings.',
+    question: 'Who can see my quotes?',
+    answer: 'Quotes are visible to the friends of both the person who posted it and the person quoted. If you and your friend both post quotes about each other, your wider friend circles can see them.',
   },
   {
     question: 'How do I block someone?',
