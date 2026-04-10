@@ -195,7 +195,7 @@ export default function QuoteActionsModal() {
               if (router.canGoBack()) {
                 router.back();
               }
-            } catch (error) {
+            } catch {
               Toast.show({ type: "error", text1: "Failed to delete quote" });
             }
           },

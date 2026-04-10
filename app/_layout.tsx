@@ -22,13 +22,13 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { Platform, useColorScheme } from 'react-native';
-
-SplashScreen.preventAutoHideAsync();
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from "react-native-toast-message";
+
+SplashScreen.preventAutoHideAsync();
 
 // Configure how push notifications are displayed when the app is foregrounded.
 Notifications.setNotificationHandler({

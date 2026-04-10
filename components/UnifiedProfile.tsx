@@ -265,7 +265,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
         removeQuotesInvolvingUser(user.id);
         Toast.show({ type: 'info', text1: `@${user.username} blocked` });
         router.back();
-      } catch (error) {
+      } catch {
         Toast.show({ type: 'error', text1: 'Failed to block user' });
       }
     };

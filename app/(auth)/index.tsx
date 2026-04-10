@@ -5,7 +5,7 @@ import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { register } from "@/lib/api/auth";
-import { ApiError, getErrorMessage } from "@/lib/api/errors";
+import { ApiError } from "@/lib/api/errors";
 import LoginErrorHandler from "@/lib/utils/LoginErrorHandler";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";

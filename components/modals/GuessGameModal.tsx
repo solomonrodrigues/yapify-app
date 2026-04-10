@@ -412,6 +412,7 @@ const OptionTile = React.memo<OptionTileProps>(({
     </Animated.View>
   );
 });
+OptionTile.displayName = 'OptionTile';
 
 // ---------- LockedTile ----------
 
@@ -474,6 +475,7 @@ const LockedTile = React.memo<LockedTileProps>(({
     </View>
   );
 });
+LockedTile.displayName = 'LockedTile';
 
 // ---------- GuessGameModal ----------
 

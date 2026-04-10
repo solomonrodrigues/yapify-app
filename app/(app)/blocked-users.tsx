@@ -55,7 +55,7 @@ export default function BlockedUsersScreen() {
             try {
               await unblockUserById(user.id);
               Toast.show({ type: 'success', text1: `@${user.username} unblocked` });
-            } catch (error) {
+            } catch {
               Toast.show({ type: 'error', text1: 'Failed to unblock user' });
             }
           },
