@@ -55,7 +55,7 @@ interface GroupInviteActionsProps {
 }
 
 const GroupInviteActions: React.FC<GroupInviteActionsProps> = ({ groupInvite, theme }) => {
-  const { refreshPendingInvites } = useGroups();
+  const { refreshPendingInvites, refreshGroups } = useGroups();
   const [loading, setLoading] = useState(false);
   const [responded, setResponded] = useState<'accepted' | 'declined' | null>(
     groupInvite.status !== 'pending' ? groupInvite.status : null
@@ -67,6 +67,7 @@ const GroupInviteActions: React.FC<GroupInviteActionsProps> = ({ groupInvite, th
       await respondToInvite(groupInvite.id, action);
       setResponded(action === 'accept' ? 'accepted' : 'declined');
       refreshPendingInvites();
+      if (action === 'accept') refreshGroups();
     } catch {
       // ignore — toast would be shown elsewhere
     } finally {
