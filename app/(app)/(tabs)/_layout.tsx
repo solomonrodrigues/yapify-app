@@ -11,7 +11,7 @@ import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { useUser } from '@/context/UserContext';
 import { useNotifications } from '@/context/NotificationsContext';
 import { DataPreloader } from '@/components/DataPreloader';
-import Toast from 'react-native-toast-message';
+import { useToast } from '@/context/ToastContext';
 import FeedFilterDropdown from '@/components/FeedFilterDropdown';
 import { ThemedText } from '@/components/ThemedText';
 
@@ -54,6 +54,7 @@ function TabContent() {
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const { user } = useUser();
   const { markAllAsRead, unreadCount } = useNotifications();
+  const { toast } = useToast();
 
   const tabBarIconSize = Platform.OS === 'ios' ? 28 : 20
   const headerIconSize = Platform.OS === 'ios' ? 28 : 20
@@ -62,10 +63,7 @@ function TabContent() {
   const handleMarkAllRead = async () => {
     try {
       await markAllAsRead();
-      Toast.show({
-        type: 'info',
-        text1: 'You\'re all caught up.'
-      });
+      toast.show({ variant: 'accent', label: "You're all caught up." });
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'Failed to mark all notifications as read');

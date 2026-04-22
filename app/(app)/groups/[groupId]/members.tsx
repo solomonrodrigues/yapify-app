@@ -22,7 +22,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { useToast } from '@/context/ToastContext';
 
 export default function GroupMembersScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -31,6 +31,7 @@ export default function GroupMembersScreen() {
   const theme = Colors[colorScheme];
   const styles = useThemedStyles(getStyles);
   const router = useRouter();
+  const { toast } = useToast();
   const { refreshGroups } = useGroups();
 
   const [group, setGroup] = useState<Group | null>(null);
@@ -60,7 +61,7 @@ export default function GroupMembersScreen() {
       setMembers(membersData.results);
       setNextUrl(membersData.next);
     } catch (err) {
-      Toast.show({ type: 'error', text1: 'Failed to load members', text2: getErrorMessage(err) });
+      toast.show({ variant: 'danger', label: 'Failed to load members', description: getErrorMessage(err) });
     } finally {
       setLoading(false);
     }
@@ -93,7 +94,7 @@ export default function GroupMembersScreen() {
               setMembers((prev) => prev.filter((m) => m.user.id !== member.user.id));
               refreshGroups();
             } catch (err) {
-              Toast.show({ type: 'error', text1: 'Failed to remove member', text2: getErrorMessage(err) });
+              toast.show({ variant: 'danger', label: 'Failed to remove member', description: getErrorMessage(err) });
             }
           },
         },
@@ -124,11 +125,11 @@ export default function GroupMembersScreen() {
     setInvitingId(user.id);
     try {
       await inviteToGroup(id, user.id);
-      Toast.show({ type: 'success', text1: `Invited ${user.display_name}` });
+      toast.show({ variant: 'success', label: `Invited ${user.display_name}` });
       setInviteQuery('');
       setInviteResults([]);
     } catch (err) {
-      Toast.show({ type: 'error', text1: 'Failed to send invite', text2: getErrorMessage(err) });
+      toast.show({ variant: 'danger', label: 'Failed to send invite', description: getErrorMessage(err) });
     } finally {
       setInvitingId(null);
     }
@@ -225,7 +226,7 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     container: { flex: 1 },
     safeArea: { flex: 1 },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-    inviteSection: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4 },
+    inviteSection: { paddingHorizontal: 16, paddingVertical: 12 },
     inviteResult: {
       flexDirection: 'row', alignItems: 'center',
       paddingVertical: 10, paddingHorizontal: 4,

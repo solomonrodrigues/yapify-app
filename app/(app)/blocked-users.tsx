@@ -15,7 +15,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { useToast } from '@/context/ToastContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BlockedUsersScreen() {
@@ -29,6 +29,7 @@ export default function BlockedUsersScreen() {
 
   const styles = useThemedStyles(getStyles);
   const insets = useSafeAreaInsets();
+  const { toast } = useToast();
   const [refreshing, setRefreshing] = React.useState(false);
 
   useEffect(() => {
@@ -54,9 +55,9 @@ export default function BlockedUsersScreen() {
           onPress: async () => {
             try {
               await unblockUserById(user.id);
-              Toast.show({ type: 'success', text1: `@${user.username} unblocked` });
+              toast.show({ variant: 'success', label: `@${user.username} unblocked` });
             } catch {
-              Toast.show({ type: 'error', text1: 'Failed to unblock user' });
+              toast.show({ variant: 'danger', label: 'Failed to unblock user' });
             }
           },
         },

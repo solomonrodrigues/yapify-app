@@ -16,12 +16,13 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { useToast } from '@/context/ToastContext';
 
 export default function CreateGroupScreen() {
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
   const router = useRouter();
+  const { toast } = useToast();
   const { refreshGroups, setCurrentGroup } = useGroups();
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,10 +36,10 @@ export default function CreateGroupScreen() {
       const group = await createGroup(trimmed);
       await refreshGroups();
       setCurrentGroup(group);
-      Toast.show({ type: 'success', text1: `"${group.name}" created` });
+      toast.show({ variant: 'success', label: `"${group.name}" created` });
       router.back();
     } catch (err) {
-      Toast.show({ type: 'error', text1: 'Failed to create group', text2: getErrorMessage(err) });
+      toast.show({ variant: 'danger', label: 'Failed to create group', description: getErrorMessage(err) });
     } finally {
       setLoading(false);
     }

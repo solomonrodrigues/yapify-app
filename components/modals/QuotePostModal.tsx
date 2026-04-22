@@ -27,7 +27,7 @@ import {
     View,
 } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
-import Toast from "react-native-toast-message";
+import { useToast } from "@/context/ToastContext";
 
 const QUOTE_MAX_LENGTH = 280;
 
@@ -57,6 +57,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   const [quoteText, setQuoteText] = useState("");
   const [contextText, setContextText] = useState("");
   const [creatingQuote, setCreatingQuote] = useState(false);
+  const { toast } = useToast();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];
   const styles = useThemedStyles(getStyles);
@@ -145,7 +146,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   const handleCreateQuote = async () => {
     if (!selectedUser || !quoteText.trim()) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      Toast.show({ type: 'error', text1: 'Please select a user and enter a quote' });
+      toast.show({ variant: 'danger', label: 'Please select a user and enter a quote' });
       return;
     }
 
@@ -174,12 +175,12 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       }
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Toast.show({ type: 'success', text1: 'Quote created!' });
+      toast.show({ variant: 'success', label: 'Quote created!' });
       onClose();
     } catch (error) {
       console.error('Error creating quote:', error);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Toast.show({ type: 'error', text1: 'Failed to create quote' });
+      toast.show({ variant: 'danger', label: 'Failed to create quote' });
     } finally {
       setCreatingQuote(false);
     }

@@ -15,7 +15,7 @@ import {
   useColorScheme,
   View,
 } from "react-native";
-import Toast from "react-native-toast-message";
+import { useToast } from "@/context/ToastContext";
 
 const QUOTE_MAX_LENGTH = 280;
 const CONTEXT_MAX_LENGTH = 150;
@@ -38,6 +38,7 @@ const QuoteEditModal: React.FC<QuoteEditModalProps> = ({
   const [quoteText, setQuoteText] = useState(initialText);
   const [contextText, setContextText] = useState(initialContext ?? "");
   const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
   const styles = useThemedStyles(getStyles);
@@ -78,10 +79,10 @@ const QuoteEditModal: React.FC<QuoteEditModalProps> = ({
         text: quoteText.trim(),
         context: contextText.trim() || null,
       });
-      Toast.show({ type: "success", text1: "Quote updated" });
+      toast.show({ variant: 'success', label: 'Quote updated' });
       onClose();
     } catch {
-      Toast.show({ type: "error", text1: "Failed to update quote" });
+      toast.show({ variant: 'danger', label: 'Failed to update quote' });
     } finally {
       setSaving(false);
     }

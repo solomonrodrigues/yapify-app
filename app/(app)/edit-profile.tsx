@@ -19,7 +19,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { useToast } from '@/context/ToastContext';
 
 // Generate profile color options from the hex map
 const PROFILE_COLORS: { value: ProfileColorEnum; hex: string; name: string }[] = (
@@ -32,6 +32,7 @@ const PROFILE_COLORS: { value: ProfileColorEnum; hex: string; name: string }[] =
 
 export default function EditProfileScreen() {
   const { user, updateUser } = useUser();
+  const { toast } = useToast();
   const styles = useThemedStyles(getStyles);
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
@@ -54,11 +55,7 @@ export default function EditProfileScreen() {
         profile_color: profileColor,
       });
 
-      Toast.show({
-        type: 'success',
-        text1: 'Profile updated',
-        text2: 'Your changes have been saved',
-      });
+      toast.show({ variant: 'success', label: 'Profile updated', description: 'Your changes have been saved' });
     } catch (error) {
       const message = getErrorMessage(error);
       Alert.alert('Error', message || 'Failed to update profile');

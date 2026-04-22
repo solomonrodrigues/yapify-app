@@ -15,7 +15,7 @@ import { useRouter } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import { Alert, Platform, Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { Colors } from "@/constants/Colors";
-import Toast from "react-native-toast-message";
+import { useToast } from "@/context/ToastContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const isIOS = Platform.OS === 'ios';
@@ -25,6 +25,7 @@ export default function QuoteActionsModal() {
   const { quotes, saveQuoteById, unsaveQuoteById, hideQuoteById, deleteQuoteById, assignUserToQuoteById, updateQuoteById } = useQuotes();
   const { user } = useUser();
   const router = useRouter();
+  const { toast } = useToast();
   const insets = useSafeAreaInsets();
   const shareRef = useRef<{ share: () => Promise<void> }>(null);
   const [assignModalVisible, setAssignModalVisible] = useState(false);
@@ -88,7 +89,7 @@ export default function QuoteActionsModal() {
   const handleCopy = async () => {
     if (quote.text) {
       await Clipboard.setStringAsync(quote.text);
-      Toast.show({ type: "success", text1: "Copied. Try not to misuse this power." });
+      toast.show({ variant: 'success', label: 'Copied. Try not to misuse this power.' });
     }
     closeModal();
   };
@@ -109,14 +110,14 @@ export default function QuoteActionsModal() {
     try {
       if (isSavedQuote) {
         await unsaveQuoteById(quote.id);
-        Toast.show({ type: "info", text1: "Unsaved. Bye bye." });
+        toast.show({ variant: 'accent', label: 'Unsaved. Bye bye.' });
         await new Promise((r) => setTimeout(r, 100));
       } else {
         await saveQuoteById(quote.id);
-        Toast.show({ type: "info", text1: "Saved. For future contemplation." });
+        toast.show({ variant: 'accent', label: 'Saved. For future contemplation.' });
       }
     } catch {
-      Toast.show({ type: "error", text1: "Failed to update saved status." });
+      toast.show({ variant: 'danger', label: 'Failed to update saved status.' });
     }
     closeModal();
   };
@@ -124,7 +125,7 @@ export default function QuoteActionsModal() {
   const handleHide = async () => {
     if (quote.id) {
       await hideQuoteById(quote.id);
-      Toast.show({ type: "info", text1: "Hidden. Tap to undo." });
+      toast.show({ variant: 'accent', label: 'Hidden. Tap to undo.' });
     }
     closeModal();
   };
@@ -133,24 +134,24 @@ export default function QuoteActionsModal() {
     try {
       await reportQuote(quote.id, { reason });
       const reportedQuoteId = quote.id;
-      Toast.show({
-        type: "success",
-        text1: "Quote reported",
-        text2: "Tap to undo",
-        onPress: async () => {
-          Toast.hide();
+      toast.show({
+        variant: 'success',
+        label: 'Quote reported',
+        actionLabel: 'Undo',
+        onActionPress: async ({ hide }) => {
+          hide();
           try {
             await unreportQuote(reportedQuoteId);
-            Toast.show({ type: "info", text1: "Report withdrawn" });
+            toast.show({ variant: 'accent', label: 'Report withdrawn' });
           } catch (undoError) {
-            Toast.show({ type: "error", text1: "Failed to undo report", text2: getErrorMessage(undoError) });
+            toast.show({ variant: 'danger', label: 'Failed to undo report', description: getErrorMessage(undoError) });
           }
         },
       });
     } catch (error) {
       const detail = getErrorMessage(error);
       console.error("Report quote failed:", detail);
-      Toast.show({ type: "error", text1: "Failed to report quote", text2: detail });
+      toast.show({ variant: 'danger', label: 'Failed to report quote', description: detail });
     }
     closeModal();
   };
@@ -189,14 +190,14 @@ export default function QuoteActionsModal() {
           onPress: async () => {
             try {
               await deleteQuoteById(quote.id);
-              Toast.show({ type: "success", text1: "Quote deleted" });
+              toast.show({ variant: 'success', label: 'Quote deleted' });
               closeModal();
               // Navigate back if on detail screen
               if (router.canGoBack()) {
                 router.back();
               }
             } catch {
-              Toast.show({ type: "error", text1: "Failed to delete quote" });
+              toast.show({ variant: 'danger', label: 'Failed to delete quote' });
             }
           },
         },
@@ -214,10 +215,10 @@ export default function QuoteActionsModal() {
         display_name: selectedUser.display_name,
         profile_color: (selectedUser.profile_color ?? "GREY") as import('@/types/api').ProfileColorEnum,
       });
-      Toast.show({ type: "success", text1: `Assigned to ${selectedUser.display_name}` });
+      toast.show({ variant: 'success', label: `Assigned to ${selectedUser.display_name}` });
       closeModal();
     } catch (error) {
-      Toast.show({ type: "error", text1: "Failed to assign user", text2: getErrorMessage(error) });
+      toast.show({ variant: 'danger', label: 'Failed to assign user', description: getErrorMessage(error) });
     }
   };
 
@@ -227,7 +228,7 @@ export default function QuoteActionsModal() {
       await updateQuoteById(quote.id, updates);
       closeModal();
     } catch (error) {
-      Toast.show({ type: "error", text1: "Failed to update quote", text2: getErrorMessage(error) });
+      toast.show({ variant: 'danger', label: 'Failed to update quote', description: getErrorMessage(error) });
     }
   };
 

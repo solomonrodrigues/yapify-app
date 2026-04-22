@@ -5,7 +5,7 @@ import * as Sharing from 'expo-sharing';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { useToast } from '@/context/ToastContext';
 import ViewShot from 'react-native-view-shot';
 
 interface ShareableQuoteProps {
@@ -32,12 +32,13 @@ const SHARE_THEME = Colors.dark;
 
 const ShareableQuoteInner: React.ForwardRefRenderFunction<{ share: () => Promise<void> }, ShareableQuoteProps> = ({ quote, guessable, onCapture }, ref) => {
     const viewShotRef = useRef<ViewShot>(null);
+    const { toast } = useToast();
 
     const share = useCallback(async () => {
       try {
         const uri = await viewShotRef.current?.capture?.();
         if (!uri) {
-          Toast.show({ type: 'error', text1: 'Failed to generate image' });
+          toast.show({ variant: 'danger', label: 'Failed to generate image' });
           return;
         }
         onCapture?.();
@@ -47,7 +48,7 @@ const ShareableQuoteInner: React.ForwardRefRenderFunction<{ share: () => Promise
         });
       } catch (error) {
         console.error('Failed to share quote:', error);
-        Toast.show({ type: 'error', text1: 'Failed to share quote' });
+        toast.show({ variant: 'danger', label: 'Failed to share quote' });
       }
     }, [onCapture]);
 

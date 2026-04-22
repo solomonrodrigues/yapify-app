@@ -38,7 +38,7 @@ import ReAnimated, {
     runOnJS,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { useToast } from '@/context/ToastContext';
 import { useNavigation, useRouter } from 'expo-router';
 
 type ProfileUser = CurrentUser | PublicUser;
@@ -58,6 +58,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   const colorScheme = useColorScheme() ?? 'dark';
   const theme = Colors[colorScheme];
   const router = useRouter();
+  const { toast } = useToast();
   const navigation = useNavigation();
   const isOwnProfile = !userId || userId === currentUser.id;
   const { blockUserById } = useBlockedUsers();
@@ -152,7 +153,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   const prevErrorRef = useRef<string | null>(null);
   useEffect(() => {
     if (hasLoadedOnce && error && error !== prevErrorRef.current) {
-      Toast.show({ type: 'error', text1: 'Failed to refresh quotes' });
+      toast.show({ variant: 'danger', label: 'Failed to refresh quotes' });
     }
     prevErrorRef.current = error ?? null;
   }, [error, hasLoadedOnce]);
@@ -186,10 +187,10 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
       try {
         await blockUserById(user.id);
         removeQuotesInvolvingUser(user.id);
-        Toast.show({ type: 'info', text1: `@${user.username} blocked` });
+        toast.show({ variant: 'accent', label: `@${user.username} blocked` });
         router.back();
       } catch {
-        Toast.show({ type: 'error', text1: 'Failed to block user' });
+        toast.show({ variant: 'danger', label: 'Failed to block user' });
       }
     };
 
@@ -209,22 +210,22 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
       await reportUser(user.id, { reason });
       const reportedUserId = user.id;
       const reportedUsername = user.username;
-      Toast.show({
-        type: 'success',
-        text1: `@${reportedUsername} reported`,
-        text2: 'Tap to undo',
-        onPress: async () => {
-          Toast.hide();
+      toast.show({
+        variant: 'success',
+        label: `@${reportedUsername} reported`,
+        actionLabel: 'Undo',
+        onActionPress: async ({ hide }) => {
+          hide();
           try {
             await unreportUser(reportedUserId);
-            Toast.show({ type: 'info', text1: 'Report withdrawn' });
+            toast.show({ variant: 'accent', label: 'Report withdrawn' });
           } catch (undoError) {
-            Toast.show({ type: 'error', text1: 'Failed to undo report', text2: getErrorMessage(undoError) });
+            toast.show({ variant: 'danger', label: 'Failed to undo report', description: getErrorMessage(undoError) });
           }
         },
       });
     } catch (error) {
-      Toast.show({ type: 'error', text1: 'Failed to report user', text2: getErrorMessage(error) });
+      toast.show({ variant: 'danger', label: 'Failed to report user', description: getErrorMessage(error) });
     }
   };
 

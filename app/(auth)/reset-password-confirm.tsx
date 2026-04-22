@@ -5,7 +5,7 @@ import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
 import { confirmPasswordReset, sendPasswordReset } from "@/lib/api/auth";
 import { getErrorCode, getErrorMessage } from "@/lib/api/errors";
-import Toast from "react-native-toast-message";
+import { useToast } from "@/context/ToastContext";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -24,6 +24,7 @@ import {
 
 export default function ResetPasswordConfirmScreen() {
   const router = useRouter();
+  const { toast } = useToast();
   const { email } = useLocalSearchParams<{ email: string }>();
 
   const [code, setCode] = useState("");
@@ -113,7 +114,7 @@ export default function ResetPasswordConfirmScreen() {
       setResendCooldown(30);
       setCode(""); // Clear current code
     } catch (err) {
-      Toast.show({ type: 'error', text1: 'Resend failed.', text2: getErrorMessage(err) });
+      toast.show({ variant: 'danger', label: 'Resend failed.', description: getErrorMessage(err) });
     }
   };
 

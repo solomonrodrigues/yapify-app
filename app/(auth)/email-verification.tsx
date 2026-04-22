@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getErrorCode, getErrorMessage } from "@/lib/api/errors";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import Toast from "react-native-toast-message";
+import { useToast } from "@/context/ToastContext";
 import {
     Keyboard,
     KeyboardAvoidingView,
@@ -24,6 +24,7 @@ import {
 
 export default function EmailVerificationScreen() {
   const router = useRouter();
+  const { toast } = useToast();
   const { completeLogin } = useAuth();
   const { email } = useLocalSearchParams<{ email: string }>();
 
@@ -69,7 +70,7 @@ export default function EmailVerificationScreen() {
       if (getErrorCode(err) === 'VERIFICATION_CODE_INVALID') {
         setCodeError('Invalid or expired code.');
       } else {
-        Toast.show({ type: 'error', text1: 'Verification failed.', text2: getErrorMessage(err) });
+        toast.show({ variant: 'danger', label: 'Verification failed.', description: getErrorMessage(err) });
       }
     } finally {
       setLoading(false);
@@ -81,11 +82,11 @@ export default function EmailVerificationScreen() {
 
     try {
       await resendVerificationCode(email);
-      Toast.show({ type: "success", text1: "Verification code sent to your email." });
+      toast.show({ variant: 'success', label: 'Verification code sent to your email.' });
       setResendCooldown(30);
       setCode("");
     } catch (err) {
-      Toast.show({ type: "error", text1: "Couldn't resend verification email.", text2: getErrorMessage(err) });
+      toast.show({ variant: 'danger', label: "Couldn't resend verification email.", description: getErrorMessage(err) });
     }
   };
 

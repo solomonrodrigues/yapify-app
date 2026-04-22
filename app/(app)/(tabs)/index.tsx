@@ -210,7 +210,6 @@ const QuotesFeed: React.FC = () => {
               <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
               {filter === 'latest' && groups.length === 0 && (
                 <TouchableOpacity style={styles.inviteButton} onPress={() => router.push('/groups/create')}>
-                  <IconSymbol name="person.3.fill" size={16} color={theme.accent} style={{ marginRight: 8 }} />
                   <Text style={styles.inviteText}>Create a Group</Text>
                 </TouchableOpacity>
               )}
@@ -261,18 +260,15 @@ export const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       color: theme.accent,
     },
     inviteButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderWidth: 1,
-      borderRadius: 8,
+      backgroundColor: theme.accent,
+      borderRadius: 999,
       paddingVertical: 12,
-      paddingHorizontal: 24,
-      borderColor: theme.accent,
+      paddingHorizontal: 28,
     },
     inviteText: {
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '600',
-      color: theme.accent,
+      color: '#fff',
     },
     loadingFooter: {
       padding: 20,

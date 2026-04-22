@@ -19,7 +19,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { useToast } from '@/context/ToastContext';
 
 export default function GroupSettingsScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -30,6 +30,7 @@ export default function GroupSettingsScreen() {
   const router = useRouter();
   const { user } = useUser();
   const { refreshGroups, setCurrentGroup, currentGroup } = useGroups();
+  const { toast } = useToast();
 
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,7 +42,7 @@ export default function GroupSettingsScreen() {
   useEffect(() => {
     getGroup(id)
       .then((g) => { setGroup(g); setNameInput(g.name); })
-      .catch(() => Toast.show({ type: 'error', text1: 'Failed to load group' }))
+      .catch(() => toast.show({ variant: 'danger', label: 'Failed to load group' }))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -58,9 +59,9 @@ export default function GroupSettingsScreen() {
       setNameInput(updated.name);
       if (currentGroup?.id === id) setCurrentGroup(updated);
       refreshGroups();
-      Toast.show({ type: 'success', text1: 'Group renamed' });
+      toast.show({ variant: 'success', label: 'Group renamed' });
     } catch (err) {
-      Toast.show({ type: 'error', text1: 'Failed to rename group', text2: getErrorMessage(err) });
+      toast.show({ variant: 'danger', label: 'Failed to rename group', description: getErrorMessage(err) });
     } finally {
       setRenaming(false);
     }
@@ -81,10 +82,10 @@ export default function GroupSettingsScreen() {
               await deleteGroup(id);
               if (currentGroup?.id === id) setCurrentGroup(null);
               refreshGroups();
-              Toast.show({ type: 'info', text1: 'Group deleted' });
+              toast.show({ variant: 'accent', label: 'Group deleted' });
               router.back();
             } catch (err) {
-              Toast.show({ type: 'error', text1: 'Failed to delete group', text2: getErrorMessage(err) });
+              toast.show({ variant: 'danger', label: 'Failed to delete group', description: getErrorMessage(err) });
               setDeleting(false);
             }
           },
@@ -108,10 +109,10 @@ export default function GroupSettingsScreen() {
               await leaveGroup(id);
               if (currentGroup?.id === id) setCurrentGroup(null);
               refreshGroups();
-              Toast.show({ type: 'info', text1: `Left "${group?.name}"` });
+              toast.show({ variant: 'accent', label: `Left "${group?.name}"` });
               router.back();
             } catch (err) {
-              Toast.show({ type: 'error', text1: 'Failed to leave group', text2: getErrorMessage(err) });
+              toast.show({ variant: 'danger', label: 'Failed to leave group', description: getErrorMessage(err) });
               setLeaving(false);
             }
           },

@@ -10,7 +10,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
+import { useToast } from "@/context/ToastContext";
 
 import HiddenQuote from "@/components/HiddenQuote";
 import { ThemedText } from "@/components/ThemedText";
@@ -39,6 +39,7 @@ const HiddenQuotesScreen = () => {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
   const insets = useSafeAreaInsets();
+  const { toast } = useToast();
 
   // Kick off the first load when the screen mounts
   useEffect(() => {
@@ -49,7 +50,7 @@ const HiddenQuotesScreen = () => {
   const prevErrorRef = useRef<string | null>(null);
   useEffect(() => {
     if (error && error !== prevErrorRef.current && hasLoadedOnce) {
-      Toast.show({ type: "error", text1: "Couldn't load hidden quotes" });
+      toast.show({ variant: 'danger', label: "Couldn't load hidden quotes" });
     }
     prevErrorRef.current = error;
   }, [error, hasLoadedOnce]);

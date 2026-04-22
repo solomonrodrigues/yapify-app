@@ -22,7 +22,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
+import { useToast } from "@/context/ToastContext";
 import { timeAgo } from "@/lib/utils/timeAgo";
 import { FilterPicker } from "@/components/FilterPicker";
 import { MONTH_KEYS, MONTH_MAP, MONTH_MAP_REVERSE } from "@/constants/Months";
@@ -32,6 +32,7 @@ type SearchScope = "users" | "quotes";
 
 const SearchScreen = () => {
   const router = useRouter();
+  const { toast } = useToast();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "dark"];
   const styles = useThemedStyles(getStyles);
@@ -109,7 +110,7 @@ const SearchScreen = () => {
         setUserNextPage(response.next ?? null);
       }
     } catch (err) {
-      Toast.show({ type: 'error', text1: 'Failed to load more results', text2: getErrorMessage(err) });
+      toast.show({ variant: 'danger', label: 'Failed to load more results', description: getErrorMessage(err) });
     } finally {
       setIsLoadingMore(false);
     }
