@@ -36,7 +36,6 @@ const NotificationsView: React.FC = () => {
     markAsRead,
     markAsUnread,
     deleteNotification,
-    updateFriendship,
     refresh,
   } = useNotifications();
 
@@ -112,7 +111,6 @@ const NotificationsView: React.FC = () => {
               notification={item}
               theme={theme}
               onPress={() => handleNotificationPress(item)}
-              onFriendshipChange={updateFriendship}
               onMarkUnread={(id) => markAsUnread(id).catch(() => Alert.alert('Error', 'Failed to mark as unread'))}
               onMarkRead={(id) => markAsRead(id).catch(() => Alert.alert('Error', 'Failed to mark as read'))}
               onDelete={(id) => deleteNotification(id).catch(() => Alert.alert('Error', 'Failed to delete notification'))}

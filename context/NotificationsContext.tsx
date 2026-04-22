@@ -1,7 +1,7 @@
 // context/NotificationsContext.tsx
 import { getNotifications, getUnreadNotificationCount, markAllNotificationsRead, markNotificationRead, markNotificationUnread, deleteNotification as deleteNotificationApi } from '@/lib/api/notifications';
 import { getErrorMessage } from '@/lib/utils/error';
-import { Friendship, Notification } from '@/types/api';
+import { Notification } from '@/types/api';
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 interface NotificationsContextValue {
@@ -19,7 +19,6 @@ interface NotificationsContextValue {
   markAllAsRead: () => Promise<void>;
   markAsUnread: (id: number) => Promise<void>;
   deleteNotification: (id: number) => Promise<void>;
-  updateFriendship: (notificationId: number, friendship: Friendship | null) => void;
   refresh: () => Promise<void>;
 }
 
@@ -50,7 +49,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       }
       const res = await getNotifications(url);
       setNextUrl(res.next ?? null);
-      setNotifications((prev) => (mode === 'append' ? [...prev, ...res.results] : res.results));
+      setNotifications((prev) => (mode === 'append' ? [...prev, ...(res.results as Notification[])] : (res.results as Notification[])));
       if (mode === 'reset') {
         // Fetch the true server-side unread count in the background so the badge
         // is accurate even for notifications not yet loaded via pagination.
@@ -163,13 +162,6 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const updateFriendship = useCallback((notificationId: number, _friendship: Friendship | null) => {
-    const wasUnread = notificationsRef.current.find(n => n.id === notificationId)?.is_read === false;
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
-    if (wasUnread) {
-      setApiUnreadCount(prev => prev !== null ? Math.max(0, prev - 1) : null);
-    }
-  }, []);
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
@@ -198,7 +190,6 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       markAllAsRead,
       markAsUnread,
       deleteNotification,
-      updateFriendship,
       refresh,
     }}>
       {children}
