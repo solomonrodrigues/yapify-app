@@ -96,28 +96,8 @@ const GuessesModal: React.FC<GuessesModalProps> = ({
     loadGuesses({ refresh: true });
   };
 
-  // Group guesses by friendship status
   const sections: GuessSection[] = useMemo(() => {
-    const friends: QuoteGuessListItem[] = [];
-    const others: QuoteGuessListItem[] = [];
-
-    guesses.forEach((guess) => {
-      if (guess.friendship_status === 'accepted') {
-        friends.push(guess);
-      } else {
-        others.push(guess);
-      }
-    });
-
-    const result: GuessSection[] = [];
-    if (friends.length > 0) {
-      result.push({ title: 'Friends', data: friends });
-    }
-    if (others.length > 0) {
-      result.push({ title: 'Others', data: others });
-    }
-
-    return result;
+    return guesses.length > 0 ? [{ title: '', data: guesses }] : [];
   }, [guesses]);
 
   const correctCount = guesses.filter((g) => g.correct === true).length;
@@ -170,14 +150,17 @@ const GuessesModal: React.FC<GuessesModalProps> = ({
     );
   };
 
-  const renderSectionHeader = ({ section }: { section: GuessSection }) => (
-    <View style={styles.sectionHeader}>
-      <ThemedText style={styles.sectionTitle}>{section.title}</ThemedText>
-      <View style={styles.sectionCount}>
-        <Text style={styles.sectionCountText}>{section.data.length}</Text>
+  const renderSectionHeader = ({ section }: { section: GuessSection }) => {
+    if (!section.title) return null;
+    return (
+      <View style={styles.sectionHeader}>
+        <ThemedText style={styles.sectionTitle}>{section.title}</ThemedText>
+        <View style={styles.sectionCount}>
+          <Text style={styles.sectionCountText}>{section.data.length}</Text>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderFooter = () => {
     if (!loading || refreshing) return null;

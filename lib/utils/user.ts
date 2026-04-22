@@ -1,6 +1,6 @@
-import { User, PublicUser, MinimalUser } from "@/types/api";
+import { User, PublicUser, PublicUserSummary, MinimalUser } from "@/types/api";
 
-export function getInitials(user: User | PublicUser | MinimalUser | null) {
+export function getInitials(user: User | PublicUser | PublicUserSummary | MinimalUser | null) {
   if (user == null) {
     return "?"
   }

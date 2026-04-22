@@ -203,15 +203,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/friends/": {
+    "/api/groups/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description List and search user's friends */
-        get: operations["friends_list"];
+        /** @description List user's groups / create a new group. */
+        get: operations["groups_list"];
+        put?: never;
+        /** @description List user's groups / create a new group. */
+        post: operations["groups_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/groups/{group_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Retrieve / rename (admin) / delete (admin) a group. */
+        get: operations["groups_retrieve"];
+        put?: never;
+        post?: never;
+        /** @description Retrieve / rename (admin) / delete (admin) a group. */
+        delete: operations["groups_destroy"];
+        options?: never;
+        head?: never;
+        /** @description Retrieve / rename (admin) / delete (admin) a group. */
+        patch: operations["groups_partial_update"];
+        trace?: never;
+    };
+    "/api/groups/{group_id}/invite/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Invite a user to a group (any member). */
+        post: operations["groups_invite_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/groups/{group_id}/leave/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Leave a group. */
+        post: operations["groups_leave_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/groups/{group_id}/members/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description List members of a group. */
+        get: operations["groups_members_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -220,7 +291,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/friends/{user_id}/cancel/": {
+    "/api/groups/{group_id}/members/{user_id}/": {
         parameters: {
             query?: never;
             header?: never;
@@ -230,37 +301,31 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /**
-         * Cancel a sent friend request
-         * @description Cancel outgoing pending friend request.
-         */
-        delete: operations["friends_cancel_destroy"];
+        /** @description Kick a member from a group (admin only). */
+        delete: operations["groups_members_destroy"];
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/friends/{user_id}/respond/": {
+    "/api/groups/invites/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** @description List pending group invites received by the current user. */
+        get: operations["groups_invites_list"];
         put?: never;
-        /**
-         * Accept or reject a friend request
-         * @description Accept or reject friend request
-         */
-        post: operations["friends_respond_create"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/friends/{user_id}/unfriend/": {
+    "/api/groups/invites/{invite_id}/": {
         parameters: {
             query?: never;
             header?: never;
@@ -270,51 +335,14 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /**
-         * Unfriend a user
-         * @description Unfriend (remove accepted friendship).
-         */
-        delete: operations["friends_unfriend_destroy"];
+        /** @description Cancel a sent invite (inviter or admin). */
+        delete: operations["groups_invites_destroy"];
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/friends/recent-quoted/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description List up to 5 most recent friends that the user has made quotes for */
-        get: operations["friends_recent_quoted_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/friends/requests/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description List pending friend requests */
-        get: operations["friends_requests_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/friends/send/": {
+    "/api/groups/invites/{invite_id}/respond/": {
         parameters: {
             query?: never;
             header?: never;
@@ -323,11 +351,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Send a friend request
-         * @description Send friend request
-         */
-        post: operations["friends_send_create"];
+        /** @description Accept or decline a group invite. */
+        post: operations["groups_invites_respond_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -934,23 +959,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/users/{user_id}/friends/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get a paginated list of another user's friends. */
-        get: operations["users_friends_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/users/{user_id}/quotes/posted/": {
         parameters: {
             query?: never;
@@ -1047,12 +1055,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /**
-         * @description * `accept` - accept
-         *     * `reject` - reject
-         * @enum {string}
-         */
-        ActionEnum: "accept" | "reject";
         AppConfigResponse: {
             minimum_version: string;
             ios_store_url: string | null;
@@ -1070,27 +1072,32 @@ export interface components {
         DeviceToken: {
             token: string;
         };
-        /** @description Serializer for sending friend requests */
-        FriendRequest: {
-            receiver_id: number;
-        };
-        FriendRequestAction: {
-            action: components["schemas"]["ActionEnum"];
-        };
-        /** @description Serializer for friendship relationships */
-        Friendship: {
+        Group: {
             readonly id: number;
-            readonly sender: components["schemas"]["MinimalUser"];
-            readonly receiver: components["schemas"]["MinimalUser"];
-            status?: components["schemas"]["StatusEnum"];
+            name: string;
+            readonly created_by: components["schemas"]["MinimalUser"];
+            readonly member_count: number;
+            readonly is_admin: boolean;
             /** Format: date-time */
             readonly created_at: string;
-            /** Format: date-time */
-            readonly updated_at: string;
         };
-        FriendshipWithMessage: {
-            message: string;
-            readonly friendship: components["schemas"]["Friendship"];
+        GroupCreate: {
+            name: string;
+        };
+        GroupInvite: {
+            readonly id: number;
+            readonly group: components["schemas"]["Group"];
+            readonly invited_by: components["schemas"]["MinimalUser"];
+            readonly invited_user: components["schemas"]["MinimalUser"];
+            /** @default pending */
+            status: components["schemas"]["StatusEnum"];
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        GroupMember: {
+            readonly user: components["schemas"]["MinimalUser"];
+            /** Format: date-time */
+            readonly joined_at: string;
         };
         /**
          * @description * `user` - user
@@ -1117,16 +1124,19 @@ export interface components {
             readonly id: number;
             notification_type: components["schemas"]["NotificationTypeEnum"];
             readonly actors: components["schemas"]["MinimalUser"][];
+            /** Format: int64 */
             actor_count?: number;
             quote?: number | null;
-            readonly friendship: components["schemas"]["Friendship"] | null;
+            readonly group_invite: {
+                [key: string]: unknown;
+            } | null;
             is_read?: boolean;
             /** Format: date-time */
             last_event_at: string;
         };
         /**
-         * @description * `friend_request` - Friend Request
-         *     * `friend_accepted` - Friend Request Accepted
+         * @description * `group_invite` - Group Invite
+         *     * `group_invite_accepted` - Group Invite Accepted
          *     * `new_quote` - New Quote About You
          *     * `quote_witnessed` - Quote Witnessed
          *     * `quote_liked` - Quote Liked
@@ -1135,10 +1145,10 @@ export interface components {
          *     * `quote_response` - Quote Confirmed or Denied
          * @enum {string}
          */
-        NotificationTypeEnum: "friend_request" | "friend_accepted" | "new_quote" | "quote_witnessed" | "quote_liked" | "quote_guessed" | "you_were_guessed" | "quote_response";
+        NotificationTypeEnum: "group_invite" | "group_invite_accepted" | "new_quote" | "quote_witnessed" | "quote_liked" | "quote_guessed" | "you_were_guessed" | "quote_response";
         /** @enum {unknown} */
         NullEnum: null;
-        PaginatedFriendshipList: {
+        PaginatedGroupInviteList: {
             /** @example 123 */
             count: number;
             /**
@@ -1151,7 +1161,37 @@ export interface components {
              * @example http://api.example.org/accounts/?page=2
              */
             previous?: string | null;
-            results: components["schemas"]["Friendship"][];
+            results: components["schemas"]["GroupInvite"][];
+        };
+        PaginatedGroupList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Group"][];
+        };
+        PaginatedGroupMemberList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["GroupMember"][];
         };
         PaginatedNotificationList: {
             /** @example 123 */
@@ -1233,6 +1273,7 @@ export interface components {
             readonly quoted_user?: components["schemas"]["MinimalUser"];
             quoted_user_id?: number | null;
             quoted_name?: string | null;
+            group_id?: number | null;
             /** @description Whether the quoted user has confirmed or denied this quote
              *
              *     * `confirmed` - Confirmed
@@ -1268,11 +1309,12 @@ export interface components {
             bio?: string | null;
             /** Format: date-time */
             readonly date_joined?: string;
-            readonly friends_count?: number;
             readonly quotes_posted?: number;
             readonly quotes_received?: number;
             profile_color?: components["schemas"]["ProfileColorEnum"];
+            /** Format: int64 */
             current_streak?: number;
+            /** Format: int64 */
             longest_streak?: number;
         };
         /**
@@ -1300,13 +1342,13 @@ export interface components {
             readonly profile_color: string;
             /** Format: date-time */
             readonly date_joined: string;
-            readonly friends_count: number;
             readonly quotes_posted: number;
             readonly quotes_received: number;
+            /** Format: int64 */
             current_streak?: number;
+            /** Format: int64 */
             longest_streak?: number;
             readonly recent_quotes_posted: components["schemas"]["Quote"][];
-            readonly friendship: components["schemas"]["Friendship"] | null;
         };
         /** @description Lighter serializer for user list views — excludes expensive nested quotes. */
         PublicUserSummary: {
@@ -1316,12 +1358,12 @@ export interface components {
             readonly profile_color: string;
             /** Format: date-time */
             readonly date_joined: string;
-            readonly friends_count: number;
             readonly quotes_posted: number;
             readonly quotes_received: number;
+            /** Format: int64 */
             current_streak?: number;
+            /** Format: int64 */
             longest_streak?: number;
-            readonly friendship: components["schemas"]["Friendship"] | null;
         };
         /** @description Serializer for quotes */
         Quote: {
@@ -1332,6 +1374,7 @@ export interface components {
             readonly quoted_user: components["schemas"]["MinimalUser"];
             quoted_user_id?: number | null;
             quoted_name?: string | null;
+            group_id?: number | null;
             /** @description Whether the quoted user has confirmed or denied this quote
              *
              *     * `confirmed` - Confirmed
@@ -1385,7 +1428,7 @@ export interface components {
             readonly current_streak: number;
             readonly longest_streak: number;
         };
-        /** @description Serializer for listing guesses on a quote with friendship status */
+        /** @description Serializer for listing guesses on a quote */
         QuoteGuessListItem: {
             readonly id: number;
             readonly user: components["schemas"]["MinimalUser"];
@@ -1394,8 +1437,6 @@ export interface components {
             readonly skipped: boolean;
             /** Format: date-time */
             readonly created_at: string;
-            /** @description Return friendship status between requesting user and the guesser */
-            readonly friendship_status: string | null;
         };
         QuoteRespondRequest: {
             response: (components["schemas"]["ResponseEnum"] | components["schemas"]["NullEnum"]) | null;
@@ -1469,11 +1510,10 @@ export interface components {
         /**
          * @description * `pending` - Pending
          *     * `accepted` - Accepted
-         *     * `rejected` - Rejected
-         *     * `blocked` - Blocked
+         *     * `declined` - Declined
          * @enum {string}
          */
-        StatusEnum: "pending" | "accepted" | "rejected" | "blocked";
+        StatusEnum: "pending" | "accepted" | "declined";
         TokenRefresh: {
             readonly access: string;
             refresh: string;
@@ -1491,11 +1531,12 @@ export interface components {
             bio?: string | null;
             /** Format: date-time */
             readonly date_joined: string;
-            readonly friends_count: number;
             readonly quotes_posted: number;
             readonly quotes_received: number;
             profile_color?: components["schemas"]["ProfileColorEnum"];
+            /** Format: int64 */
             current_streak?: number;
+            /** Format: int64 */
             longest_streak?: number;
         };
         /** @description Serializer for user registration */
@@ -1810,7 +1851,154 @@ export interface operations {
             };
         };
     };
-    friends_list: {
+    groups_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedGroupList"];
+                };
+            };
+        };
+    };
+    groups_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GroupCreate"];
+                "application/x-www-form-urlencoded": components["schemas"]["GroupCreate"];
+                "multipart/form-data": components["schemas"]["GroupCreate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupCreate"];
+                };
+            };
+        };
+    };
+    groups_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    groups_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    groups_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    groups_invite_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    groups_leave_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    groups_members_list: {
         parameters: {
             query?: {
                 /** @description A page number within the paginated result set. */
@@ -1821,7 +2009,9 @@ export interface operations {
                 search?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                group_id: number;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1831,16 +2021,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserSummaryList"];
+                    "application/json": components["schemas"]["PaginatedGroupMemberList"];
                 };
             };
         };
     };
-    friends_cancel_destroy: {
+    groups_members_destroy: {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                group_id: number;
                 user_id: number;
             };
             cookie?: never;
@@ -1856,76 +2047,7 @@ export interface operations {
             };
         };
     };
-    friends_respond_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                user_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["FriendRequestAction"];
-                "application/x-www-form-urlencoded": components["schemas"]["FriendRequestAction"];
-                "multipart/form-data": components["schemas"]["FriendRequestAction"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FriendshipWithMessage"];
-                };
-            };
-        };
-    };
-    friends_unfriend_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                user_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    friends_recent_quoted_list: {
-        parameters: {
-            query?: {
-                /** @description A page number within the paginated result set. */
-                page?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserSummaryList"];
-                };
-            };
-        };
-    };
-    friends_requests_list: {
+    groups_invites_list: {
         parameters: {
             query?: {
                 /** @description A page number within the paginated result set. */
@@ -1944,33 +2066,48 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedFriendshipList"];
+                    "application/json": components["schemas"]["PaginatedGroupInviteList"];
                 };
             };
         };
     };
-    friends_send_create: {
+    groups_invites_destroy: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                invite_id: number;
+            };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["FriendRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["FriendRequest"];
-                "multipart/form-data": components["schemas"]["FriendRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
-            201: {
+            /** @description No response body */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["FriendshipWithMessage"];
+                content?: never;
+            };
+        };
+    };
+    groups_invites_respond_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invite_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
             };
         };
     };
@@ -2968,34 +3105,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DetailResponse"];
-                };
-            };
-        };
-    };
-    users_friends_list: {
-        parameters: {
-            query?: {
-                /** @description A page number within the paginated result set. */
-                page?: number;
-                /** @description Number of results to return per page. */
-                page_size?: number;
-                /** @description A search term. */
-                search?: string;
-            };
-            header?: never;
-            path: {
-                user_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedPublicUserSummaryList"];
                 };
             };
         };

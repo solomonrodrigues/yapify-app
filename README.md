@@ -9,7 +9,7 @@ Run the following command, updating the paths to match your local environment:
 Windows
 npx openapi-typescript "C:\Users\Solom\Downloads\yapifySchema.yaml" -o C:\Users\Solom\Sites\yapify-app\types\schema.ts
 MacOS:
-npx openapi-typescript "/Users/solomonrodrigues/Downloads/Yapify API.yaml" -o "/Users/solomonrodrigues/Personal/yapify-app/types/schema.ts"
+npx openapi-typescript "/Users/solomonrodrigues/Downloads/Yapify API(22).yaml" -o "/Users/solomonrodrigues/Personal/yapify-projects/yapify-app/types/schema.ts"
 ```
 Notes
 - The first path points to your OpenAPI schema file (.yaml or .json).
