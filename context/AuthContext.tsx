@@ -3,8 +3,7 @@ import { deregisterDeviceToken } from "@/lib/api/devices";
 import { refreshAuthTokens, setOnLogoutHandler } from "@/lib/api/client";
 import { addPendingDeregistration, clearPushToken, clearTokens, getPushToken, getRefresh, setTokens } from "@/lib/utils/storage";
 import { isAxiosError } from "axios";
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { View } from "react-native";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -20,9 +19,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [authKey, setAuthKey] = useState(0);
+  const isLoggingOutRef = useRef(false);
 
   async function checkAuth() {
+    isLoggingOutRef.current = false;
     setIsLoading(true);
     try {
       // 1. Look for a refresh token (access is memory-only, so ignore it on cold start)
@@ -60,31 +60,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function login(email: string, password: string) {
     await apiLogin(email, password);
+    isLoggingOutRef.current = false;
     setIsLoggedIn(true);
   }
 
   function completeLogin() {
+    isLoggingOutRef.current = false;
     setIsLoggedIn(true);
   }
 
   async function logout() {
-    // Best-effort deregister — don't let a network failure block the user from logging out
-    const pushToken = await getPushToken();
-    if (pushToken) {
-      try {
-        await deregisterDeviceToken(pushToken);
-      } catch {
-        // Network failure — queue for retry on next cold start. The backend's
-        // unauthenticated DELETE /api/devices/ path accepts the token as the
-        // credential, so this works even after the session is cleared.
-        await addPendingDeregistration(pushToken);
-      }
-      await clearPushToken();
-    }
+    // Guard against re-entrant calls: when clearTokens() runs, all in-flight
+    // requests return 401 and each triggers onLogoutHandler() again.
+    if (isLoggingOutRef.current) return;
+    isLoggingOutRef.current = true;
 
     await clearTokens();
     setIsLoggedIn(false);
-    setAuthKey((k) => k + 1); // forces remount of children
+
+    // Deregister push token in the background. The endpoint is unauthenticated
+    // (push token is its own credential), so this is safe after clearTokens().
+    getPushToken().then(async (pushToken) => {
+      if (!pushToken) return;
+      try {
+        await deregisterDeviceToken(pushToken);
+      } catch {
+        await addPendingDeregistration(pushToken);
+      }
+      await clearPushToken();
+    });
   }
 
   useEffect(() => {
@@ -98,8 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ isLoading, isLoggedIn, login, completeLogin, logout, checkAuth }}>
-      {/* everything inside remounts on logout */}
-      <View key={authKey} style={{ flex: 1 }}>{children}</View>
+      {children}
     </AuthContext.Provider>
   );
 }

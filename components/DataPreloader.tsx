@@ -23,18 +23,11 @@ export function DataPreloader({ children }: { children: React.ReactNode }) {
   const [loadingMessage, setLoadingMessage] = useState('');
 
   useEffect(() => {
-    if (!quotesLoaded) {
-      loadQuotes(false);
-    }
-
-    if (!userLoaded) {
-      loadUser();
-    }
-
-    if (!notificationsLoaded) {
-      fetchNotifications();
-    }
-  }, [quotesLoaded, userLoaded, notificationsLoaded, loadQuotes, loadUser, fetchNotifications]);
+    loadQuotes(false);
+    loadUser();
+    fetchNotifications();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Handle loading message rotation
   useEffect(() => {
