@@ -5,8 +5,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
-import { getFriends, getRecentFriends, searchFriends } from "@/lib/api/friends";
-import { User } from "@/types/api";
+import { getGroupMembers, GroupMember } from "@/lib/api/groups";
 import * as Haptics from "expo-haptics";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -20,13 +19,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
 
 interface AssignUserModalProps {
   visible: boolean;
   onClose: () => void;
-  onAssign: (user: User) => void;
+  onAssign: (user: { id: number; username: string; display_name: string; profile_color: string }) => void;
   currentQuotedName?: string | null;
+  groupId?: number | null;
 }
 
 const AssignUserModal: React.FC<AssignUserModalProps> = ({
@@ -34,23 +33,22 @@ const AssignUserModal: React.FC<AssignUserModalProps> = ({
   onClose,
   onAssign,
   currentQuotedName,
+  groupId,
 }) => {
   const [query, setQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<User[]>([]);
-  const [friends, setFriends] = useState<User[]>([]);
-  const [recentUsers, setRecentUsers] = useState<User[]>([]);
+  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [searchResults, setSearchResults] = useState<GroupMember[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [friendsLoading, setFriendsLoading] = useState(false);
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
   const styles = useThemedStyles(getStyles);
 
   useEffect(() => {
-    if (visible) {
-      loadFriends();
-      loadRecent();
+    if (visible && groupId) {
+      loadMembers();
     }
-  }, [visible]);
+  }, [visible, groupId]);
 
   useEffect(() => {
     if (!visible) {
@@ -59,25 +57,16 @@ const AssignUserModal: React.FC<AssignUserModalProps> = ({
     }
   }, [visible]);
 
-  const loadFriends = async () => {
+  const loadMembers = async () => {
+    if (!groupId) return;
+    setMembersLoading(true);
     try {
-      setFriendsLoading(true);
-      const friendsData = await getFriends();
-      setFriends(friendsData);
-    } catch (error) {
-      console.error("Error loading friends:", error);
-      Toast.show({ type: "error", text1: "Failed to load friends" });
+      const data = await getGroupMembers(groupId);
+      setMembers(data.results);
+    } catch {
+      setMembers([]);
     } finally {
-      setFriendsLoading(false);
-    }
-  };
-
-  const loadRecent = async () => {
-    try {
-      const recentData = await getRecentFriends();
-      setRecentUsers(recentData);
-    } catch (error) {
-      console.error("Error loading recent friends:", error);
+      setMembersLoading(false);
     }
   };
 
@@ -87,56 +76,38 @@ const AssignUserModal: React.FC<AssignUserModalProps> = ({
       setSearchResults([]);
       return;
     }
+    if (!groupId) return;
 
+    setSearchLoading(true);
     try {
-      setSearchLoading(true);
-      const data = await searchFriends(text);
-      setSearchResults(data);
-    } catch (error) {
-      console.error("Error searching friends:", error);
+      const data = await getGroupMembers(groupId, null, text);
+      setSearchResults(data.results);
+    } catch {
       setSearchResults([]);
     } finally {
       setSearchLoading(false);
     }
-  }, []);
+  }, [groupId]);
 
-  const handleUserSelect = (user: User) => {
+  const handleUserSelect = (member: GroupMember) => {
     Haptics.selectionAsync();
-    onAssign(user);
+    onAssign(member.user);
   };
 
-  const allFriends = (() => {
-    if (query.length > 0) return searchResults;
-    // Merge recent + friends, deduplicating by id
-    const seen = new Set<number>();
-    const merged: { section: string; users: User[] }[] = [];
-    if (recentUsers.length > 0) {
-      merged.push({ section: "Recent", users: recentUsers });
-      recentUsers.forEach((u) => seen.add(u.id));
-    }
-    const remaining = friends.filter((u) => !seen.has(u.id));
-    if (remaining.length > 0) {
-      merged.push({ section: "Friends", users: remaining });
-    }
-    return merged;
-  })();
+  const displayList = query.length >= 2 ? searchResults : members;
+  const isLoading = query.length >= 2 ? searchLoading : membersLoading;
+  const isEmpty = !isLoading && displayList.length === 0 && (query.length === 0 || query.length >= 2);
 
-  const isLoading = query.length > 0 ? searchLoading : friendsLoading;
-  const isSearching = query.length > 0;
-  const isEmpty = isSearching
-    ? query.length >= 2 && searchResults.length === 0 && !searchLoading
-    : friends.length === 0 && recentUsers.length === 0 && !friendsLoading;
-
-  const renderUserItem = (item: User) => (
+  const renderMemberItem = (item: GroupMember) => (
     <TouchableOpacity
-      key={item.id}
+      key={item.user.id}
       style={styles.userItem}
       onPress={() => handleUserSelect(item)}
     >
-      <InitialsAvatar user={item} size={40} />
+      <InitialsAvatar user={item.user} size={40} />
       <View style={styles.userInfo}>
-        <ThemedText style={styles.displayName}>{item.display_name}</ThemedText>
-        <ThemedText style={styles.username}>@{item.username}</ThemedText>
+        <ThemedText style={styles.displayName}>{item.user.display_name}</ThemedText>
+        <ThemedText style={styles.username}>@{item.user.username}</ThemedText>
       </View>
     </TouchableOpacity>
   );
@@ -154,7 +125,7 @@ const AssignUserModal: React.FC<AssignUserModalProps> = ({
           <View style={styles.modalHeader}>
             <View style={styles.headerCenter}>
               <View style={styles.grabber} />
-              <ThemedText style={styles.headerTitle}>Assign to friend</ThemedText>
+              <ThemedText style={styles.headerTitle}>Assign to group member</ThemedText>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <View style={styles.closeButtonCircle}>
@@ -166,52 +137,47 @@ const AssignUserModal: React.FC<AssignUserModalProps> = ({
           {currentQuotedName && (
             <View style={styles.subtitleRow}>
               <Text style={styles.subtitleText}>
-                Replace &ldquo;{currentQuotedName}&rdquo; with a registered friend
+                Replace &ldquo;{currentQuotedName}&rdquo; with a group member
               </Text>
             </View>
           )}
 
-          {/* Search */}
-          <View style={styles.searchContainer}>
-            <SearchBar
-              value={query}
-              onChangeText={handleSearchChange}
-              placeholder="Search friends"
-            />
-          </View>
+          {!groupId ? (
+            <View style={styles.emptyContainer}>
+              <ThemedText style={styles.emptyText}>This quote is not linked to a group</ThemedText>
+            </View>
+          ) : (
+            <>
+              <View style={styles.searchContainer}>
+                <SearchBar
+                  value={query}
+                  onChangeText={handleSearchChange}
+                  placeholder="Search members"
+                />
+              </View>
 
-          {/* Friend list */}
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.usersList}
-            keyboardShouldPersistTaps="handled"
-          >
-            {isLoading && (friends.length === 0 && searchResults.length === 0) ? (
-              <View style={styles.emptyContainer}>
-                <ActivityIndicator size="large" />
-              </View>
-            ) : isEmpty ? (
-              <View style={styles.emptyContainer}>
-                <IconSymbol name="person.2" size={40} color={theme.border} />
-                <ThemedText style={styles.emptyText}>
-                  {isSearching ? "No friends found" : "No friends yet"}
-                </ThemedText>
-              </View>
-            ) : isSearching ? (
-              // Flat search results
-              searchResults.map((item) => renderUserItem(item))
-            ) : (
-              // Sectioned list (Recent + Friends)
-              (allFriends as { section: string; users: User[] }[]).map((group) => (
-                <View key={group.section} style={styles.section}>
-                  <Text style={styles.sectionTitle}>
-                    {group.section.toUpperCase()}
-                  </Text>
-                  {group.users.map((item) => renderUserItem(item))}
-                </View>
-              ))
-            )}
-          </ScrollView>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.usersList}
+                keyboardShouldPersistTaps="handled"
+              >
+                {isLoading ? (
+                  <View style={styles.emptyContainer}>
+                    <ActivityIndicator size="large" />
+                  </View>
+                ) : isEmpty ? (
+                  <View style={styles.emptyContainer}>
+                    <IconSymbol name="person.2" size={40} color={theme.border} />
+                    <ThemedText style={styles.emptyText}>
+                      {query.length >= 2 ? "No members found" : "No group members yet"}
+                    </ThemedText>
+                  </View>
+                ) : (
+                  displayList.map((item) => renderMemberItem(item))
+                )}
+              </ScrollView>
+            </>
+          )}
         </SafeAreaView>
       </ThemedView>
     </Modal>
@@ -220,12 +186,8 @@ const AssignUserModal: React.FC<AssignUserModalProps> = ({
 
 const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   StyleSheet.create({
-    modalContainer: {
-      flex: 1,
-    },
-    modalSafeArea: {
-      flex: 1,
-    },
+    modalContainer: { flex: 1 },
+    modalSafeArea: { flex: 1 },
     modalHeader: {
       alignItems: "center",
       paddingTop: 10,
@@ -234,96 +196,28 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: theme.divider,
     },
-    headerCenter: {
-      alignItems: "center",
-    },
+    headerCenter: { alignItems: "center" },
     grabber: {
-      width: 36,
-      height: 5,
-      borderRadius: 3,
-      backgroundColor: theme.border,
-      marginBottom: 12,
+      width: 36, height: 5, borderRadius: 3,
+      backgroundColor: theme.border, marginBottom: 12,
     },
-    headerTitle: {
-      fontSize: 17,
-      fontWeight: "600",
-      color: theme.text,
-    },
-    closeButton: {
-      position: "absolute",
-      right: 16,
-      top: 28,
-    },
+    headerTitle: { fontSize: 17, fontWeight: "600", color: theme.text },
+    closeButton: { position: "absolute", right: 16, top: 28 },
     closeButtonCircle: {
-      width: 28,
-      height: 28,
-      borderRadius: 14,
+      width: 28, height: 28, borderRadius: 14,
       backgroundColor: theme.inputBackground,
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: "center", justifyContent: "center",
     },
-    subtitleRow: {
-      paddingHorizontal: 20,
-      paddingTop: 12,
-      paddingBottom: 4,
-    },
-    subtitleText: {
-      fontSize: 13,
-      color: theme.secondaryText,
-      fontStyle: "italic",
-    },
-    searchContainer: {
-      marginHorizontal: 16,
-      marginTop: 12,
-      marginBottom: 4,
-    },
-    usersList: {
-      paddingHorizontal: 16,
-      paddingTop: 12,
-      paddingBottom: 16,
-      gap: 6,
-    },
-    section: {
-      marginBottom: 8,
-    },
-    sectionTitle: {
-      fontSize: 12,
-      fontWeight: "600",
-      color: theme.secondaryText,
-      letterSpacing: 1,
-      marginBottom: 6,
-      marginLeft: 4,
-    },
-    userItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 12,
-      paddingHorizontal: 4,
-    },
-    userInfo: {
-      marginLeft: 12,
-      flex: 1,
-    },
-    displayName: {
-      fontSize: 16,
-      fontWeight: "500",
-    },
-    username: {
-      fontSize: 14,
-      opacity: 0.7,
-    },
-    emptyContainer: {
-      paddingVertical: 64,
-      paddingHorizontal: 32,
-      alignItems: "center",
-      gap: 12,
-    },
-    emptyText: {
-      fontSize: 15,
-      color: theme.secondaryText,
-      textAlign: "center",
-      lineHeight: 22,
-    },
+    subtitleRow: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 4 },
+    subtitleText: { fontSize: 13, color: theme.secondaryText, fontStyle: "italic" },
+    searchContainer: { marginHorizontal: 16, marginTop: 12, marginBottom: 4 },
+    usersList: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16, gap: 6 },
+    userItem: { flexDirection: "row", alignItems: "center", paddingVertical: 12, paddingHorizontal: 4 },
+    userInfo: { marginLeft: 12, flex: 1 },
+    displayName: { fontSize: 16, fontWeight: "500" },
+    username: { fontSize: 14, opacity: 0.7 },
+    emptyContainer: { paddingVertical: 64, paddingHorizontal: 32, alignItems: "center", gap: 12 },
+    emptyText: { fontSize: 15, color: theme.secondaryText, textAlign: "center", lineHeight: 22 },
   });
 
 export default AssignUserModal;

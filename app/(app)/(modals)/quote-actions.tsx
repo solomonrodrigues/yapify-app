@@ -8,7 +8,7 @@ import { useQuotes } from "@/context/QuotesContext";
 import { useUser } from "@/context/UserContext";
 import { reportQuote, unreportQuote } from "@/lib/api/quotes";
 import { getErrorMessage } from "@/lib/utils/error";
-import { ReportReasonEnum, User } from "@/types/api";
+import { ReportReasonEnum } from "@/types/api";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
@@ -205,14 +205,14 @@ export default function QuoteActionsModal() {
   };
 
 
-  const handleAssign = async (selectedUser: User) => {
+  const handleAssign = async (selectedUser: { id: number; username: string; display_name: string; profile_color: string }) => {
     setAssignModalVisible(false);
     try {
       await assignUserToQuoteById(quote.id, {
         id: selectedUser.id,
         username: selectedUser.username,
         display_name: selectedUser.display_name,
-        profile_color: selectedUser.profile_color ?? "GREY",
+        profile_color: (selectedUser.profile_color ?? "GREY") as import('@/types/api').ProfileColorEnum,
       });
       Toast.show({ type: "success", text1: `Assigned to ${selectedUser.display_name}` });
       closeModal();
@@ -355,6 +355,7 @@ export default function QuoteActionsModal() {
           onClose={() => setAssignModalVisible(false)}
           onAssign={handleAssign}
           currentQuotedName={quote.quoted_name}
+          groupId={quote.group_id}
         />
       )}
       {/* Edit quote modal */}

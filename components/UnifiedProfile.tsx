@@ -1,20 +1,17 @@
 import FeedQuote from '@/components/FeedQuote';
-import { FriendButton } from '@/components/FriendButton';
 import { InitialsAvatar } from '@/components/InitialsAvatar';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { UserListModal } from '@/components/UserListModal';
 import { Colors, ProfileColorHexMap } from '@/constants/Colors';
 import { useBlockedUsers } from '@/context/BlockedUsersContext';
 import { useQuotes } from '@/context/QuotesContext';
 import { useQuotesFeed } from '@/hooks/useQuotesFeed';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import { getUser, getUserFriends } from '@/lib/api/friends';
-import { reportUser, unreportUser } from '@/lib/api/users';
+import { getUser, reportUser, unreportUser } from '@/lib/api/users';
 import { getErrorMessage } from '@/lib/utils/error';
 import { hexToRgba } from '@/lib/utils/style';
-import type { User as CurrentUser, Friendship, PublicUser, Quote, ProfileColorEnum, ReportReasonEnum } from '@/types/api';
+import type { User as CurrentUser, PublicUser, Quote, ProfileColorEnum, ReportReasonEnum } from '@/types/api';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -47,7 +44,7 @@ import { useNavigation, useRouter } from 'expo-router';
 type ProfileUser = CurrentUser | PublicUser;
 
 type ProfileProps = {
-  userId?: number; // If provided, show other user's profile. If not, show current user's profile
+  userId?: number;
   currentUser: CurrentUser;
 };
 
@@ -66,27 +63,18 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   const { blockUserById } = useBlockedUsers();
   const { removeQuotesInvolvingUser } = useQuotes();
 
-  // State
   const [user, setUser] = useState<ProfileUser | null>(isOwnProfile ? currentUser : null);
   const [loading, setLoading] = useState(!isOwnProfile);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('posted');
-  const [friendship, setFriendship] = useState<Friendship | null>(null);
 
-  // Friends modal state
-  const [friendsModalVisible, setFriendsModalVisible] = useState(false);
-
-  // Sticky header state
   const [headerHeight, setHeaderHeight] = useState(0);
   const [stickyTabsInteractive, setStickyTabsInteractive] = useState(false);
   const [showHeaderTitle, setShowHeaderTitle] = useState(false);
   const scrollY = useSharedValue(0);
 
-  // Animation refs for pulse effect
   const postedPulseAnim = useRef(new Animated.Value(1)).current;
   const receivedPulseAnim = useRef(new Animated.Value(1)).current;
-
-  // Avatar spin animation
   const avatarRotation = useSharedValue(0);
 
   const avatarAnimatedStyle = useAnimatedStyle(() => ({
@@ -94,35 +82,23 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   }));
 
   const handleAvatarPress = () => {
-    // Wind up (rotate backwards), then spin forward with spring
     avatarRotation.value = withSequence(
-      // Wind up: rotate backwards 30 degrees
       withTiming(-30, { duration: 150, easing: Easing.out(Easing.quad) }),
-      // Spin forward: full rotation plus overshoot
-      withSpring(360, {
-        damping: 12,
-        stiffness: 100,
-        mass: 0.8,
-      }),
-      // Reset to 0 for next tap
+      withSpring(360, { damping: 12, stiffness: 100, mass: 0.8 }),
       withTiming(0, { duration: 0 })
     );
   };
 
-  // Update user when currentUser changes (for own profile)
   useEffect(() => {
     if (isOwnProfile) {
       setUser(currentUser);
     }
   }, [currentUser, isOwnProfile]);
 
-  // Update navigation header based on scroll and profile type
   useEffect(() => {
     const options: { headerTitle: string; headerRight?: () => React.ReactElement } = {
       headerTitle: showHeaderTitle && user ? user.display_name : '',
     };
-    // Only override headerRight for other users' profiles (block button).
-    // For own profile, leave it untouched so the tab layout's menu button persists.
     if (!isOwnProfile && user) {
       options.headerRight = () => (
         <TouchableOpacity
@@ -137,22 +113,19 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     navigation.setOptions(options);
   }, [showHeaderTitle, user, navigation, isOwnProfile, theme.text]);
 
-  // Reset scroll state when switching tabs
   useEffect(() => {
     scrollY.value = 0;
     setStickyTabsInteractive(false);
     setShowHeaderTitle(false);
   }, [activeTab]);
 
-  // Load user profile
   useEffect(() => {
-    const loadUser = async () => {
+    const loadUserProfile = async () => {
       if (!userId) return;
       setLoading(true);
       try {
         const userData = await getUser(userId);
         setUser(userData);
-        setFriendship(userData.friendship || null);
       } catch (error) {
         setLoadError(getErrorMessage(error));
       } finally {
@@ -161,11 +134,10 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     };
 
     if (!isOwnProfile && userId) {
-      loadUser();
+      loadUserProfile();
     }
   }, [userId, isOwnProfile]);
 
-  // Separate feeds for posted and received quotes
   const postedFeed = useQuotesFeed({
     scope: { type: 'user-posted', id: userId ?? currentUser.id },
   });
@@ -174,11 +146,9 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     scope: { type: 'user-received', id: userId ?? currentUser.id },
   });
 
-  // Use the active tab's feed
   const activeFeed = activeTab === 'posted' ? postedFeed : receivedFeed;
   const { quotes, refreshing, isLoadingMore, initialLoading, hasLoadedOnce, error, loadMore, loadQuotes, likeQuoteById, witnessQuoteById, guessQuoteById, unhideQuoteById, respondToQuoteById } = activeFeed;
 
-  // Toast on subsequent (refresh/pagination) errors — not first load
   const prevErrorRef = useRef<string | null>(null);
   useEffect(() => {
     if (hasLoadedOnce && error && error !== prevErrorRef.current) {
@@ -187,73 +157,26 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     prevErrorRef.current = error ?? null;
   }, [error, hasLoadedOnce]);
 
-  // Friends fetcher for UserListModal
-  const friendsFetcher = useCallback(
-    async ({ url, search }: { url?: string | null; search?: string }): Promise<{ results: PublicUser[]; next: string | null }> => {
-      if (!user) {
-        return { results: [], next: null };
-      }
-      const result = await getUserFriends(user.id, url ? { url } : { search });
-      return {
-        results: result.results,
-        next: result.next ?? null,
-      };
-    },
-    [user]
-  );
-
-  // Initial load of quotes for both tabs — only if we can actually see them
   useEffect(() => {
-    if (user && (isOwnProfile || friendship?.status === 'accepted')) {
+    if (user) {
       postedFeed.loadQuotes();
       receivedFeed.loadQuotes();
     }
   }, [user]);
 
-  // Handlers
-  const handleRefreshPosted = () => {
-    postedFeed.refreshQuotes();
-  };
-
-  const handleRefreshReceived = () => {
-    receivedFeed.refreshQuotes();
-  };
-
-  const handleOpenFriends = () => {
-    setFriendsModalVisible(true);
-  };
-
-  const handleUserPress = (pressedUser: PublicUser) => {
-    setFriendsModalVisible(false);
-    router.push({ pathname: '/user/[userID]', params: { userID: String(pressedUser.id) } });
-  };
-
-  const handleFriendshipChange = (newFriendship: Friendship | null) => {
-    setFriendship(newFriendship);
-  };
+  const handleRefreshPosted = () => postedFeed.refreshQuotes();
+  const handleRefreshReceived = () => receivedFeed.refreshQuotes();
 
   const triggerPulse = (animValue: Animated.Value) => {
     Animated.sequence([
-      Animated.timing(animValue, {
-        toValue: 1.15,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(animValue, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true,
-      }),
+      Animated.timing(animValue, { toValue: 1.15, duration: 150, useNativeDriver: true }),
+      Animated.timing(animValue, { toValue: 1, duration: 150, useNativeDriver: true }),
     ]).start();
   };
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
-    if (tab === 'posted') {
-      triggerPulse(postedPulseAnim);
-    } else {
-      triggerPulse(receivedPulseAnim);
-    }
+    triggerPulse(tab === 'posted' ? postedPulseAnim : receivedPulseAnim);
   };
 
   const handleBlockUser = () => {
@@ -301,15 +224,12 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
         },
       });
     } catch (error) {
-      const detail = getErrorMessage(error);
-      console.error('Report user failed:', detail);
-      Toast.show({ type: 'error', text1: 'Failed to report user', text2: detail });
+      Toast.show({ type: 'error', text1: 'Failed to report user', text2: getErrorMessage(error) });
     }
   };
 
   const handleReportUser = () => {
     if (!user) return;
-
     Alert.alert(
       `Report @${user.username}`,
       "Why are you reporting this user?",
@@ -325,48 +245,34 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
 
   const handleUserMenu = () => {
     if (!user) return;
-
-    Alert.alert(
-      '',
-      undefined,
-      [
-        { text: 'Report User', style: 'destructive', onPress: handleReportUser },
-        { text: 'Block User', style: 'destructive', onPress: handleBlockUser },
-        { text: 'Cancel', style: 'cancel' },
-      ]
-    );
+    Alert.alert('', undefined, [
+      { text: 'Report User', style: 'destructive', onPress: handleReportUser },
+      { text: 'Block User', style: 'destructive', onPress: handleBlockUser },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   };
 
-  // Update sticky tabs and header title state
   const updateScrollState = useCallback((isInteractive: boolean, shouldShowTitle: boolean) => {
     setStickyTabsInteractive(isInteractive);
     setShowHeaderTitle(shouldShowTitle);
   }, []);
 
-  // Animated scroll handler
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       scrollY.value = event.contentOffset.y;
-      // Update interactive state when crossing threshold
       const threshold = headerHeight;
       const shouldBeInteractive = event.contentOffset.y >= threshold && headerHeight > 0;
-      // Show header title slightly before tabs stick (when profile info scrolls away)
       const shouldShowTitle = event.contentOffset.y >= threshold * 0.6 && headerHeight > 0;
       runOnJS(updateScrollState)(shouldBeInteractive, shouldShowTitle);
     },
   });
 
-  // Measure header height (content above tabs)
   const handleHeaderLayout = useCallback((e: LayoutChangeEvent) => {
     setHeaderHeight(e.nativeEvent.layout.height);
   }, []);
 
-  // Animated style for sticky tabs
   const stickyTabsStyle = useAnimatedStyle(() => {
-    // Don't show until header height is measured
-    if (headerHeight === 0) {
-      return { opacity: 0 };
-    }
+    if (headerHeight === 0) return { opacity: 0 };
     const threshold = headerHeight;
     const opacity = interpolate(
       scrollY.value,
@@ -387,26 +293,19 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     );
   };
 
-  // Handle both User (string) and PublicUser (number) types
-  const friendsCount = user?.friends_count ?? 0;
   const quotesPostedCount = user?.quotes_posted ?? 0;
   const quotesReceivedCount = user?.quotes_received ?? 0;
   const currentStreak = user?.current_streak ?? 0;
   const longestStreak = user?.longest_streak ?? 0;
 
-  // Get user's profile color
   const userProfileColor = user?.profile_color
     ? ProfileColorHexMap[user.profile_color as ProfileColorEnum]
     : theme.pastels.purple;
 
-  // Render tabs (reused for inline and sticky)
   const renderTabs = useCallback(() => (
     <View style={styles.tabsContainer}>
       <TouchableOpacity
-        style={[
-          styles.tab,
-          activeTab === 'posted' && { borderBottomColor: userProfileColor },
-        ]}
+        style={[styles.tab, activeTab === 'posted' && { borderBottomColor: userProfileColor }]}
         onPress={() => handleTabChange('posted')}
       >
         <Animated.View style={{ transform: [{ scale: postedPulseAnim }] }}>
@@ -416,10 +315,7 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
         </Animated.View>
       </TouchableOpacity>
       <TouchableOpacity
-        style={[
-          styles.tab,
-          activeTab === 'received' && { borderBottomColor: userProfileColor },
-        ]}
+        style={[styles.tab, activeTab === 'received' && { borderBottomColor: userProfileColor }]}
         onPress={() => handleTabChange('received')}
       >
         <Animated.View style={{ transform: [{ scale: receivedPulseAnim }] }}>
@@ -431,16 +327,12 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
     </View>
   ), [activeTab, userProfileColor, postedPulseAnim, receivedPulseAnim, handleTabChange, styles]);
 
-  // List header component with profile info and tabs
   const ListHeaderComponent = useMemo(() => {
     if (!user) return null;
 
     return (
       <View>
-        {/* Scrollable header content - measure this to know when tabs reach top */}
         <View onLayout={handleHeaderLayout}>
-
-          {/* Avatar + name row */}
           <View style={styles.headerRow}>
             <Pressable onPress={handleAvatarPress}>
               <ReAnimated.View style={avatarAnimatedStyle}>
@@ -472,12 +364,10 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
             </View>
           </View>
 
-          {/* Bio — full width, part of identity */}
           {'bio' in user && user.bio ? (
             <ThemedText style={styles.bio}>{user.bio}</ThemedText>
           ) : null}
 
-          {/* Stats row — full width, hairline borders */}
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
               <ThemedText style={styles.statNumber}>{quotesPostedCount}</ThemedText>
@@ -488,36 +378,15 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
               <ThemedText style={styles.statNumber}>{quotesReceivedCount}</ThemedText>
               <ThemedText style={styles.statLabel}>{"Recv'd"}</ThemedText>
             </View>
-            <View style={styles.statSeparator} />
-            <TouchableOpacity style={styles.statItem} onPress={handleOpenFriends} activeOpacity={0.7}>
-              <ThemedText style={styles.statNumber}>{friendsCount}</ThemedText>
-              <ThemedText style={styles.statLabel}>Friends</ThemedText>
-            </TouchableOpacity>
           </View>
-
-          {/* Friend button (other user only) */}
-          {!isOwnProfile && (
-            <View style={styles.actionContainer}>
-              <FriendButton
-                userId={user.id}
-                friendship={friendship}
-                onFriendshipChange={handleFriendshipChange}
-                variant="default"
-                style={styles.friendButtonFull}
-              />
-            </View>
-          )}
-
         </View>
 
-        {/* Tabs */}
         {renderTabs()}
       </View>
     );
-  }, [user, isOwnProfile, friendship, quotesPostedCount, quotesReceivedCount, friendsCount,
+  }, [user, isOwnProfile, quotesPostedCount, quotesReceivedCount,
       currentStreak, longestStreak, userProfileColor,
-      styles, theme, avatarAnimatedStyle, handleHeaderLayout, handleAvatarPress,
-      handleFriendshipChange, handleOpenFriends, renderTabs]);
+      styles, avatarAnimatedStyle, handleHeaderLayout, handleAvatarPress, renderTabs]);
 
   if (loading) {
     return (
@@ -540,7 +409,6 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
               setLoading(true);
               getUser(userId!).then((userData) => {
                 setUser(userData);
-                setFriendship(userData.friendship || null);
               }).catch((e) => setLoadError(getErrorMessage(e))).finally(() => setLoading(false));
             }}
           >
@@ -559,7 +427,6 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView edges={['bottom']} style={styles.safeArea}>
-        {/* Quote Feed with header */}
         <ReAnimated.FlatList
           key={activeTab}
           data={quotes}
@@ -588,12 +455,6 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
               <View style={styles.emptyContainer}>
                 <ActivityIndicator size="small" />
               </View>
-            ) : !isOwnProfile && friendship?.status !== 'accepted' ? (
-              <View style={styles.emptyContainer}>
-                <ThemedText style={styles.emptyText}>
-                  {"Add " + (user?.display_name ?? "this user") + " as a friend to see their quotes."}
-                </ThemedText>
-              </View>
             ) : !hasLoadedOnce && error ? (
               <View style={styles.emptyContainer}>
                 <ThemedText style={styles.emptyText}>{"Couldn't load quotes"}</ThemedText>
@@ -613,27 +474,12 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
           scrollEventThrottle={16}
         />
 
-        {/* Sticky tabs - appear when tabs scroll to top */}
         <ReAnimated.View
-          style={[
-            styles.stickyTabsContainer,
-            stickyTabsStyle
-          ]}
+          style={[styles.stickyTabsContainer, stickyTabsStyle]}
           pointerEvents={stickyTabsInteractive ? 'auto' : 'none'}
         >
           {renderTabs()}
         </ReAnimated.View>
-
-        {/* Friends Modal */}
-        <UserListModal
-          visible={friendsModalVisible}
-          onClose={() => setFriendsModalVisible(false)}
-          title="Friends"
-          fetcher={friendsFetcher}
-          onUserPress={handleUserPress}
-          searchable={true}
-          emptyMessage="No friends yet"
-        />
       </SafeAreaView>
     </ThemedView>
   );
@@ -641,191 +487,50 @@ const UnifiedProfile: React.FC<ProfileProps> = ({
 
 const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.background,
-    },
-    safeArea: {
-      flex: 1,
-    },
-    centerContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: 20,
-    },
-    centerText: {
-      marginTop: 16,
-      fontSize: 16,
-      color: theme.secondaryText,
-    },
+    container: { flex: 1, backgroundColor: theme.background },
+    safeArea: { flex: 1 },
+    centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+    centerText: { marginTop: 16, fontSize: 16, color: theme.secondaryText },
     retryButton: {
-      marginTop: 16,
-      borderWidth: 1,
-      borderRadius: 8,
-      paddingVertical: 10,
-      paddingHorizontal: 20,
-      borderColor: theme.border,
+      marginTop: 16, borderWidth: 1, borderRadius: 8,
+      paddingVertical: 10, paddingHorizontal: 20, borderColor: theme.border,
     },
-    retryText: {
-      fontSize: 15,
-      fontWeight: '600',
-      color: theme.text,
-    },
+    retryText: { fontSize: 15, fontWeight: '600', color: theme.text },
     headerRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 16,
-      paddingTop: 20,
-      paddingBottom: 16,
-      gap: 16,
+      flexDirection: 'row', alignItems: 'center',
+      paddingHorizontal: 16, paddingTop: 20, paddingBottom: 16, gap: 16,
     },
-    headerInfo: {
-      flex: 1,
-      justifyContent: 'center',
-    },
-    displayName: {
-      fontSize: 20,
-      fontWeight: '700',
-      color: theme.text,
-      lineHeight: 26,
-    },
-    usernameRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-      gap: 6,
-      marginTop: 3,
-    },
-    username: {
-      fontSize: 14,
-      color: theme.secondaryText,
-    },
-    streakRow: {
-      flexDirection: 'row',
-      gap: 5,
-    },
-    streakPill: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 3,
-      paddingHorizontal: 6,
-      paddingVertical: 2,
-      borderRadius: 999,
-    },
-    streakPillText: {
-      fontSize: 11,
-      fontWeight: '700',
-      color: theme.text,
-    },
+    headerInfo: { flex: 1, justifyContent: 'center' },
+    displayName: { fontSize: 20, fontWeight: '700', color: theme.text, lineHeight: 26 },
+    usernameRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 3 },
+    username: { fontSize: 14, color: theme.secondaryText },
+    streakRow: { flexDirection: 'row', gap: 5 },
+    streakPill: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999 },
+    streakPillText: { fontSize: 11, fontWeight: '700', color: theme.text },
     statsRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: theme.divider,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: theme.divider,
+      flexDirection: 'row', alignItems: 'center',
+      borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.divider,
+      borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.divider,
       paddingVertical: 14,
     },
-    statItem: {
-      flex: 1,
-      alignItems: 'center',
-    },
-    statSeparator: {
-      width: StyleSheet.hairlineWidth,
-      height: 28,
-      backgroundColor: theme.divider,
-    },
-    statNumber: {
-      fontSize: 20,
-      fontWeight: '700',
-      color: theme.text,
-      lineHeight: 24,
-    },
-    statLabel: {
-      marginTop: 2,
-      fontSize: 12,
-      color: theme.secondaryText,
-      lineHeight: 16,
-    },
-    bio: {
-      color: theme.secondaryText,
-      fontSize: 14,
-      lineHeight: 20,
-      paddingHorizontal: 16,
-      paddingBottom: 16,
-    },
-    actionContainer: {
-      paddingHorizontal: 16,
-      paddingTop: 14,
-      paddingBottom: 4,
-    },
-    friendButtonFull: {
-      alignSelf: 'stretch',
-      minWidth: undefined,
-      paddingHorizontal: 0,
-    },
-    tabsContainer: {
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderBottomColor: theme.divider,
-    },
-    tab: {
-      flex: 1,
-      paddingVertical: 16,
-      alignItems: 'center',
-      borderBottomWidth: 2,
-      borderBottomColor: 'transparent',
-    },
-    tabText: {
-      fontSize: 15,
-      fontWeight: '600',
-      color: theme.secondaryText,
-    },
-    tabTextActive: {
-      color: theme.text,
-    },
+    statItem: { flex: 1, alignItems: 'center' },
+    statSeparator: { width: StyleSheet.hairlineWidth, height: 28, backgroundColor: theme.divider },
+    statNumber: { fontSize: 20, fontWeight: '700', color: theme.text, lineHeight: 24 },
+    statLabel: { marginTop: 2, fontSize: 12, color: theme.secondaryText, lineHeight: 16 },
+    bio: { color: theme.secondaryText, fontSize: 14, lineHeight: 20, paddingHorizontal: 16, paddingBottom: 16 },
+    tabsContainer: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: theme.divider },
+    tab: { flex: 1, paddingVertical: 16, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
+    tabText: { fontSize: 15, fontWeight: '600', color: theme.secondaryText },
+    tabTextActive: { color: theme.text },
     stickyTabsContainer: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 99,
+      position: 'absolute', top: 0, left: 0, right: 0, zIndex: 99,
       backgroundColor: theme.background,
     },
-    listContent: {
-      paddingBottom: 48,
-    },
-    quoteContainer: {
-      paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 12,
-    },
-    quoteContent: {
-      fontSize: 26,
-      lineHeight: 34,
-      color: theme.text,
-      fontWeight: '300',
-      letterSpacing: 0.3,
-    },
-    loadingFooter: {
-      padding: 20,
-      alignItems: 'center',
-    },
-    loadingText: {
-      marginTop: 8,
-      fontSize: 14,
-      color: theme.secondaryText,
-    },
-    emptyContainer: {
-      padding: 48,
-      alignItems: 'center',
-    },
-    emptyText: {
-      fontSize: 16,
-      color: theme.secondaryText,
-      textAlign: 'center',
-    },
+    listContent: { paddingBottom: 48 },
+    loadingFooter: { padding: 20, alignItems: 'center' },
+    loadingText: { marginTop: 8, fontSize: 14, color: theme.secondaryText },
+    emptyContainer: { padding: 48, alignItems: 'center' },
+    emptyText: { fontSize: 16, color: theme.secondaryText, textAlign: 'center' },
   });
 
 export default UnifiedProfile;

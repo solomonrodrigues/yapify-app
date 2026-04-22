@@ -5,8 +5,8 @@ import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
-import { useFriends } from "@/context/FriendsContext";
-import { searchUsers } from "@/lib/api/friends";
+import { useGroups } from "@/context/GroupsContext";
+import { searchUsers } from "@/lib/api/users";
 import { searchQuotes } from "@/lib/api/quotes";
 import { getErrorMessage } from "@/lib/utils/error";
 import { Quote, MinimalUser, PublicUserSummary } from "@/types/api";
@@ -37,7 +37,7 @@ const SearchScreen = () => {
   const styles = useThemedStyles(getStyles);
   const insets = useSafeAreaInsets();
   const { user: currentUser } = useUser();
-  const { recentUsers, upsertRecentUser, removeRecentUser } = useFriends();
+  const { recentUsers, upsertRecentUser, removeRecentUser } = useGroups();
 
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState<SearchScope>("users");
@@ -175,7 +175,7 @@ const SearchScreen = () => {
     return (
       <TouchableOpacity style={styles.quoteCard} onPress={() => handlePressQuote(quote)}>
         <View style={styles.quoteHeader}>
-          <InitialsAvatar user={isGuessable ? { display_name: '?', profile_color: 'GREY' } : quote.author} size={32} />
+          <InitialsAvatar user={isGuessable ? { display_name: '?', profile_color: 'GREY' } as import('@/types/api').MinimalUser : quote.author} size={32} />
           <View style={{ marginLeft: 8 }}>
             <ThemedText style={styles.displayName}>
               {isGuessable ? "??? quoted ???" : `${quote.author.display_name} quoted ${quote.quoted_user?.display_name ?? quote.quoted_name ?? 'someone'}`}
@@ -227,7 +227,7 @@ const SearchScreen = () => {
                 onPress={() => setShowYearPicker(true)}
               >
                 <IconSymbol
-                  name="line.3.horizontal.decrease"
+                  name="line.3.horizontal.decrease.circle"
                   size={11}
                   color={yearFilter ? "#fff" : theme.secondaryText}
                   style={{ marginRight: 4 }}
@@ -242,7 +242,7 @@ const SearchScreen = () => {
                 onPress={() => setShowMonthPicker(true)}
               >
                 <IconSymbol
-                  name="line.3.horizontal.decrease"
+                  name="line.3.horizontal.decrease.circle"
                   size={11}
                   color={monthFilter ? "#fff" : theme.secondaryText}
                   style={{ marginRight: 4 }}

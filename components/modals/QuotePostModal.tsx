@@ -4,16 +4,15 @@ import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { Spacing } from "@/constants/Spacing";
-import { useFriends } from "@/context/FriendsContext";
+import { useGroups } from "@/context/GroupsContext";
 import { useThemedStyles } from "@/hooks/useThemedStyles";
-import { searchFriends } from "@/lib/api/friends";
+import { getGroupMembers, Group, GroupMember } from "@/lib/api/groups";
 import { createQuote } from "@/lib/api/quotes";
 import { hexToRgba } from "@/lib/utils/style";
-import { Quote, User } from "@/types/api";
+import { Quote } from "@/types/api";
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
     KeyboardAvoidingView,
     Modal,
     NativeScrollEvent,
@@ -38,16 +37,23 @@ interface QuotePostModalProps {
   onQuoteCreated?: (quote: Quote) => void;
 }
 
+type SelectedUser = { display_name: string; username: string; id: number | null; profile_color?: string };
+
 const QuotePostModal: React.FC<QuotePostModalProps> = ({
   visible,
   onClose,
   onQuoteCreated,
 }) => {
-  const { friends, recentFriends, loading: friendsLoading, friendsLoadingMore, loadMoreFriends, refreshRecentFriends } = useFriends();
+  const { groups, currentGroup } = useGroups();
+  // Use currentGroup if set, otherwise fall back to first group available
+  const activeGroup: Group | null = currentGroup ?? groups[0] ?? null;
+
   const [query, setQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | { display_name: string; username: string; id: null } | null>(null);
+  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<GroupMember[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<SelectedUser | null>(null);
   const [quoteText, setQuoteText] = useState("");
   const [contextText, setContextText] = useState("");
   const [creatingQuote, setCreatingQuote] = useState(false);
@@ -66,6 +72,26 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
     transform: [{ scale: buttonScale.value }],
   }));
 
+  // Load group members when modal opens
+  useEffect(() => {
+    if (visible && activeGroup) {
+      loadMembers();
+    }
+  }, [visible, activeGroup?.id]);
+
+  const loadMembers = async () => {
+    if (!activeGroup) return;
+    setMembersLoading(true);
+    try {
+      const data = await getGroupMembers(activeGroup.id);
+      setMembers(data.results);
+    } catch {
+      setMembers([]);
+    } finally {
+      setMembersLoading(false);
+    }
+  };
+
   // Reset state when modal closes
   useEffect(() => {
     if (!visible) {
@@ -83,32 +109,36 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       setSearchResults([]);
       return;
     }
-    
+    if (!activeGroup) return;
+
     try {
-      setLoading(true);
-      const data = await searchFriends(text);
-      setSearchResults(data);
-    } catch (error) {
-      console.error('Error searching users:', error);
+      setSearchLoading(true);
+      const data = await getGroupMembers(activeGroup.id, null, text);
+      setSearchResults(data.results);
+    } catch {
       setSearchResults([]);
     } finally {
-      setLoading(false);
+      setSearchLoading(false);
     }
   };
 
-  const handleUserSelect = (user: User | { display_name: string; username: string; id: null }) => {
+  const handleUserSelect = (member: GroupMember) => {
     Haptics.selectionAsync();
-    setSelectedUser(user);
+    setSelectedUser({
+      id: member.user.id,
+      display_name: member.user.display_name,
+      username: member.user.username,
+      profile_color: member.user.profile_color,
+    });
   };
 
   const handleCustomQuote = () => {
     if (query.trim()) {
-      const customUser = {
+      setSelectedUser({
         display_name: query.trim(),
         username: query.trim().toLowerCase().replace(/\s+/g, ''),
         id: null,
-      };
-      setSelectedUser(customUser);
+      });
     }
   };
 
@@ -122,16 +152,19 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
     try {
       setCreatingQuote(true);
 
-      const quoteData: Partial<Quote> = {
+      const quoteData: Partial<Quote> & { group_id?: number } = {
         text: quoteText.trim(),
         ...(contextText.trim() ? { context: contextText.trim() } : {}),
       };
 
-      // Add quoted_user_id only if it's a real user
       if (selectedUser.id !== null) {
         quoteData.quoted_user_id = selectedUser.id;
       } else {
         quoteData.quoted_name = selectedUser.display_name;
+      }
+
+      if (activeGroup) {
+        quoteData.group_id = activeGroup.id;
       }
 
       const newQuote = await createQuote(quoteData);
@@ -143,7 +176,6 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Toast.show({ type: 'success', text1: 'Quote created!' });
       onClose();
-      refreshRecentFriends();
     } catch (error) {
       console.error('Error creating quote:', error);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -159,43 +191,30 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
     setContextText("");
   };
 
-  const handleFriendsScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+  const handleMembersScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (query.length > 0) return;
     const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
     if (layoutMeasurement.height + contentOffset.y >= contentSize.height - 80) {
-      loadMoreFriends();
+      // Could load more members here if pagination is needed
     }
   };
 
-  const renderUserItem = ({ item }: { item: User }) => (
+  const displayList = query.length > 0 ? searchResults : members;
+  const isSearchLoading = query.length > 0 ? searchLoading : membersLoading;
+
+  const renderMemberItem = (member: GroupMember) => (
     <TouchableOpacity
+      key={member.user.id}
       style={styles.userItem}
-      onPress={() => handleUserSelect(item)}
+      onPress={() => handleUserSelect(member)}
     >
-      <InitialsAvatar user={item} size={40} />
+      <InitialsAvatar user={member.user} size={40} />
       <View style={styles.userInfo}>
-        <ThemedText style={styles.displayName}>{item.display_name}</ThemedText>
-        <ThemedText style={styles.username}>@{item.username}</ThemedText>
+        <ThemedText style={styles.displayName}>{member.user.display_name}</ThemedText>
+        <ThemedText style={styles.username}>@{member.user.username}</ThemedText>
       </View>
     </TouchableOpacity>
   );
-
-  const renderSection = (title: string, data: User[]) => {
-    if (data.length === 0) return null;
-
-    return (
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colorScheme === 'dark' ? '#666' : '#888' }]}>
-          {title.toUpperCase()}
-        </Text>
-        {data.map((item) => (
-          <React.Fragment key={`${title}-${item.id}`}>
-            {renderUserItem({ item })}
-          </React.Fragment>
-        ))}
-      </View>
-    );
-  };
 
   // User selection screen
   if (!selectedUser) {
@@ -207,119 +226,116 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
         onRequestClose={onClose}
       >
         <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-        {/* Header */}
-        <View style={styles.header}>
+          {/* Header */}
+          <View style={styles.header}>
             <Text style={[styles.headerTitle, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-            Let&apos;s <Text style={styles.quoteText}>quote</Text>
+              Let&apos;s <Text style={styles.quoteText}>quote</Text>
             </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <IconSymbol name="xmark" size={20} color={colorScheme === 'dark' ? '#fff' : '#000'} />
+              <IconSymbol name="xmark" size={20} color={colorScheme === 'dark' ? '#fff' : '#000'} />
             </TouchableOpacity>
-        </View>
+          </View>
 
-        {/* Integrated Search Input */}
-        <View style={styles.searchContainer}>
-            <Text style={[styles.subtitlePrefix, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>
-            whom?
-            </Text>
-            <View style={styles.integratedInputContainer}>
-            <TextInput
-                style={[
-                styles.integratedInput,
-                {
-                    color: colorScheme === "dark" ? 'white' : 'black',
-                    borderBottomColor: colorScheme === 'dark' ? '#333' : '#ccc',
-                },
-                ]}
-                placeholder="Start typing a name..."
-                placeholderTextColor="#999"
-                value={query}
-                onChangeText={handleSearch}
-                autoCapitalize="words"
-                autoFocus
-                textContentType="none"
-                autoComplete="off"
-                importantForAutofill="no"
-            />
+          {activeGroup && (
+            <View style={styles.groupLabel}>
+              <IconSymbol name="person.2.fill" size={12} color={theme.secondaryText} style={{ marginRight: 4 }} />
+              <ThemedText style={styles.groupLabelText}>{activeGroup.name}</ThemedText>
             </View>
-        </View>
+          )}
 
-        {/* Content — ScrollView with keyboardShouldPersistTaps so user items are tappable through the keyboard */}
-        <ScrollView
-            style={styles.content}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            onScroll={handleFriendsScroll}
-            scrollEventThrottle={200}
-        >
-            {loading ? (
-            <View>
-              {Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonUserItem key={i} />
-              ))}
+          {!activeGroup ? (
+            <View style={styles.noGroupContainer}>
+              <IconSymbol name="person.2" size={40} color={theme.border} />
+              <ThemedText style={styles.centerText}>Join or create a group first</ThemedText>
             </View>
-            ) : query.length > 0 ? (
-            <View>
-                {/* Search Results */}
-                {searchResults.length > 0 && (
-                <View style={styles.searchResults}>
-                  {searchResults.map((item) => (
-                    <React.Fragment key={`search-${item.id}`}>
-                      {renderUserItem({ item })}
-                    </React.Fragment>
-                  ))}
+          ) : (
+            <>
+              {/* Integrated Search Input */}
+              <View style={styles.searchContainer}>
+                <Text style={[styles.subtitlePrefix, { color: colorScheme === 'dark' ? '#ccc' : '#666' }]}>
+                  whom?
+                </Text>
+                <View style={styles.integratedInputContainer}>
+                  <TextInput
+                    style={[
+                      styles.integratedInput,
+                      {
+                        color: colorScheme === "dark" ? 'white' : 'black',
+                        borderBottomColor: colorScheme === 'dark' ? '#333' : '#ccc',
+                      },
+                    ]}
+                    placeholder="Start typing a name..."
+                    placeholderTextColor="#999"
+                    value={query}
+                    onChangeText={handleSearch}
+                    autoCapitalize="words"
+                    autoFocus
+                    textContentType="none"
+                    autoComplete="off"
+                    importantForAutofill="no"
+                  />
                 </View>
-                )}
+              </View>
 
-                {/* Custom Quote Option */}
-                {query.trim() && (
-                <TouchableOpacity
-                    style={styles.customOption}
-                    onPress={handleCustomQuote}
-                >
-                    <View style={styles.customIconWrapper}>
-                    <IconSymbol name="plus" size={20} color="#fff" />
-                    </View>
-                    <View style={styles.userInfo}>
-                    <ThemedText style={styles.displayName}>Quote &ldquo;{query.trim()}&rdquo;</ThemedText>
-                    <ThemedText style={styles.customText}>Create quote for custom name</ThemedText>
-                    </View>
-                </TouchableOpacity>
-                )}
-
-                {searchResults.length === 0 && !query.trim() && (
-                <ThemedText style={styles.centerText}>No users found</ThemedText>
-                )}
-            </View>
-            ) : (
-            <View>
-                {friendsLoading ? (
-                <View>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <SkeletonUserItem key={i} />
-                  ))}
-                </View>
+              <ScrollView
+                style={styles.content}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+                onScroll={handleMembersScroll}
+                scrollEventThrottle={200}
+              >
+                {isSearchLoading ? (
+                  <View>
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <SkeletonUserItem key={i} />
+                    ))}
+                  </View>
+                ) : query.length > 0 ? (
+                  <View>
+                    {displayList.length > 0 && (
+                      <View style={styles.searchResults}>
+                        {displayList.map((m) => renderMemberItem(m))}
+                      </View>
+                    )}
+                    {query.trim() && (
+                      <TouchableOpacity
+                        style={styles.customOption}
+                        onPress={handleCustomQuote}
+                      >
+                        <View style={styles.customIconWrapper}>
+                          <IconSymbol name="plus" size={20} color="#fff" />
+                        </View>
+                        <View style={styles.userInfo}>
+                          <ThemedText style={styles.displayName}>Quote &ldquo;{query.trim()}&rdquo;</ThemedText>
+                          <ThemedText style={styles.customText}>Create quote for custom name</ThemedText>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                    {displayList.length === 0 && !query.trim() && (
+                      <ThemedText style={styles.centerText}>No members found</ThemedText>
+                    )}
+                  </View>
                 ) : (
-                <>
-                    {renderSection("Recent", recentFriends)}
-                    {renderSection("Friends", friends)}
-
-                    {recentFriends.length === 0 && friends.length === 0 && (
-                    <ThemedText style={styles.centerText}>
-                        Start typing to search for friends
-                    </ThemedText>
+                  <View>
+                    {membersLoading ? (
+                      <View>
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <SkeletonUserItem key={i} />
+                        ))}
+                      </View>
+                    ) : members.length === 0 ? (
+                      <ThemedText style={styles.centerText}>No group members yet</ThemedText>
+                    ) : (
+                      members.map((m) => renderMemberItem(m))
                     )}
-                    {friendsLoadingMore && (
-                      <ActivityIndicator size="small" style={{ paddingVertical: 12 }} />
-                    )}
-                </>
+                  </View>
                 )}
-            </View>
-            )}
-        </ScrollView>
+              </ScrollView>
+            </>
+          )}
         </KeyboardAvoidingView>
       </Modal>
     );
@@ -358,7 +374,7 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
           <View style={styles.selectedUserContainer}>
             <View style={styles.selectedUser}>
               {selectedUser.id ? (
-                <InitialsAvatar user={selectedUser as User} size={50} />
+                <InitialsAvatar user={selectedUser as import('@/types/api').MinimalUser} size={50} />
               ) : (
                 <View style={styles.customUserIcon}>
                   <IconSymbol name="person" size={24} color="#fff" />
@@ -473,6 +489,22 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   quoteText: {
     color: theme.accent,
   },
+  groupLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.xs,
+  },
+  groupLabelText: {
+    fontSize: 12,
+    color: theme.secondaryText,
+  },
+  noGroupContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
   searchContainer: {
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.xl,
@@ -496,15 +528,6 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   content: {
     flex: 1,
     paddingHorizontal: Spacing.md,
-  },
-  section: {
-    marginBottom: Spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-    letterSpacing: 1,
   },
   userItem: {
     flexDirection: 'row',
