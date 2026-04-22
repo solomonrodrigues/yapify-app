@@ -7,7 +7,6 @@ import {
   useColorScheme,
   Platform,
   ActivityIndicator,
-  Share,
   ScrollView,
 } from 'react-native';
 import { Quote } from '@/types/api';
@@ -21,7 +20,6 @@ import { LegendList } from '@legendapp/list';
 import FeedQuote from '@/components/FeedQuote';
 import { useFeedFilter } from '@/context/FeedFilterContext';
 import { IconSymbol, type IconSymbolName } from '@/components/ui/IconSymbol';
-import { useUser } from '@/context/UserContext';
 import { useRouter } from 'expo-router';
 
 
@@ -37,6 +35,7 @@ const GroupPills: React.FC = () => {
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={pillStyles.container}
+      style={{ flexGrow: 0 }}
     >
       {groups.length > 0 && (
         <TouchableOpacity
@@ -54,8 +53,10 @@ const GroupPills: React.FC = () => {
           <TouchableOpacity
             key={group.id}
             style={[pillStyles.pill, { borderColor: active ? theme.accent : theme.border }, active && { backgroundColor: theme.accent }]}
-            onPress={() => setCurrentGroup(active ? null : group)}
-            onLongPress={() => router.push({ pathname: '/groups/[groupId]/settings', params: { groupId: group.id.toString() } })}
+            onPress={() => active
+              ? router.push({ pathname: '/groups/[groupId]/settings', params: { groupId: group.id.toString() } })
+              : setCurrentGroup(group)
+            }
           >
             <Text style={[pillStyles.pillText, { color: active ? '#fff' : theme.text }]} numberOfLines={1}>
               {group.name}
@@ -79,6 +80,7 @@ const pillStyles = StyleSheet.create({
     paddingVertical: 8,
     gap: 8,
     flexDirection: 'row',
+    alignItems: 'center',
   },
   pill: {
     paddingHorizontal: 14,
@@ -106,15 +108,8 @@ const QuotesFeed: React.FC = () => {
   const insets = useSafeAreaInsets();
   const paddingTop = Platform.OS === 'ios' ? 0 : 16;
   const { filter } = useFeedFilter();
-  const { user } = useUser();
   const { groups } = useGroups();
-
-  const handleInvite = async () => {
-    if (!user?.username) return;
-    await Share.share({
-      message: `Join me on Yapify!\nhttps://yapify.net/invite/${user.username}/`,
-    });
-  };
+  const router = useRouter();
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;
@@ -214,9 +209,9 @@ const QuotesFeed: React.FC = () => {
               />
               <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
               {filter === 'latest' && groups.length === 0 && (
-                <TouchableOpacity style={styles.inviteButton} onPress={handleInvite}>
-                  <IconSymbol name="person.badge.plus" size={16} color={theme.accent} style={{ marginRight: 8 }} />
-                  <Text style={styles.inviteText}>Invite Friends</Text>
+                <TouchableOpacity style={styles.inviteButton} onPress={() => router.push('/groups/create')}>
+                  <IconSymbol name="person.3.fill" size={16} color={theme.accent} style={{ marginRight: 8 }} />
+                  <Text style={styles.inviteText}>Create a Group</Text>
                 </TouchableOpacity>
               )}
             </View>
