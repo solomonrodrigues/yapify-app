@@ -8,9 +8,11 @@ import {
   Platform,
   ActivityIndicator,
   Share,
+  ScrollView,
 } from 'react-native';
 import { Quote } from '@/types/api';
 import { useQuotes } from '@/context/QuotesContext';
+import { useGroups } from '@/context/GroupsContext';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
@@ -20,7 +22,80 @@ import FeedQuote from '@/components/FeedQuote';
 import { useFeedFilter } from '@/context/FeedFilterContext';
 import { IconSymbol, type IconSymbolName } from '@/components/ui/IconSymbol';
 import { useUser } from '@/context/UserContext';
+import { useRouter } from 'expo-router';
 
+
+// Group pill switcher at the top of the feed
+const GroupPills: React.FC = () => {
+  const colorScheme = useColorScheme() ?? 'dark';
+  const theme = Colors[colorScheme];
+  const { groups, currentGroup, setCurrentGroup } = useGroups();
+  const router = useRouter();
+
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={pillStyles.container}
+    >
+      {groups.length > 0 && (
+        <TouchableOpacity
+          style={[pillStyles.pill, currentGroup === null && { backgroundColor: theme.accent, borderColor: theme.accent }]}
+          onPress={() => setCurrentGroup(null)}
+        >
+          <Text style={[pillStyles.pillText, { color: currentGroup === null ? '#fff' : theme.secondaryText }]}>
+            All
+          </Text>
+        </TouchableOpacity>
+      )}
+      {groups.map((group) => {
+        const active = currentGroup?.id === group.id;
+        return (
+          <TouchableOpacity
+            key={group.id}
+            style={[pillStyles.pill, { borderColor: active ? theme.accent : theme.border }, active && { backgroundColor: theme.accent }]}
+            onPress={() => setCurrentGroup(active ? null : group)}
+            onLongPress={() => router.push({ pathname: '/groups/[groupId]/settings', params: { groupId: group.id.toString() } })}
+          >
+            <Text style={[pillStyles.pillText, { color: active ? '#fff' : theme.text }]} numberOfLines={1}>
+              {group.name}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+      <TouchableOpacity
+        style={[pillStyles.pill, pillStyles.createPill, { borderColor: theme.border }]}
+        onPress={() => router.push('/groups/create')}
+      >
+        <IconSymbol name="plus" size={14} color={theme.secondaryText} />
+      </TouchableOpacity>
+    </ScrollView>
+  );
+};
+
+const pillStyles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 8,
+    flexDirection: 'row',
+  },
+  pill: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  createPill: {
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pillText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+});
 
 // Main Feed Component
 const QuotesFeed: React.FC = () => {
@@ -32,6 +107,7 @@ const QuotesFeed: React.FC = () => {
   const paddingTop = Platform.OS === 'ios' ? 0 : 16;
   const { filter } = useFeedFilter();
   const { user } = useUser();
+  const { groups } = useGroups();
 
   const handleInvite = async () => {
     if (!user?.username) return;
@@ -59,13 +135,16 @@ const QuotesFeed: React.FC = () => {
 
   // Empty state messages based on filter
   const getEmptyMessage = () => {
+    if (groups.length === 0) {
+      return "Create a group and invite friends to start sharing quotes.";
+    }
     switch (filter) {
       case 'guessable':
-        return "All caught up on guesses!\nCheck back when friends post more.";
+        return "All caught up on guesses!\nCheck back when your group posts more.";
       case 'respondable':
         return "Nothing waiting for your response.";
       default:
-        return "Add friends and start sharing your group's funniest moments.";
+        return "Start quoting your group's funniest moments.";
     }
   };
 
@@ -96,12 +175,10 @@ const QuotesFeed: React.FC = () => {
       <View
         style={{
           flex: 1,
-          // On Android the tab bar is not absolutely positioned, so the content
-          // area already ends at the top of the tab bar — no bottom padding needed.
-          // On iOS the tab bar floats over content, so pad by the home-indicator height.
           paddingBottom: Platform.OS === 'ios' ? insets.bottom : 0,
         }}
       >
+        <GroupPills />
         <LegendList
           data={quotes}
           keyExtractor={(item: Quote) => item.id.toString()}
@@ -136,7 +213,7 @@ const QuotesFeed: React.FC = () => {
                 style={{ marginBottom: 16 }}
               />
               <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
-              {filter === 'latest' && (
+              {filter === 'latest' && groups.length === 0 && (
                 <TouchableOpacity style={styles.inviteButton} onPress={handleInvite}>
                   <IconSymbol name="person.badge.plus" size={16} color={theme.accent} style={{ marginRight: 8 }} />
                   <Text style={styles.inviteText}>Invite Friends</Text>
