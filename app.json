@@ -24,6 +24,7 @@
       "package": "net.yapify"
     },
 "plugins": [
+      "expo-dev-client",
       "expo-router",
       [
         "expo-splash-screen",
