@@ -120,7 +120,8 @@ export default function AppLayout() {
       router.back();
     } else {
       // Fallback to specified route if no history
-      router.replace(fallbackRoute);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.replace(fallbackRoute as any);
     }
   };
 
@@ -247,6 +248,51 @@ export default function AppLayout() {
             <HeaderBackButton
               {...props}
               onPress={handleBackPress('/my-account')}
+              tintColor={theme.text}
+              label={"Back"}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="groups/create"
+        options={{
+          headerShown: true,
+          headerTitle: 'New Group',
+          headerLeft: (props) => (
+            <HeaderBackButton
+              {...props}
+              onPress={handleBackPress('/(tabs)')}
+              tintColor={theme.text}
+              label={"Back"}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="groups/[groupId]/settings"
+        options={{
+          headerShown: true,
+          headerTitle: 'Group Settings',
+          headerLeft: (props) => (
+            <HeaderBackButton
+              {...props}
+              onPress={() => router.back()}
+              tintColor={theme.text}
+              label={"Back"}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="groups/[groupId]/members"
+        options={{
+          headerShown: true,
+          headerTitle: 'Members',
+          headerLeft: (props) => (
+            <HeaderBackButton
+              {...props}
+              onPress={() => router.back()}
               tintColor={theme.text}
               label={"Back"}
             />
