@@ -1,5 +1,23 @@
-import { PaginatedPublicUserList, ReportReasonEnum } from '../../types/api';
+import { PaginatedPublicUserList, PublicUser, ReportReasonEnum } from '../../types/api';
 import api from './client';
+
+export const searchUsers = async (
+  query: string,
+  url?: string | null,
+): Promise<PaginatedPublicUserList> => {
+  if (!query.trim()) return { count: 0, results: [] };
+  if (url) {
+    const res = await api.get<PaginatedPublicUserList>(url);
+    return res.data;
+  }
+  const res = await api.get<PaginatedPublicUserList>(`/users/search/?search=${encodeURIComponent(query)}`);
+  return res.data;
+};
+
+export const getUser = async (userId: number): Promise<PublicUser> => {
+  const res = await api.get<PublicUser>(`/users/${userId}/`);
+  return res.data;
+};
 
 /**
  * Block a user.

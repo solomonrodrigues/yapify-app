@@ -3,6 +3,7 @@ import { QuotesFeedValue, useQuotesFeed } from "@/hooks/useQuotesFeed";
 import { getGuessableQuotes, getQuotes, getRespondableQuotes } from "@/lib/api/quotes";
 import { createContext, useCallback, useContext, useEffect, useRef } from "react";
 import { useFeedFilter, FeedFilterType } from "./FeedFilterContext";
+import { useGroups } from "./GroupsContext";
 
 const QuotesContext = createContext<QuotesFeedValue | undefined>(undefined);
 
@@ -10,9 +11,10 @@ export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { filter } = useFeedFilter();
+  const { currentGroup } = useGroups();
   const prevFilterRef = useRef<FeedFilterType>(filter);
+  const prevGroupIdRef = useRef<number | null | undefined>(currentGroup?.id);
 
-  // Create a fetcher that uses the appropriate API based on the filter
   const fetcher = useCallback(
     async (url?: string | null) => {
       switch (filter) {
@@ -22,21 +24,24 @@ export const QuotesProvider: React.FC<{ children: React.ReactNode }> = ({
           return getRespondableQuotes(url);
         case 'latest':
         default:
-          return getQuotes(url);
+          return getQuotes(url, null, currentGroup?.id);
       }
     },
-    [filter]
+    [filter, currentGroup?.id]
   );
 
   const feed = useQuotesFeed({ scope: null, fetcher });
 
-  // Reload quotes when filter changes
+  // Reload when filter or active group changes
   useEffect(() => {
-    if (prevFilterRef.current !== filter) {
+    const filterChanged = prevFilterRef.current !== filter;
+    const groupChanged = prevGroupIdRef.current !== currentGroup?.id;
+    if (filterChanged || groupChanged) {
       prevFilterRef.current = filter;
+      prevGroupIdRef.current = currentGroup?.id;
       feed.loadQuotes(true);
     }
-  }, [filter, feed.loadQuotes]);
+  }, [filter, currentGroup?.id, feed.loadQuotes]);
 
   return (
     <QuotesContext.Provider value={feed}>

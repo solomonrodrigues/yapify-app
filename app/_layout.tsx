@@ -4,7 +4,7 @@ import { UpdateRequiredScreen } from '@/components/UpdateRequiredScreen';
 import { AuthProvider } from '@/context/AuthContext';
 import { BlockedUsersProvider } from '@/context/BlockedUsersContext';
 import { FeedFilterProvider } from '@/context/FeedFilterContext';
-import { FriendsProvider } from '@/context/FriendsContext';
+import { GroupsProvider } from '@/context/GroupsContext';
 import { NotificationsProvider } from '@/context/NotificationsContext';
 import { QuoteActionsModalProvider } from '@/context/QuoteActionsModalContext';
 import { QuotesProvider } from '@/context/QuotesContext';
@@ -134,9 +134,9 @@ export default function RootLayout() {
       <UserProvider>
         <BlockedUsersProvider>
           <FeedFilterProvider>
+            <GroupsProvider>
             <QuotesProvider>
               <NotificationsProvider>
-              <FriendsProvider>
               <QuoteActionsModalProvider>
               <ThemeProvider value={theme}>
                 <GestureHandlerRootView>
@@ -160,9 +160,9 @@ export default function RootLayout() {
                 </GestureHandlerRootView>
               </ThemeProvider>
               </QuoteActionsModalProvider>
-              </FriendsProvider>
               </NotificationsProvider>
             </QuotesProvider>
+            </GroupsProvider>
           </FeedFilterProvider>
         </BlockedUsersProvider>
       </UserProvider>

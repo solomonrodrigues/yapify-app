@@ -11,14 +11,14 @@ export type FeedScope =
  */
 export const getQuotes = async (
   url?: string | null,
-  scope?: FeedScope | null
+  scope?: FeedScope | null,
+  groupId?: number | null,
 ): Promise<PaginatedQuoteList> => {
   let endpoint: string;
 
   if (url) {
     endpoint = url;
   } else if (scope) {
-    // Use the appropriate endpoint based on scope type
     if (scope.type === 'user-posted') {
       endpoint = `/users/${scope.id}/quotes/posted/`;
     } else if (scope.type === 'user-received') {
@@ -30,7 +30,8 @@ export const getQuotes = async (
     endpoint = '/quotes/';
   }
 
-  const res = await api.get<PaginatedQuoteList>(endpoint);
+  const params = groupId ? { group_id: groupId } : undefined;
+  const res = await api.get<PaginatedQuoteList>(endpoint, { params });
   return res.data;
 };
 
