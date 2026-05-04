@@ -45,8 +45,10 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
   onQuoteCreated,
 }) => {
   const { groups, currentGroup } = useGroups();
-  // Use currentGroup if set, otherwise fall back to first group available
-  const activeGroup: Group | null = currentGroup ?? groups[0] ?? null;
+  // Local selection: defaults to currentGroup, then first group. User can override per-quote.
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const activeGroup: Group | null = selectedGroup ?? currentGroup ?? groups[0] ?? null;
+  const [groupPickerVisible, setGroupPickerVisible] = useState(false);
 
   const [query, setQuery] = useState("");
   const [members, setMembers] = useState<GroupMember[]>([]);
@@ -101,8 +103,20 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
       setSelectedUser(null);
       setQuoteText("");
       setContextText("");
+      setSelectedGroup(null);
+      setGroupPickerVisible(false);
     }
   }, [visible]);
+
+  const handleGroupChange = (group: Group) => {
+    Haptics.selectionAsync();
+    setSelectedGroup(group);
+    setGroupPickerVisible(false);
+    // Reset user selection when group changes — members differ
+    setQuery("");
+    setSearchResults([]);
+    setSelectedUser(null);
+  };
 
   const handleSearch = async (text: string) => {
     setQuery(text);
@@ -241,10 +255,18 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
           </View>
 
           {activeGroup && (
-            <View style={styles.groupLabel}>
+            <TouchableOpacity
+              style={styles.groupLabel}
+              onPress={() => groups.length > 1 && setGroupPickerVisible(true)}
+              disabled={groups.length <= 1}
+              activeOpacity={0.6}
+            >
               <IconSymbol name="person.2.fill" size={12} color={theme.secondaryText} style={{ marginRight: 4 }} />
               <ThemedText style={styles.groupLabelText}>{activeGroup.name}</ThemedText>
-            </View>
+              {groups.length > 1 && (
+                <IconSymbol name="chevron.down" size={10} color={theme.secondaryText} style={{ marginLeft: 4 }} />
+              )}
+            </TouchableOpacity>
           )}
 
           {!activeGroup ? (
@@ -337,6 +359,58 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
               </ScrollView>
             </>
           )}
+
+          <Modal
+            visible={groupPickerVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setGroupPickerVisible(false)}
+          >
+            <TouchableOpacity
+              style={styles.pickerBackdrop}
+              activeOpacity={1}
+              onPress={() => setGroupPickerVisible(false)}
+            >
+              <View style={styles.pickerSheet}>
+                <ThemedText style={styles.pickerTitle}>Post to which group?</ThemedText>
+                <ScrollView style={styles.pickerList} keyboardShouldPersistTaps="handled">
+                  {groups.map((g) => {
+                    const isActive = activeGroup?.id === g.id;
+                    return (
+                      <TouchableOpacity
+                        key={g.id}
+                        style={styles.pickerItem}
+                        onPress={() => handleGroupChange(g)}
+                      >
+                        <IconSymbol
+                          name="person.2.fill"
+                          size={14}
+                          color={isActive ? theme.accent : theme.secondaryText}
+                          style={{ marginRight: 10 }}
+                        />
+                        <ThemedText
+                          style={[
+                            styles.pickerItemText,
+                            isActive && { color: theme.accent, fontWeight: '600' },
+                          ]}
+                        >
+                          {g.name}
+                        </ThemedText>
+                        {isActive && (
+                          <IconSymbol
+                            name="checkmark"
+                            size={14}
+                            color={theme.accent}
+                            style={{ marginLeft: 'auto' }}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            </TouchableOpacity>
+          </Modal>
         </KeyboardAvoidingView>
       </Modal>
     );
@@ -499,6 +573,37 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
   groupLabelText: {
     fontSize: 12,
     color: theme.secondaryText,
+  },
+  pickerBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+  },
+  pickerSheet: {
+    backgroundColor: theme.modalBackground,
+    borderRadius: 14,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    maxHeight: '70%',
+  },
+  pickerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+    paddingHorizontal: Spacing.xs,
+  },
+  pickerList: {
+    flexGrow: 0,
+  },
+  pickerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm + Spacing.xs,
+    paddingHorizontal: Spacing.xs,
+  },
+  pickerItemText: {
+    fontSize: 16,
   },
   noGroupContainer: {
     flex: 1,
