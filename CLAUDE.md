@@ -82,7 +82,7 @@ The app uses React Context for global state management. Context providers are st
 4. **FeedFilterProvider** (`context/FeedFilterContext.tsx`) - Feed filter state (`latest` | `guessable` | `respondable`)
 5. **QuotesProvider** (`context/QuotesContext.tsx`) - Global quotes feed state; switches fetchers based on FeedFilterContext
 6. **NotificationsProvider** (`context/NotificationsContext.tsx`) - Notification state and unread count
-7. **FriendsProvider** (`context/FriendsContext.tsx`) - Friends list, recently quoted, and recently viewed users. Auto-fetches on mount as a background prefetch (see below).
+7. **GroupsProvider** (`context/GroupsContext.tsx`) - Groups the user belongs to, group members, recently quoted, and recently viewed users. Auto-fetches on mount as a background prefetch (see below).
 8. **QuoteActionsModalProvider** (`context/QuoteActionsModalContext.tsx`) - Modal state for quote actions
 
 ### API Client Architecture
@@ -113,7 +113,7 @@ The API client uses `setOnLogoutHandler()` to register the `AuthContext.logout()
 - `lib/api/auth.ts` - Login, registration, email verification
 - `lib/api/quotes.ts` - Quote CRUD, like, witness, guess, save/unsave actions
 - `lib/api/profile.ts` - User profile operations
-- `lib/api/friends.ts` - Friend relationships
+- `lib/api/groups.ts` - Group CRUD, members, invites
 - `lib/api/notifications.ts` - Notifications
 - `lib/api/users.ts` - User blocking/unblocking
 - `lib/api/recents.ts` - Recent search tracking
@@ -140,7 +140,7 @@ Specialized feed hooks built on top of `useQuotesFeed`:
 Contexts like `QuotesProvider`, `UserProvider`, and `NotificationsContext` do **not** auto-load data on mount — their load functions must be called explicitly. `DataPreloader` is the single place responsible for triggering all initial loads (quotes, user profile, notifications) on app startup. It also blocks rendering of its children until essential data is ready, showing a loading screen with rotating humorous messages in the interim. Do not add auto-load `useEffect` calls inside context providers — use `DataPreloader` instead.
 
 **Exception — background prefetch contexts:**
-Contexts that provide data which is *not* required for the first screen, and whose absence never blocks rendering, may auto-fetch once the user is authenticated. `FriendsContext` is the canonical example: it watches `isLoggedIn` from `AuthContext` and triggers a one-time prefetch when it becomes `true`, so friends, recent friends, and recent users are already cached by the time the user opens the post modal or navigates to the search screen. The fetch is gated on `isLoggedIn` (not on mount) to avoid firing unauthenticated API calls during the initial auth check. The rule against auto-loading in context providers exists specifically because `DataPreloader` uses those load functions to gate rendering — when there is no render-blocking concern, auto-fetching on login in the context itself is the right call.
+Contexts that provide data which is *not* required for the first screen, and whose absence never blocks rendering, may auto-fetch once the user is authenticated. `GroupsContext` is the canonical example: it watches `isLoggedIn` from `AuthContext` and triggers a one-time prefetch when it becomes `true`, so groups, group members, and recent users are already cached by the time the user opens the post modal or navigates to the search screen. The fetch is gated on `isLoggedIn` (not on mount) to avoid firing unauthenticated API calls during the initial auth check. The rule against auto-loading in context providers exists specifically because `DataPreloader` uses those load functions to gate rendering — when there is no render-blocking concern, auto-fetching on login in the context itself is the right call.
 
 ### Component Patterns
 
