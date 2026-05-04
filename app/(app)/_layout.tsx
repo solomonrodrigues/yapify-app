@@ -6,10 +6,26 @@ import { getPushToken, setPushToken } from "@/lib/utils/storage";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
-import { Redirect, Stack, useRouter } from "expo-router";
+import { Redirect, Stack, useRouter, type Href } from "expo-router";
 import { useEffect } from "react";
 import { AppState, Platform, useColorScheme } from "react-native";
 import { HeaderBackButton } from "@react-navigation/elements";
+
+// `group_invite` routes to /notifications because the accept/reject UI lives
+// there and the recipient hasn't joined the group yet.
+function routeForNotification(data: Record<string, string | undefined> | undefined): Href | null {
+  if (!data) return null;
+  if (data.quote_id) {
+    return { pathname: '/(app)/[quoteID]', params: { quoteID: data.quote_id } };
+  }
+  if (data.notification_type === 'group_invite_accepted' && data.group_id) {
+    return { pathname: '/(app)/groups/[groupId]/members', params: { groupId: data.group_id } };
+  }
+  if (data.notification_type === 'group_invite') {
+    return '/(app)/(tabs)/notifications';
+  }
+  return null;
+}
 
 export default function AppLayout() {
   const { isLoggedIn, isLoading } = useAuth();
@@ -83,24 +99,21 @@ export default function AppLayout() {
     };
   }, []);
 
-  // Deep-link to a quote when the user taps a push notification.
+  // Deep-link when the user taps a push notification (foreground listener
+  // plus the cold-start / re-open case).
   useEffect(() => {
+    const handle = (data: Record<string, string | undefined> | undefined) => {
+      const target = routeForNotification(data);
+      if (target) router.push(target);
+    };
+
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-      const data = response.notification.request.content.data as Record<string, string | undefined>;
-      const quoteId = data?.quote_id;
-      if (quoteId) {
-        router.push({ pathname: '/(app)/[quoteID]', params: { quoteID: quoteId } });
-      }
+      handle(response.notification.request.content.data as Record<string, string | undefined>);
     });
 
-    // Handle the notification tap that cold-started (or re-opened) the app.
     const lastResponse = Notifications.getLastNotificationResponse();
     if (lastResponse) {
-      const data = lastResponse.notification.request.content.data as Record<string, string | undefined>;
-      const quoteId = data?.quote_id;
-      if (quoteId) {
-        router.push({ pathname: '/(app)/[quoteID]', params: { quoteID: quoteId } });
-      }
+      handle(lastResponse.notification.request.content.data as Record<string, string | undefined>);
     }
 
     return () => subscription.remove();
