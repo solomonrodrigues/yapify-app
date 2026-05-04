@@ -13,6 +13,7 @@ import { Quote } from "@/types/api";
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
 import {
+    ActivityIndicator,
     KeyboardAvoidingView,
     Modal,
     NativeScrollEvent,
@@ -108,14 +109,25 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
     }
   }, [visible]);
 
-  const handleGroupChange = (group: Group) => {
+  const handleGroupChange = async (group: Group) => {
     Haptics.selectionAsync();
     setSelectedGroup(group);
     setGroupPickerVisible(false);
-    // Reset user selection when group changes — members differ
-    setQuery("");
+    // Re-run any active search in the new group's context. Members differ across groups,
+    // so old results are stale, but the user's typed query usually still applies.
     setSearchResults([]);
     setSelectedUser(null);
+    if (query.length >= 2) {
+      try {
+        setSearchLoading(true);
+        const data = await getGroupMembers(group.id, null, query);
+        setSearchResults(data.results);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }
   };
 
   const handleSearch = async (text: string) => {
@@ -529,9 +541,14 @@ const QuotePostModal: React.FC<QuotePostModalProps> = ({
               disabled={!quoteText.trim() || creatingQuote || quoteText.length > QUOTE_MAX_LENGTH}
               activeOpacity={0.8}
             >
-              <Text style={styles.createButtonText}>
-                {creatingQuote ? 'Creating...' : 'Create Quote'}
-              </Text>
+              {creatingQuote ? (
+                <View style={styles.createButtonInner}>
+                  <ActivityIndicator size="small" color={theme.buttonText} style={{ marginRight: 8 }} />
+                  <Text style={styles.createButtonText}>Creating...</Text>
+                </View>
+              ) : (
+                <Text style={styles.createButtonText}>Create Quote</Text>
+              )}
             </TouchableOpacity>
           </Animated.View>
         </ScrollView>
@@ -779,6 +796,10 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
     marginHorizontal: Spacing.md,
     marginBottom: Spacing.xxxl + Spacing.md,
     borderRadius: 12,
+    alignItems: 'center',
+  },
+  createButtonInner: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
   createButtonDisabled: {
