@@ -125,7 +125,6 @@ export default function QuoteActionsModal() {
   const handleHide = async () => {
     if (quote.id) {
       await hideQuoteById(quote.id);
-      toast.show({ variant: 'accent', label: 'Hidden. Tap to undo.' });
     }
     closeModal();
   };
