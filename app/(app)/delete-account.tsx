@@ -109,11 +109,11 @@ export default function DeleteAccountScreen() {
           <View style={styles.infoCard}>
             <ThemedText style={styles.infoTitle}>What will be deleted</ThemedText>
             <ThemedText style={styles.infoText}>
-              Your profile, posted quotes, friendships, saved quotes, and all other account data will be permanently removed.
+              Your profile, posted quotes, group memberships, saved quotes, and all other account data will be permanently removed.
             </ThemedText>
             <View style={styles.divider} />
             <ThemedText style={styles.infoText}>
-              Quotes where you appear as the quoted person will be kept for your friends, with your display name preserved.
+              Quotes where you appear as the quoted person will be kept for your groups, with your display name preserved.
             </ThemedText>
           </View>
 
