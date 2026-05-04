@@ -130,40 +130,45 @@ function ToastCard({
 
   return (
     <GestureDetector gesture={pan}>
+      {/* Outer wrapper owns the layout animations; inner owns the swipe transform.
+          Reanimated overwrites `transform` on a node that also runs entering/exiting. */}
       <Animated.View
         entering={FadeInDown.springify().mass(0.7).damping(14)}
         exiting={FadeOutUp.duration(180)}
-        style={[
-          styles.card,
-          { backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF' },
-          animStyle,
-        ]}
       >
-        <View style={styles.strip} pointerEvents="none">
-          <View style={[styles.stripBar, { backgroundColor: accentColor }]} />
-        </View>
-        <View style={styles.body}>
-          <View style={styles.textBlock}>
-            {item.label ? (
-              <Text style={[styles.label, { color: theme.text }]} numberOfLines={2}>
-                {item.label}
-              </Text>
-            ) : null}
-            {item.description ? (
-              <Text style={[styles.description, { color: theme.secondaryText }]} numberOfLines={2}>
-                {item.description}
+        <Animated.View
+          style={[
+            styles.card,
+            { backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF' },
+            animStyle,
+          ]}
+        >
+          <View style={styles.strip} pointerEvents="none">
+            <View style={[styles.stripBar, { backgroundColor: accentColor }]} />
+          </View>
+          <View style={styles.body}>
+            <View style={styles.textBlock}>
+              {item.label ? (
+                <Text style={[styles.label, { color: theme.text }]} numberOfLines={2}>
+                  {item.label}
+                </Text>
+              ) : null}
+              {item.description ? (
+                <Text style={[styles.description, { color: theme.secondaryText }]} numberOfLines={2}>
+                  {item.description}
+                </Text>
+              ) : null}
+            </View>
+            {item.actionLabel ? (
+              <Text
+                onPress={handleAction}
+                style={[styles.action, { color: theme.accent }]}
+              >
+                {item.actionLabel}
               </Text>
             ) : null}
           </View>
-          {item.actionLabel ? (
-            <Text
-              onPress={handleAction}
-              style={[styles.action, { color: theme.accent }]}
-            >
-              {item.actionLabel}
-            </Text>
-          ) : null}
-        </View>
+        </Animated.View>
       </Animated.View>
     </GestureDetector>
   );
