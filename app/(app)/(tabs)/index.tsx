@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 import { Quote } from '@/types/api';
 import { useQuotes } from '@/context/QuotesContext';
 import { useGroups } from '@/context/GroupsContext';
+import { useToast } from '@/context/ToastContext';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
@@ -110,6 +111,15 @@ const QuotesFeed: React.FC = () => {
   const { filter } = useFeedFilter();
   const { groups } = useGroups();
   const router = useRouter();
+  const { toast } = useToast();
+
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current && hasLoadedOnce) {
+      toast.show({ variant: 'danger', label: "Couldn't refresh quotes" });
+    }
+    prevErrorRef.current = error ?? null;
+  }, [error, hasLoadedOnce]);
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;

@@ -6,13 +6,15 @@ import { Colors } from '@/constants/Colors';
 import { useBlockedUsers } from '@/context/BlockedUsersContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { PublicUser } from '@/types/api';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   ActivityIndicator,
   Alert,
   FlatList,
   Pressable,
   StyleSheet,
+  Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { useToast } from '@/context/ToastContext';
@@ -22,6 +24,7 @@ export default function BlockedUsersScreen() {
   const {
     blockedUsers,
     loading,
+    error,
     hasLoadedOnce,
     loadBlockedUsers,
     unblockUserById,
@@ -37,6 +40,14 @@ export default function BlockedUsersScreen() {
       loadBlockedUsers();
     }
   }, [hasLoadedOnce, loadBlockedUsers]);
+
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current && hasLoadedOnce) {
+      toast.show({ variant: 'danger', label: "Couldn't refresh blocked users" });
+    }
+    prevErrorRef.current = error ?? null;
+  }, [error, hasLoadedOnce]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -89,6 +100,17 @@ export default function BlockedUsersScreen() {
       <ThemedView style={styles.centerContainer}>
         <ActivityIndicator size="large" />
         <ThemedText style={styles.loadingText}>Loading...</ThemedText>
+      </ThemedView>
+    );
+  }
+
+  if (!hasLoadedOnce && error) {
+    return (
+      <ThemedView style={styles.centerContainer}>
+        <ThemedText style={styles.firstLoadErrorText}>{"Couldn't load blocked users"}</ThemedText>
+        <TouchableOpacity style={styles.retryButton} onPress={() => loadBlockedUsers()}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
       </ThemedView>
     );
   }
@@ -151,6 +173,24 @@ const getStyles = (theme: typeof Colors.light | typeof Colors.dark) =>
       marginTop: 12,
       fontSize: 14,
       color: theme.secondaryText,
+    },
+    firstLoadErrorText: {
+      fontSize: 18,
+      marginBottom: 20,
+      textAlign: 'center',
+      color: theme.secondaryText,
+    },
+    retryButton: {
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderColor: theme.accent,
+    },
+    retryText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: theme.accent,
     },
     infoCard: {
       backgroundColor: theme.cardBackground,

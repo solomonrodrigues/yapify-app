@@ -7,7 +7,7 @@ import { useNotifications } from '@/context/NotificationsContext';
 import { Notification } from '@/types/api';
 import { LegendList } from '@legendapp/list';
 import { router, useFocusEffect } from 'expo-router';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -18,6 +18,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useToast } from '@/context/ToastContext';
 
 // Main Notifications View
 const NotificationsView: React.FC = () => {
@@ -38,6 +39,16 @@ const NotificationsView: React.FC = () => {
     deleteNotification,
     refresh,
   } = useNotifications();
+
+  const { toast } = useToast();
+
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current && hasLoadedOnce) {
+      toast.show({ variant: 'danger', label: "Couldn't refresh notifications" });
+    }
+    prevErrorRef.current = error ?? null;
+  }, [error, hasLoadedOnce]);
 
   const handleNotificationPress = async (item: Notification) => {
     if (!item.is_read) {
