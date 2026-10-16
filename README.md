@@ -1,66 +1,64 @@
-# Yapify - React Native/Expo mobile app
+<p align="center">
+  <img src="assets/images/icon.png" alt="Yapify app icon" width="120">
+</p>
 
-## Generating TypeScript Types from OpenAPI
+<h1 align="center">Yapify</h1>
 
-We use the openapi-typescript package to generate TypeScript type definitions from our OpenAPI schema. This step only needs to be done when the API specification has changed.
+<p align="center"><strong>Catch what your friends say before they deny it.</strong></p>
 
-Run the following command, updating the paths to match your local environment:
+Yapify is a private social app for friend groups. Someone says something ridiculous, you post it as a quote attributed to them, and the rest of the group can witness it ("I was there"), react, and play a guessing game: *who said it?* Think of it as receipts for the wildest things your friends will ever say.
+
+This repo is the iOS app, built with React Native and Expo. The API lives in [yapify](https://github.com/solomonrodrigues/yapify).
+
+**Status:** Built through to App Store–ready (accounts, groups, push notifications, moderation, privacy and terms) but not currently live. I'd like to bring it back one day.
+
+## Features
+
+- **Feed** of quotes from your groups, with filters, infinite scroll and skeleton loading states
+- **Posting** a quote with context, attributed to a group member or to someone not on the app
+- **"Who said it?"** guessing, with streaks and weekly skips
+- **Witnessing, likes and responses**, plus saving and hiding quotes
+- **Groups**: create a group, invite friends, manage members and settings
+- **Shareable quote cards**, rendered to an image for sharing outside the app
+- **Notifications**, in-app and push
+- **Onboarding, email verification and password reset**
+- **Profiles, search, blocking and account deletion**
+
+## Built with
+
+- **Expo SDK 54** and **React Native 0.81**, written in **TypeScript**
+- **Expo Router** for file-based navigation (`app/`)
+- **Reanimated**, **Gesture Handler** and **Skia** for animation, gestures and the blurred gradient backgrounds
+- **Expo Haptics**, **Expo Notifications** and **Expo Secure Store** (for auth tokens)
+- **Axios** with automatic JWT refresh
+- **openapi-typescript**, generating API types from the backend's OpenAPI schema
+- **EAS Build** for development and production builds
+
+## Project layout
+
 ```
-Windows
-npx openapi-typescript "C:\Users\Solom\Downloads\yapifySchema.yaml" -o C:\Users\Solom\Sites\yapify-app\types\schema.ts
-MacOS:
-npx openapi-typescript "/Users/solomonrodrigues/Downloads/Yapify API(22).yaml" -o "/Users/solomonrodrigues/Personal/yapify-projects/yapify-app/types/schema.ts"
+app/
+├── (auth)/        # Sign in, onboarding, email verification, password reset
+└── (app)/         # Signed-in app
+    ├── (tabs)/    # Feed, post, notifications, profile
+    ├── groups/    # Create a group, members, settings
+    └── …          # Quote detail, search, saved and hidden quotes, account screens
+components/        # Feed quote, guess button, shareable quote card, UI primitives
+lib/api/           # API client and token refresh
+types/             # Types generated from the OpenAPI schema
 ```
-Notes
-- The first path points to your OpenAPI schema file (.yaml or .json).
-- The -o option specifies the output file where the generated TypeScript types will be saved.
 
-
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Running locally
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+The app talks to the API URL set in `lib/api/client.ts`. To use a local backend, run [yapify](https://github.com/solomonrodrigues/yapify) and point that URL at it. Push notifications need a development build (`eas build --profile development`) rather than Expo Go.
 
-## Learn more
+To regenerate the API types after the backend changes, download the schema from the backend's `/api/schema/` endpoint and run:
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npx openapi-typescript path/to/schema.yaml -o types/schema.ts
+```
